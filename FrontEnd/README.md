@@ -2,6 +2,11 @@
 
 This project is initialized with [Ant Design Pro](https://pro.ant.design). Follow is the quick guide for how to use.
 
+## Prerequisites
+
+- [Node.js](https://nodejs.org/en/) (>=16.14.0)
+- [pnpm](https://pnpm.io/) (>=6.14.0)
+
 ## Environment Prepare
 
 Install `node_modules`:
