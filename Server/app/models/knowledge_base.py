@@ -1,11 +1,23 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
+from datetime import datetime
 
 class KnowledgeBase(BaseModel):
-    id: int
+    id: int = Field(0, description="knowledge base id")
     name: str = Field(..., description="name of knowledge base")
     description: str = Field(..., description="description for the knowledge base")
-    createdAt: int = Field(0, alias="created_at", description="time in milliseconds since epoch when the base was created")
-    updatedAt: int = Field(0, alias="updated_at", description="time in milliseconds since epoch when the base was last updated")
+    userId: int = Field(-1, alias="user_id", description="user id of the user who created the knowledge base")
+    createdAt: int = Field(0, description="time in milliseconds since epoch when the base was created")
+    updatedAt: int = Field(0, description="time in milliseconds since epoch when the base was last updated")
     
     class Config:
         orm_mode = True
+
+    @validator("createdAt", "updatedAt", pre=True)
+    @classmethod
+    def datetime_convert(cls, v):
+        print(f"v: {v} ({type(v)})")
+        if isinstance(v, int):
+            return v
+        elif isinstance(v, datetime):
+            return int(v.timestamp() * 1000)
+        return v
