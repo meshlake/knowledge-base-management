@@ -2,6 +2,7 @@ import React from 'react';
 import KnowledgeBaseTabs from './components/Tabs';
 import KnowledgeList from './components/KnowledgeList';
 import KnowledgeManage from './components/KnowledgeManage';
+import KnowledgeBaseInfo from './components/KnowledgeBaseInfo';
 // import Styles from './index.less';
 
 const App: React.FC = () => {
@@ -18,6 +19,7 @@ const App: React.FC = () => {
       <KnowledgeBaseTabs items={tabs} onChange={handleTabChange} />
       {activeTab === 0 && <KnowledgeList></KnowledgeList>}
       {activeTab === 1 && <KnowledgeManage></KnowledgeManage>}
+      {activeTab === 2 && <KnowledgeBaseInfo name="名字" description="描述"></KnowledgeBaseInfo>}
     </div>
   );
 };
