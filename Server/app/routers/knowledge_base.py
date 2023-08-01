@@ -1,3 +1,4 @@
+import logging
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from fastapi import APIRouter, Depends
@@ -76,6 +77,8 @@ def delete(
         id (int): knowledge base id
         db (Session, optional): sqlalchemy database session. Defaults to Depends(get_db).
     """
-    db.query(KnowledgeBaseEntity).filter(KnowledgeBaseEntity.id == id).delete()
+    count: int = db.query(KnowledgeBaseEntity).filter(KnowledgeBaseEntity.id == id).delete()
+    if count == 0:
+        logging.info(f"knowledge base with id {id} not found, nothing deleted, and ignore exploring this information")
     db.commit()
     return {"message": "knowledge base deleted"}
