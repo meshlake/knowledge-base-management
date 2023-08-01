@@ -1,11 +1,14 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import HTTPException
+from starlette.responses import Response
 from app.service.casbinEnforcer import authorize
 from .routers import (
     users,
     organization,
     auth,
     roles,
+    knowledge_base
 )
 from fastapi_pagination import add_pagination
 from fastapi.routing import APIRoute
@@ -27,6 +30,7 @@ app.include_router(organization.router)
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(roles.router)
+app.include_router(knowledge_base.router)
 
 
 add_pagination(app)
@@ -52,14 +56,15 @@ for route in all_routes:
     if not isinstance(route, APIRoute):
         whitelist.append(route.path)
 
-
 # 注册权限验证中间件
 @app.middleware("http")
 async def add_auth_middleware(request: Request, call_next):
     # 调用自定义中间件并传递额外参数
-    response = await authorize(request, call_next, whitelist=whitelist)
-    return response
-
+    try: 
+        response = await authorize(request, call_next, whitelist=whitelist)
+        return response
+    except HTTPException as e:
+        return Response(status_code=e.status_code, content=e.detail)
 @app.get("/")
 def root():
     return {"message": "Hello Doc"}

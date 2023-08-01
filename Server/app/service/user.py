@@ -84,12 +84,14 @@ async def get_current_active_user(
 
 
 async def get_current_user_without_depends(request: Request):
-    token = request.headers.get("Authorization").split(" ")[1]
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    token = request.headers.get("Authorization").split(" ")[1] if 'Authorization' in request.headers else None
+    if not token:
+        raise credentials_exception
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
