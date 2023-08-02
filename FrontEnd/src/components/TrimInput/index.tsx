@@ -10,7 +10,7 @@ const TrimInput: React.FC<InputProps> = (props) => {
     onChange?.(e);
   };
 
-  return <Input onBlur={handleBlur} {...props} />;
+  return <Input onBlur={handleBlur} {...props} autoComplete="off" />;
 };
 
 export default TrimInput;

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Modal } from 'antd';
 import { ActionType, PageContainer, ProList } from '@ant-design/pro-components';
-import { ExclamationCircleFilled } from '@ant-design/icons';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { getChatbotList, deleteChatbot } from '@/services/chatbot';
 import AddForm from './component/AddForm';
 import CardItem from './component/CardItem';
@@ -25,8 +25,10 @@ const OrgManagement = () => {
   const handleDelete = (bot: Chatbot_API.Chatbot) => {
     confirm({
       title: '请谨慎操作',
-      icon: <ExclamationCircleFilled />,
-      content: `确定删除机器人（${bot.name}）吗？删除不可恢复，并会影响相关应用。`,
+      icon: <ExclamationCircleOutlined style={{ color: 'red' }} />,
+      content: `确定删除机器人【${bot.name}】吗？删除不可恢复，并会影响相关应用。`,
+      okText: '确定删除',
+      cancelText: '取消',
       onOk() {
         return deleteChatbot(bot.id).then((result) => {
           console.log(result);
