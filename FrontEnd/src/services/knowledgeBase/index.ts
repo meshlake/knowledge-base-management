@@ -27,3 +27,22 @@ export function deleteKnowledgeBase(id: number) {
     },
   });
 }
+
+export function getKnowledgeBase(id: number) {
+  return request(`/knowledge_bases/${id}`, {
+    method: 'GET',
+    headers: {
+      authorization: 'Bearer ' + localStorage.getItem('access_token'),
+    },
+  });
+}
+
+export function updateKnowledgeBase(data: Omit<KnowledgeBaseModel, 'userId'>) {
+  return request<DEFAULT_API.Response<KnowledgeBaseModel>>(`/knowledge_bases/${data.id}`, {
+    method: 'PUT',
+    data,
+    headers: {
+      authorization: 'Bearer ' + localStorage.getItem('access_token'),
+    },
+  });
+}

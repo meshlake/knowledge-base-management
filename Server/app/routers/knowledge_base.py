@@ -92,7 +92,7 @@ def delete(
 
 
 @router.put("/knowledge_bases/{id}", dependencies=[Depends(oauth2_scheme)])
-def update_knowledge_bases(
+def update(
     id: int, knowledge_base: KnowledgeBaseUpdate, db: Session = Depends(get_db)
 ):
     knowledge_base = update_knowledge_base(db, knowledge_base, id)
@@ -100,6 +100,6 @@ def update_knowledge_bases(
 
 
 @router.get("/knowledge_bases/{id}", dependencies=[Depends(oauth2_scheme)])
-def get_knowledge_base(id: int, db: Session = Depends(get_db)):
+def get(id: int, db: Session = Depends(get_db)):
     knowledge_base = get_knowledge_base(db, id)
     return {"data": knowledge_base}

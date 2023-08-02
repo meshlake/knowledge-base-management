@@ -4,13 +4,15 @@ import Styles from './index.less';
 import KnowledgeItem from '../KnowledgeItem';
 import ImportFile from '../ImportFile';
 import ManuallyEnter from '../ManuallyEnter';
+import { KnowledgeBaseModel } from '@/pages/KnowledgeBase/types';
 
 type TPagination = Omit<DEFAULT_API.Paginate<any>, 'items'>;
+type KnowledgeListProps = {
+  knowledgeBase: KnowledgeBaseModel;
+};
 
-const App: React.FC = () => {
-  const [knowledgeBase, setKnowledgeBase] = React.useState<any>({
-    name: 'lalal',
-  });
+const App: React.FC<KnowledgeListProps> = (props) => {
+  const { knowledgeBase } = props;
 
   const [knowledgeList, setKnowledgeList] = React.useState<any[]>([]);
 
@@ -29,9 +31,6 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    setKnowledgeBase({
-      name: 'lalal',
-    });
     setKnowledgeList([]);
     setPagination({
       page: 1,
