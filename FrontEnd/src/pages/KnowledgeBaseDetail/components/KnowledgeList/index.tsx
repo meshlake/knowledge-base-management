@@ -2,13 +2,17 @@ import { Button, Pagination } from 'antd';
 import React, { useEffect } from 'react';
 import Styles from './index.less';
 import KnowledgeItem from '../KnowledgeItem';
+import ImportFile from '../ImportFile';
+import ManuallyEnter from '../ManuallyEnter';
+import { KnowledgeBaseModel } from '@/pages/KnowledgeBase/types';
 
 type TPagination = Omit<DEFAULT_API.Paginate<any>, 'items'>;
+type KnowledgeListProps = {
+  knowledgeBase: KnowledgeBaseModel;
+};
 
-const App: React.FC = () => {
-  const [knowledgeBase, setKnowledgeBase] = React.useState<any>({
-    name: 'lalal',
-  });
+const App: React.FC<KnowledgeListProps> = (props) => {
+  const { knowledgeBase } = props;
 
   const [knowledgeList, setKnowledgeList] = React.useState<any[]>([]);
 
@@ -19,14 +23,14 @@ const App: React.FC = () => {
     size: 10,
   });
 
+  const [isImportFileModalOpen, setIsImportFileModalOpen] = React.useState<boolean>(false);
+  const [isManuallyEnterModalOpen, setIsManuallyEnterModalOpen] = React.useState<boolean>(false);
+
   const handleDeleteKnowledgeItem = (id: number) => {
     console.log(id);
   };
 
   useEffect(() => {
-    setKnowledgeBase({
-      name: 'lalal',
-    });
     setKnowledgeList([]);
     setPagination({
       page: 1,
@@ -44,7 +48,9 @@ const App: React.FC = () => {
         </div>
         {/* <div>搜索</div> */}
         <div>
-          <Button>文件导入</Button>
+          <Button onClick={() => setIsImportFileModalOpen(true)} style={{ marginRight: '20px' }}>
+            文件导入
+          </Button>
           <Button type="primary" ghost>
             手动添加
           </Button>
@@ -77,14 +83,30 @@ const App: React.FC = () => {
               您还没有添加任何知识点，可以通过手动输入或者文件导入完成知识点录入～
             </div>
             <div className={Styles.btns}>
-              <Button style={{ width: '140px' }}>文件导入</Button>
-              <Button style={{ width: '140px' }} type="primary" ghost>
+              <Button style={{ width: '140px' }} onClick={() => setIsImportFileModalOpen(true)}>
+                文件导入
+              </Button>
+              <Button
+                style={{ width: '140px' }}
+                type="primary"
+                ghost
+                onClick={() => setIsManuallyEnterModalOpen(true)}
+              >
                 手动添加
               </Button>
             </div>
           </div>
         </div>
       )}
+      <ImportFile
+        isModalOpen={isImportFileModalOpen}
+        onClose={() => setIsImportFileModalOpen(false)}
+      ></ImportFile>
+      <ManuallyEnter
+        isModalOpen={isManuallyEnterModalOpen}
+        onClose={() => setIsManuallyEnterModalOpen(false)}
+        data={null}
+      ></ManuallyEnter>
     </div>
   );
 };
