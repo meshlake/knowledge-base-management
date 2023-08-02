@@ -33,6 +33,12 @@ export default [
     redirect: '/welcome',
   },
   {
+    path: '/chatbot',
+    name: '机器人',
+    icon: 'robot',
+    component: 'Chatbot/List',
+  },
+  {
     path: '*',
     layout: false,
     component: './404',
