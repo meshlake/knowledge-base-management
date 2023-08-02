@@ -1,0 +1,30 @@
+@import '/src/styles/common.less';
+
+.cardItem {
+  font-family: MiSans;
+  color: #3d3d3d;
+  overflow: hidden;
+  .cardItemTop {
+    display: flex;
+    align-items: center;
+    .icon {
+      width: 30px;
+      height: 30px;
+      margin-right: 20px;
+    }
+    .title {
+      flex: 1;
+      font-size: 20px;
+      font-weight: 600;
+      .single-line-ellipsis();
+    }
+  }
+  .description {
+    height: 40px;
+    line-height: 20px;
+    margin-top: 20px;
+    font-size: 14px;
+    letter-spacing: 0em;
+    .multi-line-ellipsis(2);
+  }
+}
