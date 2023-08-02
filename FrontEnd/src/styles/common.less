@@ -1,0 +1,13 @@
+.single-line-ellipsis() {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.multi-line-ellipsis(@number) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: @number;
+  overflow: hidden;
+  word-break: break-all;
+}
