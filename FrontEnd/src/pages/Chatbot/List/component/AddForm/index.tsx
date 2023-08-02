@@ -45,7 +45,7 @@ const OrgForm = (props: OrgFormProps) => {
   // 初始化数据
   useEffect(() => {
     form.resetFields();
-  }, []);
+  }, [visible]);
 
   return (
     <Modal
