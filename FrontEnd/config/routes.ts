@@ -33,6 +33,12 @@ export default [
     redirect: '/welcome',
   },
   {
+    name: '知识库',
+    path: '/knowledgeBase',
+    icon: 'book',
+    component: './KnowledgeBase',
+  },
+  {
     path: '/chatbot',
     name: '机器人',
     icon: 'robot',
