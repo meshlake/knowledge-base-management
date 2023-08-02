@@ -25,3 +25,12 @@ export function createChatbot(data: Chatbot_API.ChatbotCreate) {
     },
   });
 }
+
+export function deleteChatbot(id: string) {
+  return request(`/chatbot/${id}`, {
+    method: 'DELETE',
+    headers: {
+      authorization: 'Bearer ' + localStorage.getItem('access_token'),
+    },
+  });
+}

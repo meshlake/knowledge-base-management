@@ -1,21 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Modal } from 'antd';
 import { ActionType, PageContainer, ProList } from '@ant-design/pro-components';
+import { ExclamationCircleFilled } from '@ant-design/icons';
+import { getChatbotList, deleteChatbot } from '@/services/chatbot';
 import AddForm from './component/AddForm';
 import CardItem from './component/CardItem';
 import AddCard from './component/AddCard';
-import { getChatbotList } from '@/services/chatbot';
 import styles from './index.less';
 
 const OrgManagement = () => {
   const ref = useRef<ActionType>();
+  const { confirm } = Modal;
   const handleRefresh = () => ref?.current?.reload();
 
-  // const [loading, setLoading] = useState(true);
   const [addVisible, setAddVisible] = useState(false);
-
-  // const handleAdd = () => {
-  //   setAddVisible(true);
-  // };
 
   const refresh = (needRefresh: boolean) => {
     setAddVisible(false);
@@ -24,19 +22,29 @@ const OrgManagement = () => {
     }
   };
 
-  const handleDelete = (id: string) => {
-    console.log(id);
+  const handleDelete = (bot: Chatbot_API.Chatbot) => {
+    confirm({
+      title: '请谨慎操作',
+      icon: <ExclamationCircleFilled />,
+      content: `确定删除机器人（${bot.name}）吗？删除不可恢复，并会影响相关应用。`,
+      onOk() {
+        return deleteChatbot(bot.id).then((result) => {
+          console.log(result);
+          if (result.success) {
+            handleRefresh();
+          }
+        });
+      },
+      onCancel() {},
+    });
   };
 
   useEffect(() => {
-    console.log('mount');
-    console.log(ref?.current);
     if (ref?.current?.reloadAndRest) {
       ref.current.reloadAndRest();
-      console.log('load');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ref]);
+  }, []);
 
   return (
     <PageContainer
@@ -65,7 +73,7 @@ const OrgManagement = () => {
                     key={item.id}
                     data={item}
                     handleDelete={() => {
-                      handleDelete(item.id);
+                      handleDelete(item);
                     }}
                   />
                 );
@@ -77,11 +85,12 @@ const OrgManagement = () => {
         }}
         onItem={(record: Chatbot_API.Chatbot) => {
           return {
-            onMouseEnter: () => {
-              console.log(record);
-            },
             onClick: () => {
-              console.log(record);
+              if (record.id) {
+                console.log('navigate to detail');
+              } else {
+                setAddVisible(true);
+              }
             },
           };
         }}

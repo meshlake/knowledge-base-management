@@ -26,8 +26,14 @@ export default {
       },
     ],
   },
-  'POST /api/chatbot/{id}': (req: Request, res: Response, u: string) => {
+  'POST /api/chatbot': (req: Request, res: Response) => {
     res.send({
+      success: true,
+    });
+  },
+  'DELETE /api/chatbot/:id': (req: Request, res: Response, id: string) => {
+    res.send({
+      id: req.params.id,
       success: true,
     });
   },

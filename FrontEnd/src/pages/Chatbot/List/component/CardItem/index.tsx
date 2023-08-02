@@ -8,7 +8,6 @@ const CardItem: React.FC<{ data: Chatbot_API.Chatbot; handleDelete: () => void }
 }) => {
   const [active, setActive] = useState(false);
 
-  console.log(active);
   return (
     <div
       className={styles.cardItem}
