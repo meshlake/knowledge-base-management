@@ -1,4 +1,4 @@
-import Footer from '@/components/Footer';
+// import Footer from '@/components/Footer';
 import { LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 // import { SettingDrawer } from '@ant-design/pro-components';
@@ -72,7 +72,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
         return <AvatarDropdown>{avatarChildren}</AvatarDropdown>;
       },
     },
-    footerRender: () => <Footer />,
+    // footerRender: () => <Footer />,
     onPageChange: () => {
       const { location } = history;
       // 如果没有登录，重定向到 login
@@ -133,6 +133,10 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
       );
     },
     ...initialState?.settings,
+    contentStyle: {
+      background: '#fff',
+      height: 'calc(100vh - 56px)',
+    },
   };
 };
 

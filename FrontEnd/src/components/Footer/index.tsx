@@ -7,7 +7,7 @@ const Footer: React.FC = () => {
   return (
     <DefaultFooter
       style={{
-        background: 'none',
+        background: '#fff',
       }}
       copyright={`${currentYear} 迈识AI出品`}
       links={[

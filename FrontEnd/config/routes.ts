@@ -49,6 +49,12 @@ export default [
   //     component: './ChatRecord',
   //   },
   {
+    name: '知识库详情',
+    path: '/knowledgeBase/:id',
+    component: './KnowledgeBaseDetail',
+    hideInMenu: true,
+  },
+  {
     name: '系统设置',
     path: '/system',
     access: 'system',
