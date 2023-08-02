@@ -10,6 +10,7 @@ import { getCurrentUser } from '@/services/users/api';
 import React from 'react';
 import { AvatarDropdown, AvatarName } from './components/RightContent/AvatarDropdown';
 import { getRolePermissions } from './services/auth/api';
+import { ConfigProvider } from 'antd';
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
 
@@ -116,7 +117,13 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
     childrenRender: (children) => {
       // if (initialState?.loading) return <PageLoading />;
       return (
-        <>
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimary: '#3D73EC',
+            },
+          }}
+        >
           {children}
           {/* <SettingDrawer
             disableUrlParams
@@ -129,7 +136,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
               }));
             }}
           /> */}
-        </>
+        </ConfigProvider>
       );
     },
     ...initialState?.settings,
