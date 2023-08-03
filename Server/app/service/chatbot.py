@@ -18,10 +18,14 @@ def update_chatbot(db: Session, user: User, id: int, model: ChatbotUpdate):
     if db_chatbot is None:
         raise HTTPException(
             status_code=404, detail=f"chatbot with id {id} not found")
-    if model.name is not None:
-        db_chatbot.name = model.name
-    if model.description is not None:
-        db_chatbot.description = model.description
+
+    for field, value in model.dict(exclude_unset=True).items():
+        if field != "knowledgeBaseList":
+            if field == "promptConfig":
+                setattr(db_chatbot, 'prompt_config', value)
+            else:
+                setattr(db_chatbot, field, value)
+
     if model.knowledgeBaseList is not None:  # 更新知识库
         db_chatbot.knowledge_bases = []
         knowledgeBaseList = list(set(model.knowledgeBaseList))
@@ -32,6 +36,7 @@ def update_chatbot(db: Session, user: User, id: int, model: ChatbotUpdate):
                 raise HTTPException(
                     status_code=404, detail=f"knowledge base with id {knowledge_base_id} not found")
             db_chatbot.knowledge_bases.append(db_knowledge_base)
+
     db.commit()
     db.refresh(db_chatbot)
     return db_chatbot
