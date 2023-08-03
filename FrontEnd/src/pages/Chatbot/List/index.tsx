@@ -9,8 +9,8 @@ import AddCard from './component/AddCard';
 import styles from './index.less';
 
 const OrgManagement = () => {
-  const ref = useRef<ActionType>();
   const { confirm } = Modal;
+  const ref = useRef<ActionType>();
   const handleRefresh = () => ref?.current?.reload();
 
   const [addVisible, setAddVisible] = useState(false);
@@ -30,11 +30,8 @@ const OrgManagement = () => {
       okText: '确定删除',
       cancelText: '取消',
       onOk() {
-        return deleteChatbot(bot.id).then((result) => {
-          console.log(result);
-          if (result.success) {
-            handleRefresh();
-          }
+        return deleteChatbot(bot.id).then(() => {
+          handleRefresh();
         });
       },
       onCancel() {},
@@ -61,9 +58,9 @@ const OrgManagement = () => {
         ghost
         actionRef={ref}
         request={async () => {
-          const data = await getChatbotList();
+          const list = await getChatbotList();
           return {
-            data: [...data.items, { id: '', name: '' }],
+            data: [...list, { id: '', name: '' }],
           };
         }}
         metas={{
