@@ -2,7 +2,7 @@ declare namespace KNOWLEDGE_ITEM_API {
   type KnowledgeItemMetadata = {
     knowledge_item_id: int;
     user_id: int;
-    tags: string[];
+    tags?: string[];
     source: string;
     type: 'FILE' | 'MANUALLY';
   };

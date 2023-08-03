@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Styles from './index.less';
-import { Button, Pagination, Tree } from 'antd';
+import { Button, Col, Pagination, Row, Tree } from 'antd';
 import { FileOutlined } from '@ant-design/icons';
 import type { DataNode } from 'antd/es/tree';
 import KnowledgeItem from '../KnowledgeItem';
@@ -96,9 +96,17 @@ const App: React.FC = () => {
         </div>
         <div className={Styles.knowledgeList}>
           <div style={{ width: '100%' }}>
-            <KnowledgeItem
-              data={{ id: 1, source: '手动添加', tags: ['税务登记'], content: '我是内容' }}
-            ></KnowledgeItem>
+            <Row gutter={[16, 16]}>
+              <Col span={12}>
+                <KnowledgeItem
+                  data={{
+                    id: 1,
+                    content: '我是内容',
+                    metadata: { type: 'MANUALLY', knowledge_item_id: '1', source: '', user_id: 1 },
+                  }}
+                ></KnowledgeItem>
+              </Col>
+            </Row>
           </div>
           <div className={Styles.paginationWrapper}>
             <Pagination
