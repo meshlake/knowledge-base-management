@@ -2,9 +2,9 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from app.db import Base, engine
 from app.entities.base import BaseModel
-from app.entities.chatbot_knowledge_association import chatbot_knowledge_association
+from app.entities.chatbots import chatbot_knowledge_association
 
-class KnowledgeBase(Base, BaseModel): 
+class KnowledgeBase(Base, BaseModel):
 
     __tablename__ = "knowledge_bases"
 
