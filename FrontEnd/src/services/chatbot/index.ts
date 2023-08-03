@@ -1,7 +1,7 @@
 import request from '@/utils/request';
 
 export function getChatbotList() {
-  return request<DEFAULT_API.Paginate<Chatbot_API.Chatbot>>('/chatbot/list', {
+  return request<Chatbot_API.Chatbot[]>('/chatbots/all', {
     headers: {
       authorization: 'Bearer ' + localStorage.getItem('access_token'),
     },
@@ -9,7 +9,7 @@ export function getChatbotList() {
 }
 
 export function getChatbot(params: { id: string }) {
-  return request<DEFAULT_API.Response<Chatbot_API.Chatbot>>(`/chatbot/${params.id}`, {
+  return request<DEFAULT_API.Response<Chatbot_API.Chatbot>>(`/chatbots/${params.id}`, {
     headers: {
       authorization: 'Bearer ' + localStorage.getItem('access_token'),
     },
@@ -17,7 +17,7 @@ export function getChatbot(params: { id: string }) {
 }
 
 export function createChatbot(data: Chatbot_API.ChatbotCreate) {
-  return request<DEFAULT_API.Response<Chatbot_API.Chatbot>>('/chatbot', {
+  return request<DEFAULT_API.Response<Chatbot_API.Chatbot>>('/chatbots', {
     method: 'POST',
     data,
     headers: {
@@ -27,7 +27,7 @@ export function createChatbot(data: Chatbot_API.ChatbotCreate) {
 }
 
 export function deleteChatbot(id: string) {
-  return request(`/chatbot/${id}`, {
+  return request(`/chatbots/${id}`, {
     method: 'DELETE',
     headers: {
       authorization: 'Bearer ' + localStorage.getItem('access_token'),
