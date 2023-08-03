@@ -5,7 +5,7 @@ import Styles from './index.less';
 
 type ImportFileProps = {
   isModalOpen: boolean;
-  onClose: () => void;
+  onClose: (isNeedRefresh: boolean) => void;
 };
 
 const App: React.FC<ImportFileProps> = (props) => {
@@ -47,7 +47,7 @@ const App: React.FC<ImportFileProps> = (props) => {
           保存
         </Button>,
       ]}
-      onCancel={onClose}
+      onCancel={() => onClose(false)}
     >
       <Dragger {...draggerProps} className={Styles.dragger}>
         <p className={Styles.importFileImg}>
