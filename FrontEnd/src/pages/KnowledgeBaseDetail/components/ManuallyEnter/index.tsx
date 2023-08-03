@@ -1,12 +1,14 @@
-import { Button, Form, Input, Modal, Select, Tag } from 'antd';
-import React, { useEffect } from 'react';
+import { Button, Form, Input, Modal, Select, Tag, notification } from 'antd';
+import React, { useEffect, useState } from 'react';
 import Styles from './index.less';
 import { CloseOutlined } from '@ant-design/icons';
+import { createKnowledgeItem, updateKnowledgeItem } from '@/services/knowledgeItem';
+import { useParams } from '@umijs/max';
 
 type ManuallyEnterProps = {
   isModalOpen: boolean;
-  onClose: () => void;
-  data: any;
+  onClose: (isNeedRefresh: boolean) => void;
+  data: KNOWLEDGE_ITEM_API.KnowledgeItem;
 };
 
 const Textarea = Input.TextArea;
@@ -17,11 +19,14 @@ const mockTags = [
 ];
 
 const App: React.FC<ManuallyEnterProps> = (props) => {
+  const params = useParams();
+
   const { isModalOpen, onClose, data } = props;
   const [form] = Form.useForm();
-  const [showTagsSelect, setShowTagsSelect] = React.useState<boolean>(false);
-  const [tag, setTag] = React.useState<{ id: number; content: string } | null>(data?.tags[0]);
-  const [tags, setTags] = React.useState<{ id: number; content: string }[]>(mockTags);
+  const [showTagsSelect, setShowTagsSelect] = useState<boolean>(false);
+  const [tag, setTag] = useState<{ id: number; content: string } | null>(null);
+  const [tags, setTags] = useState<{ id: number; content: string }[]>(mockTags);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleSelect = (option: any) => {
     setShowTagsSelect(false);
@@ -31,9 +36,48 @@ const App: React.FC<ManuallyEnterProps> = (props) => {
     }
   };
 
+  const handleCreate = async (formValues: any) => {
+    setLoading(true);
+    try {
+      await createKnowledgeItem(Number(params.id), { content: formValues.content });
+      notification.success({ message: '创建成功' });
+      onClose(true);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdate = async (formValues: any) => {
+    setLoading(true);
+    try {
+      await updateKnowledgeItem({ id: data.id, content: formValues.content });
+      notification.success({ message: '更新成功' });
+      onClose(true);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = () => {
+    form.validateFields().then((values) => {
+      if (!data?.id) {
+        handleCreate(values);
+      } else {
+        handleUpdate(values);
+      }
+    });
+  };
+
   useEffect(() => {
     setTags(mockTags);
-  }, []);
+    if (data.id) {
+      form.setFieldsValue({ content: data.content });
+    } else {
+      form.resetFields();
+    }
+  }, [data]);
 
   return (
     <Modal
@@ -47,14 +91,20 @@ const App: React.FC<ManuallyEnterProps> = (props) => {
         paddingBottom: '30px',
       }}
       footer={[
-        <Button key="submit" type="primary" style={{ width: '140px' }}>
+        <Button
+          key="submit"
+          type="primary"
+          style={{ width: '140px' }}
+          onClick={handleSave}
+          loading={loading}
+        >
           保存
         </Button>,
       ]}
-      onCancel={onClose}
+      onCancel={() => onClose(false)}
     >
       <Form form={form} name="control-hooks" colon={false} layout="vertical">
-        <Form.Item name="knowledge_item" label="知识点" rules={[{ required: true }]}>
+        <Form.Item name="content" label="知识点" rules={[{ required: true }]}>
           <Textarea rows={10} placeholder="录入知识点"></Textarea>
         </Form.Item>
       </Form>

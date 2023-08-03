@@ -1,17 +1,10 @@
 .knowledgeList {
+  height: calc(100vh - 56px - 24px - 34px - 32px);
   .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin: 24px 0 18px 0;
-  }
-  .paginationWrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    bottom: 40px;
-    width: 100%;
   }
   .emptyTips {
     margin-top: 200px;
@@ -39,5 +32,17 @@
         justify-content: space-between;
       }
     }
+  }
+  .listContentWrapper {
+    display: flex;
+    flex-direction: column;
+  }
+  .paginationWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    bottom: 40px;
+    width: 100%;
   }
 }
