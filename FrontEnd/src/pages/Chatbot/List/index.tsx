@@ -3,9 +3,9 @@ import { Modal } from 'antd';
 import { ActionType, PageContainer, ProList } from '@ant-design/pro-components';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { getChatbotList, deleteChatbot } from '@/services/chatbot';
-import AddForm from './component/AddForm';
-import CardItem from './component/CardItem';
-import AddCard from './component/AddCard';
+import AddForm from './components/AddForm';
+import CardItem from './components/CardItem';
+import AddCard from './components/AddCard';
 import styles from './index.less';
 
 const OrgManagement = () => {

@@ -1,5 +1,5 @@
 import React, { MouseEvent, useState } from 'react';
-import styles from '../../../Chatbot/List/component/CardItem/index.less';
+import styles from '../../../Chatbot/List/components/CardItem/index.less';
 import { DeleteOutlined } from '@ant-design/icons';
 import { KnowledgeBaseModel } from '../../types';
 
