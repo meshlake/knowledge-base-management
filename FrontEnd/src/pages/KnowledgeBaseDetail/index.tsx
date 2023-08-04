@@ -53,7 +53,7 @@ const App: React.FC = () => {
       <KnowledgeBaseTabs items={tabs} onChange={handleTabChange} />
       <Spin spinning={loading}>
         {activeTab === 0 && <KnowledgeList knowledgeBase={knowledgeBase}></KnowledgeList>}
-        {activeTab === 1 && <KnowledgeManage></KnowledgeManage>}
+        {activeTab === 1 && <KnowledgeManage knowledgeBase={knowledgeBase}></KnowledgeManage>}
         {activeTab === 2 && <KnowledgeBaseInfo knowledgeBase={knowledgeBase}></KnowledgeBaseInfo>}
       </Spin>
     </div>

@@ -4,8 +4,14 @@ import { Button, Col, Pagination, Row, Tree } from 'antd';
 import { FileOutlined } from '@ant-design/icons';
 import type { DataNode } from 'antd/es/tree';
 import KnowledgeItem from '../KnowledgeItem';
+import { KnowledgeBaseModel } from '@/pages/KnowledgeBase/types';
+import { getFiles } from '@/services/file';
+import { useParams } from '@umijs/max';
 
 type TPagination = Omit<DEFAULT_API.Paginate<any>, 'items'>;
+type KnowledgeMansgeProps = {
+  knowledgeBase: KnowledgeBaseModel;
+};
 
 const treeData: DataNode[] = [
   {
@@ -26,29 +32,15 @@ const treeData: DataNode[] = [
       },
     ],
   },
-  {
-    title: '文件筛选',
-    key: '0-1',
-    children: [
-      {
-        title: (
-          <div>
-            <FileOutlined /> aaa.xlsx
-          </div>
-        ),
-        key: '0-1-0',
-      },
-    ],
-  },
 ];
 
-const App: React.FC = () => {
-  const [knowledgeBase, setKnowledgeBase] = useState<any>({
-    name: 'lalal',
-    count: 0,
-  });
+const App: React.FC<KnowledgeMansgeProps> = (props) => {
+  const { knowledgeBase } = props;
+  const params = useParams();
 
-  const [pagination, setPagination] = React.useState<TPagination>({
+  const [tree, setTree] = useState<DataNode[]>(treeData);
+
+  const [pagination, setPagination] = useState<TPagination>({
     page: 1,
     pages: 0,
     total: 0,
@@ -59,24 +51,49 @@ const App: React.FC = () => {
     console.log('selected', selectedKeys, info);
   };
 
+  const getFileList = async () => {
+    const { data: files } = await getFiles(Number(params.id));
+    const fileData = {
+      title: '文件筛选',
+      key: '0-1',
+      children: files.map((v) => {
+        return {
+          title: (
+            <div>
+              <FileOutlined /> {v.name}
+            </div>
+          ),
+          key: `0-1-${v.id}`,
+        };
+      }),
+    };
+    if (tree.find((v) => v.key === '0-1')) {
+      const newTree = tree.map((v) => {
+        if (v.key === '0-1') {
+          return fileData;
+        }
+        return v;
+      });
+      setTree(newTree);
+    } else {
+      setTree([...tree, fileData]);
+    }
+  };
+
   useEffect(() => {
-    setKnowledgeBase({
-      name: 'lalal',
-    });
     setPagination({
       page: 1,
       pages: 0,
       total: 0,
       size: 10,
     } as TPagination);
+    getFileList();
   }, []);
 
   return (
     <div className={Styles.KnowledgeManage}>
       <div className={Styles.header}>
-        <div>
-          {knowledgeBase.name}：{knowledgeBase.count}条知识
-        </div>
+        <div>{knowledgeBase?.name}：条知识</div>
         <div>
           <Button type="primary" ghost>
             标签管理
@@ -91,7 +108,7 @@ const App: React.FC = () => {
             showIcon={false}
             defaultExpandedKeys={['0-0-0']}
             onSelect={onSelect}
-            treeData={treeData}
+            treeData={tree}
           />
         </div>
         <div className={Styles.knowledgeList}>
