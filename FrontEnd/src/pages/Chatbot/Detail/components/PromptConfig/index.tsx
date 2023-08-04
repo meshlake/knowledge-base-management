@@ -30,7 +30,7 @@ const promptFormItems = [
   },
 ];
 
-const BaseInfo: React.FC<Props> = (props) => {
+const PromptConfig: React.FC<Props> = (props) => {
   const { data, updateRequest } = props;
   const [form] = Form.useForm();
   const [editable, setEditable] = useState(false);
@@ -75,10 +75,13 @@ const BaseInfo: React.FC<Props> = (props) => {
       .validateFields()
       .then((values) => {
         setLoading(true);
-        updateRequest(data.id, { prompt_config: values }).finally(() => {
-          setEditable(false);
-          setLoading(false);
-        });
+        updateRequest(data.id, { prompt_config: values })
+          .then(() => {
+            setEditable(false);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
       })
       .catch(() => {});
   };
@@ -189,4 +192,4 @@ const BaseInfo: React.FC<Props> = (props) => {
   );
 };
 
-export default BaseInfo;
+export default PromptConfig;

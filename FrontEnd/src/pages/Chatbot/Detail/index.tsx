@@ -46,7 +46,7 @@ const App: React.FC = () => {
       notification.error({
         message: '更新失败',
       });
-      console.log(error);
+      throw error;
     }
   };
 

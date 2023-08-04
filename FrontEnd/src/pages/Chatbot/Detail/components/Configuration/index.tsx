@@ -1,5 +1,6 @@
 import React from 'react';
 import PromptConfig from '../PromptConfig';
+import KnowledgeConfig from '../KnowledgeConfig';
 import styles from './index.less';
 
 type Props = {
@@ -14,8 +15,7 @@ const Configuration: React.FC<Props> = (props) => {
     <div className={styles.comContainer}>
       <div className={styles.title}>{data?.name}</div>
       <PromptConfig data={data} updateRequest={updateRequest} />
-
-      {/* <PromptList /> */}
+      <KnowledgeConfig data={data} updateRequest={updateRequest} />
     </div>
   );
 };

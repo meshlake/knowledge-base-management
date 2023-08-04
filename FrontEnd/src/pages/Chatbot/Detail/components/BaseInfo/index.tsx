@@ -33,10 +33,13 @@ const BaseInfo: React.FC<Props> = (props) => {
       .validateFields()
       .then((values) => {
         setLoading(true);
-        updateRequest(data.id, values).finally(() => {
-          setEditable(false);
-          setLoading(false);
-        });
+        updateRequest(data.id, values)
+          .then(() => {
+            setEditable(false);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
       })
       .catch(() => {});
   };
