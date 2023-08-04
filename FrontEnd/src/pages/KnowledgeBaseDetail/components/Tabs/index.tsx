@@ -3,15 +3,16 @@ import Styles from './index.less';
 
 type TabsProps = {
   items: string[];
+  visible?: boolean;
   onChange?: (index: number) => void;
 };
 
 const App: React.FC<TabsProps> = (props) => {
-  const { items, onChange } = props;
+  const { items, onChange, visible = true } = props;
   const [activeIndex, setActiveIndex] = useState(0);
 
   return (
-    <div className={Styles.tabsWrapper}>
+    <div className={Styles.tabsWrapper} style={{ display: visible ? 'flex' : 'none' }}>
       {items.map((item, index) => {
         return (
           <div

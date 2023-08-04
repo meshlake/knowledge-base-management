@@ -7,6 +7,10 @@ import KnowledgeItem from '../KnowledgeItem';
 
 type TPagination = Omit<DEFAULT_API.Paginate<any>, 'items'>;
 
+type KnowledgeManageProps = {
+  toggleLabelManage?: () => void;
+};
+
 const treeData: DataNode[] = [
   {
     title: '标签分类',
@@ -42,7 +46,8 @@ const treeData: DataNode[] = [
   },
 ];
 
-const App: React.FC = () => {
+const App: React.FC<KnowledgeManageProps> = (props) => {
+  const { toggleLabelManage } = props;
   const [knowledgeBase, setKnowledgeBase] = useState<any>({
     name: 'lalal',
     count: 0,
@@ -78,7 +83,7 @@ const App: React.FC = () => {
           {knowledgeBase.name}：{knowledgeBase.count}条知识
         </div>
         <div>
-          <Button type="primary" ghost>
+          <Button type="primary" ghost onClick={toggleLabelManage ? toggleLabelManage : () => {}}>
             标签管理
           </Button>
         </div>
