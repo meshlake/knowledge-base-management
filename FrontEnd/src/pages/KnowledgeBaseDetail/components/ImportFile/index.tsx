@@ -29,6 +29,7 @@ const App: React.FC<ImportFileProps> = (props) => {
     onDrop(e) {
       console.log('Dropped files', e.dataTransfer.files);
     },
+    maxCount: 1,
   };
 
   return (
