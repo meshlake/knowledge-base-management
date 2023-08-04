@@ -1,0 +1,28 @@
+.comContainer {
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    line-height: 32px;
+    margin: 32px 0 24px;
+    .title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #3d3d3d;
+    }
+  }
+  .disabledForm {
+    :global {
+      .ant-form-item {
+        margin-bottom: 0;
+      }
+    }
+  }
+  .editableForm {
+    :global {
+      .ant-form-item {
+        margin-bottom: 12px;
+      }
+    }
+  }
+}
