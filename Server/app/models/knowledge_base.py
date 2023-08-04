@@ -35,3 +35,10 @@ class KnowledgeBase(BaseModel):
 class KnowledgeBaseUpdate(BaseModel):
     name: str = Field(..., description="name of knowledge base")
     description: str = Field(..., description="description for the knowledge base")
+
+class KnowledgeBaseSimple(BaseModel):
+    id: int = Field(..., description="id of knowledge base")
+    name: str = Field(..., description="name of knowledge base")
+    description: str = Field(None, description="description for the knowledge base")
+    class Config:
+        orm_mode = True
