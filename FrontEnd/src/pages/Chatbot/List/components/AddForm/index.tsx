@@ -58,14 +58,14 @@ const OrgForm = (props: OrgFormProps) => {
     >
       <Form form={form} layout="vertical" requiredMark={false}>
         <Form.Item name="name" label="机器人名称" rules={[{ required: true, message: '请输入' }]}>
-          <TrimInput placeholder="请输入" maxLength={50} />
+          <TrimInput placeholder="请输入" maxLength={255} />
         </Form.Item>
         <Form.Item
           name="description"
           label="机器人描述"
           rules={[{ required: true, message: '请输入' }]}
         >
-          <TextArea rows={4} placeholder="请输入" maxLength={200} />
+          <TextArea rows={4} placeholder="请输入" maxLength={255} />
         </Form.Item>
       </Form>
     </Modal>

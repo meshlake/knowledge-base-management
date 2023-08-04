@@ -67,11 +67,31 @@ const BaseInfo: React.FC<Props> = (props) => {
         labelAlign="left"
         className={editable ? styles.editableForm : styles.disabledForm}
       >
-        <Form.Item label="名称" name="name" rules={[{ required: true, message: '请输入' }]}>
-          <Input placeholder={editable ? '请输入' : ''} bordered={editable} />
+        <Form.Item
+          key="name"
+          label="名称"
+          name="name"
+          rules={[{ required: true, message: '请输入' }]}
+        >
+          <Input
+            maxLength={255}
+            disabled={!editable}
+            placeholder={editable ? '请输入' : ''}
+            bordered={editable}
+          />
         </Form.Item>
-        <Form.Item label="描述" name="description" rules={[{ required: true, message: '请输入' }]}>
-          <Input placeholder={editable ? '请输入' : ''} bordered={editable} />
+        <Form.Item
+          key="description"
+          label="描述"
+          name="description"
+          rules={[{ required: true, message: '请输入' }]}
+        >
+          <Input
+            maxLength={255}
+            disabled={!editable}
+            placeholder={editable ? '请输入' : ''}
+            bordered={editable}
+          />
         </Form.Item>
         {editable ? (
           <>

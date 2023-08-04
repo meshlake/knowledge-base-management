@@ -35,6 +35,25 @@ const BaseInfo: React.FC<Props> = (props) => {
   const [form] = Form.useForm();
   const [editable, setEditable] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<'basics' | 'normal'>('basics');
+
+  const resetMode = () => {
+    if (data?.prompt_config) {
+      if (data.prompt_config.prompt) {
+        setMode('normal');
+      } else {
+        setMode('basics');
+      }
+    }
+  };
+
+  const handleSwitch = () => {
+    if (mode === 'normal') {
+      setMode('basics');
+    } else {
+      setMode('normal');
+    }
+  };
 
   const handleEdit = () => {
     setEditable(true);
@@ -42,6 +61,7 @@ const BaseInfo: React.FC<Props> = (props) => {
 
   const handleCancel = () => {
     setEditable(false);
+    resetMode();
     if (data?.prompt_config) {
       form.setFieldsValue(data.prompt_config);
     }
@@ -54,7 +74,6 @@ const BaseInfo: React.FC<Props> = (props) => {
     form
       .validateFields()
       .then((values) => {
-        console.log(values);
         setLoading(true);
         updateRequest(data.id, { prompt_config: values }).finally(() => {
           setEditable(false);
@@ -65,10 +84,55 @@ const BaseInfo: React.FC<Props> = (props) => {
   };
 
   useEffect(() => {
+    resetMode();
     if (data?.prompt_config) {
       form.setFieldsValue(data.prompt_config);
+      if (data.prompt_config.prompt) {
+        setMode('normal');
+      } else {
+        setMode('basics');
+      }
+    }
+    if (data && !data.prompt_config) {
+      setEditable(true);
     }
   }, [data]);
+
+  const basicsForm = (
+    <>
+      {promptFormItems.map((item) => (
+        <>
+          <Form.Item
+            label={item.label}
+            name={item.key}
+            key={item.key}
+            rules={[{ required: true, message: '请输入' }]}
+          >
+            <Input
+              maxLength={100}
+              disabled={!editable}
+              placeholder={editable ? item.description : ''}
+              bordered={editable}
+            />
+          </Form.Item>
+        </>
+      ))}
+    </>
+  );
+
+  const normalForm = (
+    <>
+      <Form.Item label="" name="prompt" rules={[{ required: true, message: '请输入' }]}>
+        {editable ? (
+          <Input.TextArea rows={10} maxLength={500} placeholder="输入预设提示词，最多500字" />
+        ) : (
+          <div style={{ whiteSpace: 'pre-line', lineHeight: '24px' }}>
+            {data?.prompt_config?.prompt}
+          </div>
+        )}
+      </Form.Item>
+    </>
+  );
 
   return (
     <div className={styles.comContainer}>
@@ -77,55 +141,50 @@ const BaseInfo: React.FC<Props> = (props) => {
           <span>提示词设定</span>
           <span className={styles.subTitle}>通过一些提示设定，让机器人更好的完成你的任务</span>
         </div>
-        {!editable && (
+        {editable ? (
+          <Button type="link" onClick={handleSwitch}>
+            {mode === 'normal' ? '高级设定' : '自由设定'}
+          </Button>
+        ) : (
           <Button type="link" onClick={handleEdit}>
             编辑
           </Button>
         )}
       </div>
-      <Form
-        form={form}
-        colon={false}
-        autoComplete="off"
-        requiredMark={false}
-        labelCol={{ span: 2 }}
-        labelAlign="left"
-        className={editable ? styles.editableForm : styles.disabledForm}
-      >
-        {promptFormItems.map((item) => (
-          <>
-            <Form.Item
-              label={item.label}
-              name={item.key}
-              key={item.key}
-              rules={[{ required: true, message: '请输入' }]}
-            >
-              <Input placeholder={editable ? item.description : ''} bordered={editable} />
-            </Form.Item>
-          </>
-        ))}
-        {editable ? (
-          <>
-            <Form.Item style={{ textAlign: 'right', marginTop: 24 }}>
-              <Button
-                disabled={loading}
-                onClick={handleCancel}
-                style={{ marginLeft: 12, width: 120 }}
-              >
-                取消
-              </Button>
-              <Button
-                loading={loading}
-                onClick={handleSubmit}
-                type="primary"
-                style={{ marginLeft: 12, width: 120 }}
-              >
-                保存
-              </Button>
-            </Form.Item>
-          </>
-        ) : null}
-      </Form>
+      <div style={{ opacity: data ? 1 : 0 }}>
+        <Form
+          form={form}
+          colon={false}
+          autoComplete="off"
+          requiredMark={false}
+          labelCol={{ span: 2 }}
+          labelAlign="left"
+          className={editable ? styles.editableForm : styles.disabledForm}
+        >
+          {mode === 'normal' ? normalForm : basicsForm}
+          {editable ? (
+            <>
+              <Form.Item style={{ textAlign: 'right', marginTop: 24 }}>
+                <Button
+                  disabled={loading}
+                  onClick={handleCancel}
+                  style={{ marginLeft: 12, width: 120 }}
+                >
+                  取消
+                </Button>
+                <Button
+                  loading={loading}
+                  onClick={handleSubmit}
+                  type="primary"
+                  style={{ marginLeft: 12, width: 120 }}
+                >
+                  保存
+                </Button>
+              </Form.Item>
+            </>
+          ) : null}
+        </Form>
+      </div>
     </div>
   );
 };
