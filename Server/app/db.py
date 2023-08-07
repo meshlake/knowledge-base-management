@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from urllib.parse import quote_plus as urlquote
 from dotenv import load_dotenv
+from sqlalchemy.pool import QueuePool
 
 load_dotenv()
 
@@ -17,7 +18,10 @@ MYSQL_DATABASE = os.getenv("MYSQL_DATABASE")
 engine = create_engine(
     f"mysql+pymysql://{MYSQL_USERNAME}:%s@{MYSQL_ADDRESS}/{MYSQL_DATABASE}"
     % urlquote(MYSQL_PASSWORD),
+    poolclass= QueuePool,
+    pool_size=5,
     pool_pre_ping=True,
+    pool_recycle=3600,
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

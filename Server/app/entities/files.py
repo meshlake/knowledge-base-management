@@ -11,6 +11,7 @@ class File(Base, BaseModel):
     path = Column(String(255), unique=True)
     knowledge_base_id = Column(Integer, name="knowledge_base_id")
     user_id = Column(Integer, name="user_id")
+    status = Column(String(255), name="status")
     
     __table_args__ = {
         'mysql_charset': 'utf8mb4',

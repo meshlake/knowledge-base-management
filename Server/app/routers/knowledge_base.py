@@ -25,6 +25,7 @@ from app.service.knowledge_item import (
     delete_knowledge_item as delete_knowledge_item_service,
     update_knowledge_item as update_knowledge_item_service,
 )
+from typing import Union
 
 router = APIRouter(
     tags=["knowledge_bases"],
@@ -120,8 +121,8 @@ def create_one_piece_of_knowledge(
 
 
 @router.get("/knowledge_bases/{id}/item", dependencies=[Depends(oauth2_scheme)])
-def get_knowledge(id: int, page: int = 1, size: int = 15):
-    knowledge_items = get_knowledge_items(id, page, size)
+def get_knowledge(id: int, filepath: Union[str, None] = None ,page: int = 1, size: int = 15):
+    knowledge_items = get_knowledge_items(id, page, size, filepath)
     return knowledge_items
 
 

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.models.files import FileCreate
 from app.models.userDto import User
 from app.entities.files import File as FileEntity
+from app.models.enums import FileStatus
 
 load_dotenv()
 
@@ -36,12 +37,17 @@ def upload_file(file_obj, bucket, object_name):
     return True
 
 
-def create_file(file: FileCreate, user: User, db: Session):
+def create_file(
+    file: FileCreate,
+    user: User,
+    db: Session,
+):
     entity = FileEntity(
         name=file.name,
         knowledge_base_id=file.knowledge_base_id,
         user_id=user.id,
         path=file.path,
+        status=FileStatus.UPLOADED.name,
         createdAt=datetime.now(),
         updatedAt=datetime.now(),
     )
@@ -57,3 +63,13 @@ def get_files(knowledge_base_id: int, db: Session):
         .filter(FileEntity.knowledge_base_id == knowledge_base_id)
         .all()
     )
+
+
+def update_file_status(db: Session, filepath: int, status: FileStatus):
+    db.query(FileEntity).filter(FileEntity.path == filepath).update(
+        {
+            "status": status.name,
+        }
+    )
+    db.commit()
+    return True
