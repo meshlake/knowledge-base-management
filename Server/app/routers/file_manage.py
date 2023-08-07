@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, UploadFile
 from app.models.files import FileCreate, File as FileModel
 from app.models.userDto import User
+from app.service.knowledge_item import create_knowledge_items_for_file
 from app.service.user import oauth2_scheme, get_current_user
 from sqlalchemy.orm import Session
 from app.dependencies import get_db
@@ -21,10 +22,17 @@ router = APIRouter(
 @router.post("/files")
 def create_file(
     model: FileCreate,
+    background_tasks: BackgroundTasks,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     file_entity = create_file_service(model, current_user, db)
+    background_tasks.add_task(
+        create_knowledge_items_for_file,
+        model.knowledge_base_id,
+        current_user,
+        model.path,
+    )
     return {"data": file_entity}
 
 

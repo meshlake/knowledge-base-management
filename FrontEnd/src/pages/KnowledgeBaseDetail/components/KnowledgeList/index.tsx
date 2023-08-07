@@ -11,10 +11,12 @@ import { useParams } from '@umijs/max';
 type TPagination = Omit<DEFAULT_API.Paginate<KNOWLEDGE_ITEM_API.KnowledgeItem>, 'items'>;
 type KnowledgeListProps = {
   knowledgeBase: KnowledgeBaseModel;
+  isFileEmbedding: boolean;
+  refresh: () => void;
 };
 
 const App: React.FC<KnowledgeListProps> = (props) => {
-  const { knowledgeBase } = props;
+  const { knowledgeBase, isFileEmbedding, refresh } = props;
   const params = useParams();
 
   const [knowledgeList, setKnowledgeList] = useState<KNOWLEDGE_ITEM_API.KnowledgeItem[]>([]);
@@ -102,8 +104,17 @@ const App: React.FC<KnowledgeListProps> = (props) => {
     if (isNeedRefresh) {
       getKnowledgeList(pagination.page);
     }
+    refresh();
     setIsManuallyEnterModalOpen(false);
     setIsImportFileModalOpen(false);
+  };
+
+  const handleOpenImportFileModal = () => {
+    if (!isFileEmbedding) {
+      setIsImportFileModalOpen(true);
+    } else {
+      notification.warning({ message: '抱歉，有文件正在上传处理中，暂时不能进行该操作' });
+    }
   };
 
   useEffect(() => {
@@ -119,7 +130,7 @@ const App: React.FC<KnowledgeListProps> = (props) => {
           </div>
           {/* <div>搜索</div> */}
           <div>
-            <Button onClick={() => setIsImportFileModalOpen(true)} style={{ marginRight: '20px' }}>
+            <Button onClick={handleOpenImportFileModal} style={{ marginRight: '20px' }}>
               文件导入
             </Button>
             <Button type="primary" ghost onClick={handleOpenManuallyEnterModal}>
@@ -151,7 +162,7 @@ const App: React.FC<KnowledgeListProps> = (props) => {
                 您还没有添加任何知识点，可以通过手动输入或者文件导入完成知识点录入～
               </div>
               <div className={Styles.btns}>
-                <Button style={{ width: '140px' }} onClick={() => setIsImportFileModalOpen(true)}>
+                <Button style={{ width: '140px' }} onClick={handleOpenImportFileModal}>
                   文件导入
                 </Button>
                 <Button

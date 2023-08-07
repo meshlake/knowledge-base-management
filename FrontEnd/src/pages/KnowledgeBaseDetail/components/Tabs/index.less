@@ -3,11 +3,29 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
   .tab {
     padding: 8px 16px;
     border-radius: 3px;
     color: #3d3d3d;
     font-size: 16px;
     cursor: pointer;
+  }
+  .backBtn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    color: #3d3d3d;
+    font-size: 16px;
+    position: absolute;
+    left: 0;
+    top: 11px;
+    cursor: pointer;
+    .icon {
+      width: 18px;
+      height: 18px;
+      margin-right: 10px;
+    }
   }
 }

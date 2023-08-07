@@ -4,6 +4,7 @@ declare namespace FILE_API {
     knowledge_base_id: number;
     name: string;
     path: string;
+    status: 'UPLOADED' | 'SUCCESS' | 'FAILED' | 'EMBEDDING';
   };
 
   type FileCreate = Omit<File, 'id'>;

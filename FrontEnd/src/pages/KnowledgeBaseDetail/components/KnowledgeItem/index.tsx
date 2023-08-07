@@ -42,13 +42,11 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
               )}
               <DeleteOutlined className={Styles.deleteBtn} onClick={handleDelete} />
             </div>
-          ) : (
-            metadata.tags && (
-              <Tag color="#D9F0FD" className={Styles.normalTags}>
-                {metadata.tags[0]}
-              </Tag>
-            )
-          )}
+          ) : metadata.tags?.length && metadata.tags?.length > 0 ? (
+            <Tag color="#D9F0FD" className={Styles.normalTags}>
+              {metadata.tags[0]}
+            </Tag>
+          ) : null}
         </div>
       </div>
     </Card>
