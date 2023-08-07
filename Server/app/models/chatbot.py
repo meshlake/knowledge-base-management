@@ -21,6 +21,7 @@ class ChatbotBase(BaseModel):
     updatedAt: int = Field(0, description="time in milliseconds since epoch when the bot was last updated")
     knowledgeBases: List[KnowledgeBaseSimple] = Field([], alias="knowledge_bases", description="list of knowledge base")
     promptConfig: PromptConfig = Field(None, alias="prompt_config", description="chatbot prompt config")
+    prompt: str = Field(None, description="prompt")
 
     class Config:
         orm_mode = True
