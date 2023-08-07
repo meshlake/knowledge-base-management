@@ -4,49 +4,78 @@ import { random } from 'lodash';
 export default {
   'GET /api/knowledge_bases/:id/tags': (req: Request, res: Response) => {
     let id = req.params.id;
-    let response_data = {
-      items: [
+    let parent_id = req.query.parent_id;
+    let first_level = [
+      {
+        id: 1,
+        name: '消费税',
+        user_id: 1,
+        knowledge_base_id: id,
+        parent_id: 0,
+        description: '消费',
+        createdAt: 1690981561000,
+        updatedAt: 1691030210000,
+      },
+      {
+        id: 2,
+        name: '个税',
+        user_id: 1,
+        knowledge_base_id: id,
+        parent_id: 0,
+        description: '个税',
+        createdAt: 1690981561000,
+        updatedAt: 1691030210000,
+      },
+      {
+        id: 3,
+        name: '印花税',
+        user_id: 1,
+        knowledge_base_id: id,
+        parent_id: 0,
+        description: '个税',
+        createdAt: 1690981561000,
+        updatedAt: 1691030210000,
+      },
+      {
+        id: 4,
+        name: '增值税专用发票',
+        user_id: 1,
+        knowledge_base_id: id,
+        parent_id: 0,
+        description: '个税',
+        createdAt: 1690981561000,
+        updatedAt: 1691030210000,
+      },
+    ];
+    let second_level = (parent_id: number) => {
+      if (parent_id != 1) {
+        return [];
+      }
+      return [
         {
-          id: 1,
-          name: '消费税',
+          id: 11,
+          name: '增值税发票',
           user_id: 1,
           knowledge_base_id: id,
-          parent_id: 0,
+          parent_id: parent_id,
           description: '消费',
           createdAt: 1690981561000,
           updatedAt: 1691030210000,
         },
         {
-          id: 2,
-          name: '个税',
+          id: 12,
+          name: '红',
           user_id: 1,
           knowledge_base_id: id,
-          parent_id: 0,
-          description: '个税',
+          parent_id: parent_id,
+          description: '消费',
           createdAt: 1690981561000,
           updatedAt: 1691030210000,
         },
-        {
-          id: 3,
-          name: '印花税',
-          user_id: 1,
-          knowledge_base_id: id,
-          parent_id: 0,
-          description: '个税',
-          createdAt: 1690981561000,
-          updatedAt: 1691030210000,
-        },
-        {
-          id: 4,
-          name: '增值税专用发票',
-          user_id: 1,
-          knowledge_base_id: id,
-          parent_id: 0,
-          description: '个税',
-          createdAt: 1690981561000,
-          updatedAt: 1691030210000,
-        },
-      ],
+      ];
+    };
+    let response_data = {
+      items: parent_id ? second_level(Number(parent_id)) : first_level,
     };
     res.send(response_data);
   },

@@ -1,9 +1,12 @@
 import { KnowledgeBaseTagModel } from '@/pages/KnowledgeBase/types';
 import request from '@/utils/request';
 
-export function getKnowledgeBaseTags(id: number) {
+export function getKnowledgeBaseTags(id: number, parentId?: number) {
   return request<DEFAULT_API.Paginate<KnowledgeBaseTagModel>>(`/knowledge_bases/${id}/tags`, {
     method: 'GET',
+    params: {
+      parent_id: parentId,
+    },
     headers: {
       authorization: 'Bearer ' + localStorage.getItem('access_token'),
     },
@@ -21,7 +24,7 @@ export function createKnowledgeBaseTag(id: number, data: KnowledgeBaseTagModel) 
 }
 
 export function persistKnowledgeBaseTag(id: number, tagId: number, data: KnowledgeBaseTagModel) {
-  if (tagId === 0 || tagId === undefined) {
+  if (!tagId) {
     return createKnowledgeBaseTag(id, data);
   }
   return request(`/knowledge_bases/${id}/tags/${tagId}`, {

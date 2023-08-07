@@ -16,6 +16,7 @@ const { confirm } = Modal;
 type ManagableTagItemProps = {
   model: KnowledgeBaseTagModel;
   editMode?: boolean;
+  onEdit?: (active: boolean) => void;
   onChanged?: (model: KnowledgeBaseTagModel) => void;
   onDeleted?: (model: KnowledgeBaseTagModel) => void;
   onBlur?: (model: KnowledgeBaseTagModel) => void;
@@ -25,6 +26,7 @@ export default function ManagableTagItem(props: ManagableTagItemProps) {
   const {
     model,
     editMode: initialEditMode = false,
+    onEdit: editModeChangedCallback,
     onChanged: tagChangedCallback,
     onDeleted: tagDeletedCallback,
     onBlur: tagBlurredCallback,
@@ -106,8 +108,11 @@ export default function ManagableTagItem(props: ManagableTagItemProps) {
     }
   }, [editMode, actionRef]);
 
+  useEffect(() => {
+    editModeChangedCallback?.(editMode);
+  }, [model]);
   return (
-    <div className={styles.TagItem}>
+    <div className={styles.TagItem} style={{ cursor: editMode ? 'text' : 'pointer' }}>
       <span
         ref={actionRef}
         contentEditable={editMode}

@@ -6,6 +6,7 @@ import { KnowledgeBaseModel, KnowledgeBaseTagModel } from '@/pages/KnowledgeBase
 import { getKnowledgeBaseTags } from '@/services/knowledgeBaseTags';
 import ManagableTagItem from '@/components/ManagableTagItem';
 import { PlusOutlined } from '@ant-design/icons';
+import SecondaryTagManager from '../SecondaryTagManage';
 
 type TagManagerProps = {
   model: KnowledgeBaseModel;
@@ -32,7 +33,7 @@ const transformToTagHierarchy = (tags: KnowledgeBaseTagModel[]): HierarchyTagMod
         parentTag.children.push({
           ...tag,
           children: [],
-        });
+        } as HierarchyTagModel);
       }
     }
   });
@@ -42,7 +43,9 @@ const transformToTagHierarchy = (tags: KnowledgeBaseTagModel[]): HierarchyTagMod
 export default function TagManager(props: TagManagerProps) {
   const { model } = props;
   const [loading, setLoading] = React.useState<boolean>(true);
+  const [tags, setTags] = React.useState<HierarchyTagModel[]>([]);
   const [tagHierarchyNodes, setTagHierarchyNodes] = React.useState<DataNode[]>([]);
+  const [selectedTag, setSelectedTag] = React.useState<HierarchyTagModel | null>(null);
 
   const transformToDataNode = (tag: HierarchyTagModel, editMode?: boolean): DataNode => {
     const onTagBlur = (tag: KnowledgeBaseTagModel) => {
@@ -70,7 +73,9 @@ export default function TagManager(props: TagManagerProps) {
     } as DataNode;
   };
   const onSelect = (selectedKeys: React.Key[], info: any) => {
-    console.log('selected', selectedKeys, info);
+    console.log(`selected(${selectedKeys?.[0]})`, selectedKeys, info);
+    const selectedNode = tags.find((node) => node.id === (selectedKeys?.[0] as number));
+    setSelectedTag(selectedNode || null);
   };
   const onTagCreationTriggered = () => {
     if (
@@ -103,6 +108,10 @@ export default function TagManager(props: TagManagerProps) {
     getKnowledgeBaseTags(model.id)
       .then((res) => res.items)
       .then((tags) => transformToTagHierarchy(tags))
+      .then((tags) => {
+        setTags(tags);
+        return tags;
+      })
       .then((tags) => tags.map((tag) => transformToDataNode(tag)))
       .then((nodes) => setTagHierarchyNodes(nodes))
       .finally(() => setLoading(false));
@@ -110,7 +119,7 @@ export default function TagManager(props: TagManagerProps) {
 
   return (
     <>
-      <div className={Styles.LabelManager}>
+      <div className={Styles.TagManager}>
         <div className={Styles.header}>{model.name}</div>
         <div className={Styles.content}>
           <div className={Styles.tree}>
@@ -130,7 +139,9 @@ export default function TagManager(props: TagManagerProps) {
               />
             )}
           </div>
-          <div className={Styles.knowledgeList}></div>
+          <div style={{ width: '100%' }}>
+            {selectedTag ? <SecondaryTagManager model={selectedTag} /> : null}
+          </div>
         </div>
       </div>
     </>
