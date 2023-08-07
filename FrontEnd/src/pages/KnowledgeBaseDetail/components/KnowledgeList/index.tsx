@@ -1,4 +1,4 @@
-import { Button, Col, Pagination, Row, Spin, notification } from 'antd';
+import { Button, Col, Modal, Pagination, Row, Spin, notification } from 'antd';
 import React, { useEffect, useState } from 'react';
 import Styles from './index.less';
 import KnowledgeItem from '../KnowledgeItem';
@@ -35,6 +35,8 @@ const App: React.FC<KnowledgeListProps> = (props) => {
 
   const [loading, setLoading] = useState<boolean>(false);
 
+  const [modal, contextHolder] = Modal.useModal();
+
   const getKnowledgeList = async (page: number) => {
     setLoading(true);
     try {
@@ -53,15 +55,34 @@ const App: React.FC<KnowledgeListProps> = (props) => {
   };
 
   const handleDeleteKnowledgeItem = async (id: number) => {
-    setLoading(true);
-    try {
-      await deleteKnowledgeItem(id);
-      getKnowledgeList(pagination.page);
-      notification.success({ message: '删除成功' });
-      setLoading(false);
-    } catch (error) {
-      setLoading(false);
-    }
+    modal.confirm({
+      title: '',
+      icon: null,
+      content: (
+        <div style={{ marginBottom: '47px', fontSize: '18px' }}>
+          确定删除该知识点吗？删除不可恢复。
+        </div>
+      ),
+      okText: '确认删除',
+      cancelText: '取消',
+      width: '600px',
+      bodyStyle: {
+        padding: '80px 46px',
+        paddingBottom: '5px',
+        paddingRight: '6px',
+      },
+      onOk: async () => {
+        setLoading(true);
+        try {
+          await deleteKnowledgeItem(id);
+          getKnowledgeList(pagination.page);
+          notification.success({ message: '删除成功' });
+          setLoading(false);
+        } catch (error) {
+          setLoading(false);
+        }
+      },
+    });
   };
 
   const handleOpenManuallyEnterModal = () => {
@@ -165,6 +186,7 @@ const App: React.FC<KnowledgeListProps> = (props) => {
           />
         </div>
       )}
+      {contextHolder}
     </div>
   );
 };

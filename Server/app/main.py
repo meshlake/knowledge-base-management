@@ -10,6 +10,7 @@ from .routers import (
     roles,
     knowledge_base,
     chatbot,
+    file_manage,
 )
 from fastapi_pagination import add_pagination
 from fastapi.routing import APIRoute
@@ -33,6 +34,7 @@ app.include_router(auth.router)
 app.include_router(roles.router)
 app.include_router(knowledge_base.router)
 app.include_router(chatbot.router)
+app.include_router(file_manage.router)
 
 
 add_pagination(app)

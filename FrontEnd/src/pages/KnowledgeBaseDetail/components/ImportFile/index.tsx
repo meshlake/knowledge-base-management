@@ -1,7 +1,9 @@
-import { Button, Modal, UploadProps, message } from 'antd';
+import { Button, Form, Modal, UploadProps, message } from 'antd';
 import Dragger from 'antd/es/upload/Dragger';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Styles from './index.less';
+import { createFile } from '@/services/file';
+import { useParams } from '@umijs/max';
 
 type ImportFileProps = {
   isModalOpen: boolean;
@@ -10,26 +12,68 @@ type ImportFileProps = {
 
 const App: React.FC<ImportFileProps> = (props) => {
   const { isModalOpen, onClose } = props;
+  const params = useParams();
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const [form] = Form.useForm();
+
+  const normFile = (e: any) => {
+    console.log('Upload event:', e);
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return e?.fileList;
+  };
 
   const draggerProps: UploadProps = {
     name: 'file',
-    multiple: true,
-    action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+    accept: '.doc,.docx,.txt,.xlsx,.csv,.pdf,.pptx',
+    action: `/api/files/upload`,
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+    },
     onChange(info) {
       const { status } = info.file;
       if (status !== 'uploading') {
         console.log(info.file, info.fileList);
       }
       if (status === 'done') {
-        message.success(`${info.file.name} file uploaded successfully.`);
+        message.success(`${info.file.name}上传成功`);
       } else if (status === 'error') {
-        message.error(`${info.file.name} file upload failed.`);
+        message.error(`${info.file.name}上传失败`);
       }
     },
     onDrop(e) {
       console.log('Dropped files', e.dataTransfer.files);
     },
+    maxCount: 1,
   };
+
+  const handleCreateFile = async () => {
+    setLoading(true);
+    try {
+      const values = await form.validateFields();
+      console.log('Success:', values);
+      if (values.file[0]?.response?.data?.name && values.file[0]?.response?.data?.path) {
+        await createFile({
+          name: values.file[0]?.response?.data?.name,
+          path: values.file[0]?.response?.data?.path,
+          knowledge_base_id: Number(params.id),
+        });
+        onClose(true);
+      }
+      setLoading(false);
+    } catch (errorInfo) {
+      console.log('Failed:', errorInfo);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isModalOpen) {
+      form.resetFields();
+    }
+  }, [isModalOpen]);
 
   return (
     <Modal
@@ -43,19 +87,37 @@ const App: React.FC<ImportFileProps> = (props) => {
         paddingBottom: '66px',
       }}
       footer={[
-        <Button key="submit" type="primary" style={{ width: '140px' }}>
+        <Button
+          key="submit"
+          type="primary"
+          style={{ width: '140px' }}
+          onClick={handleCreateFile}
+          loading={loading}
+        >
           保存
         </Button>,
       ]}
       onCancel={() => onClose(false)}
     >
-      <Dragger {...draggerProps} className={Styles.dragger}>
-        <p className={Styles.importFileImg}>
-          <img src="/imgs/importFile.png" alt="" style={{ width: '100px', height: '100px' }} />
-        </p>
-        <p className={Styles.title}>文件上传</p>
-        <p className={Styles.hint}>将文件拖拽到此区域,支持.doc,.docx,.txt,.xlsx,.csv,.pdf,.pptx</p>
-      </Dragger>
+      <Form name="basic" autoComplete="off" form={form}>
+        <Form.Item
+          label=""
+          name="file"
+          rules={[{ required: true, message: '请上传文件' }]}
+          valuePropName="fileList"
+          getValueFromEvent={normFile}
+        >
+          <Dragger {...draggerProps} className={Styles.dragger}>
+            <p className={Styles.importFileImg}>
+              <img src="/imgs/importFile.png" alt="" style={{ width: '100px', height: '100px' }} />
+            </p>
+            <p className={Styles.title}>文件上传</p>
+            <p className={Styles.hint}>
+              将文件拖拽到此区域,支持.doc,.docx,.txt,.xlsx,.csv,.pdf,.pptx
+            </p>
+          </Dragger>
+        </Form.Item>
+      </Form>
     </Modal>
   );
 };
