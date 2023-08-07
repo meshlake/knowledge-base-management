@@ -40,4 +40,13 @@ class ChatbotUpdate(BaseModel):
     name: str = Field(None, max_length=255)
     description: str = Field(None, max_length=255)
     knowledgeBaseList: List[int] = Field(None, alias="knowledge_bases")
-    promptConfig: PromptConfig = Field(None, alias="prompt_config",)
+    promptConfig: PromptConfig = Field(None, alias="prompt_config")
+
+
+class ChatbotSimple(BaseModel):
+    id: int
+    name: str
+    description: str
+
+    class Config:
+        orm_mode = True
