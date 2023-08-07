@@ -45,6 +45,12 @@ export default [
     component: 'Chatbot/List',
   },
   {
+    path: '/chatbot/:id',
+    name: '机器人详情',
+    component: 'Chatbot/Detail',
+    hideInMenu: true,
+  },
+  {
     path: '*',
     layout: false,
     component: './404',

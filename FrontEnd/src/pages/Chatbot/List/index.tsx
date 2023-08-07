@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Modal } from 'antd';
+import { history } from '@umijs/max';
 import { ActionType, PageContainer, ProList } from '@ant-design/pro-components';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { getChatbotList, deleteChatbot } from '@/services/chatbot';
@@ -8,7 +9,7 @@ import CardItem from './components/CardItem';
 import AddCard from './components/AddCard';
 import styles from './index.less';
 
-const OrgManagement = () => {
+const ChatbotList = () => {
   const { confirm } = Modal;
   const ref = useRef<ActionType>();
   const handleRefresh = () => ref?.current?.reload();
@@ -86,7 +87,7 @@ const OrgManagement = () => {
           return {
             onClick: () => {
               if (record.id) {
-                console.log('navigate to detail');
+                history.push(`/chatbot/${record.id}`);
               } else {
                 setAddVisible(true);
               }
@@ -102,4 +103,4 @@ const OrgManagement = () => {
   );
 };
 
-export default OrgManagement;
+export default ChatbotList;

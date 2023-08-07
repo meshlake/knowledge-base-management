@@ -8,8 +8,8 @@ export function getChatbotList() {
   });
 }
 
-export function getChatbot(params: { id: string }) {
-  return request<DEFAULT_API.Response<Chatbot_API.Chatbot>>(`/chatbots/${params.id}`, {
+export function getChatbot(id: string) {
+  return request<Chatbot_API.Chatbot>(`/chatbots/${id}`, {
     headers: {
       authorization: 'Bearer ' + localStorage.getItem('access_token'),
     },
@@ -17,8 +17,18 @@ export function getChatbot(params: { id: string }) {
 }
 
 export function createChatbot(data: Chatbot_API.ChatbotCreate) {
-  return request<DEFAULT_API.Response<Chatbot_API.Chatbot>>('/chatbots', {
+  return request<Chatbot_API.Chatbot>('/chatbots', {
     method: 'POST',
+    data,
+    headers: {
+      authorization: 'Bearer ' + localStorage.getItem('access_token'),
+    },
+  });
+}
+
+export function updateChatbot(id: string, data: Chatbot_API.ChatbotUpdate) {
+  return request<Chatbot_API.Chatbot>(`/chatbots/${id}`, {
+    method: 'PUT',
     data,
     headers: {
       authorization: 'Bearer ' + localStorage.getItem('access_token'),
