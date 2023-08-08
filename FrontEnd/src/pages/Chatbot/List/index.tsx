@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Modal } from 'antd';
+import { Modal, notification } from 'antd';
 import { history } from '@umijs/max';
 import { ActionType, PageContainer, ProList } from '@ant-design/pro-components';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
@@ -31,9 +31,18 @@ const ChatbotList = () => {
       okText: '确定删除',
       cancelText: '取消',
       onOk() {
-        return deleteChatbot(bot.id).then(() => {
-          handleRefresh();
-        });
+        return deleteChatbot(bot.id)
+          .then((response) => {
+            if (response.code === 200) {
+              handleRefresh();
+            } else if (response.code === 400) {
+              notification.error({
+                message: '删除失败',
+                description: '机器人已被应用绑定，请先解除绑定',
+              });
+            }
+          })
+          .catch(() => {});
       },
       onCancel() {},
     });

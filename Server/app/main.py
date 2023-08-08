@@ -11,7 +11,8 @@ from .routers import (
     knowledge_base,
     chatbot,
     file_manage,
-    application
+    application,
+    wechat_bot,
 )
 from fastapi_pagination import add_pagination
 from fastapi.routing import APIRoute
@@ -37,6 +38,7 @@ app.include_router(knowledge_base.router)
 app.include_router(chatbot.router)
 app.include_router(application.router)
 app.include_router(file_manage.router)
+app.include_router(wechat_bot.router)
 
 
 add_pagination(app)
