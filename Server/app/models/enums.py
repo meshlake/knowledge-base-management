@@ -10,3 +10,7 @@ class FileStatus(Enum):
     SUCCESS = "SUCCESS"
     FAILED = "FAILED"
     EMBEDDING = "EMBEDDING"
+
+class ReviewStatus(Enum):
+    PENDING = "PENDING"
+    PROCESSED = "PROCESSED"

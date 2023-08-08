@@ -5,13 +5,13 @@ from app.models.knowledge_item import KnowledgeItem as KnowledgeItemModel
 import os
 from app.service.s3_file import S3FileLoader
 from app.service.supabase_client import create_supabase_client
-from app.service.supabase_vector_store import SupabaseVectorStore
+from app.service.supabase_vector_store import CustomizeSupabaseVectorStore
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.docstore.document import Document
 from app.models.enums import FileStatus, KnowledgeItemType
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from app.service.file_manage import update_file_status
-
+from app.service.review import query_similar_knowledge
 
 def create_embedding_client():
     os.environ["OPENAI_API_TYPE"] = "azure"
@@ -27,7 +27,7 @@ def create_knowledge_item(
 ):
     supabase = create_supabase_client()
     embeddings = create_embedding_client()
-    vector_store = SupabaseVectorStore(supabase, embeddings, "knowledge")
+    vector_store = CustomizeSupabaseVectorStore(supabase, embeddings, "knowledge")
     metadata = {
         "type": KnowledgeItemType.MANUALLY.name,
         "source": "",
@@ -36,7 +36,7 @@ def create_knowledge_item(
         "tags": model.tags,
     }
     docs = [Document(page_content=model.content, metadata=metadata)]
-    SupabaseVectorStore.add_documents(vector_store, documents=docs)
+    CustomizeSupabaseVectorStore.limit_size_add_documents(vector_store, documents=docs, knowledge_base_id=knowledge_base_id)
     logging.info(f"knowledge item created: {model}")
     return model
 
@@ -150,9 +150,9 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
         for doc in docs:
             doc.metadata = metadata
 
-        vector_store = SupabaseVectorStore(supabase, embeddings, "knowledge")
+        vector_store = CustomizeSupabaseVectorStore(supabase, embeddings, "knowledge")
 
-        SupabaseVectorStore.add_documents(vector_store, documents=docs)
+        CustomizeSupabaseVectorStore.limit_size_add_documents(vector_store, documents=docs, knowledge_base_id=knowledge_base_id)
 
         db = next(get_db())
         update_file_status(db=db, filepath=filepath, status=FileStatus.SUCCESS)
