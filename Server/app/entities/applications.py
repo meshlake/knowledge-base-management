@@ -21,6 +21,7 @@ class Application(Base, BaseModel):
     user_id = Column(Integer, name="user_id")
     api_key = Column(String(255))
     properties = Column(JSON)
+    login_info = Column(JSON)
     chatbot_id = Column(Integer, ForeignKey("chatbots.id"))
 
     chatbot = relationship("Chatbot", backref="applications")

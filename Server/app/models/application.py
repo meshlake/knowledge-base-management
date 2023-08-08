@@ -11,6 +11,13 @@ class ApplicationProperties(BaseModel):
     room_enable: bool = Field(True)
 
 
+class ApplicationLoginInfo(BaseModel):
+    id: str = Field(None)
+    name: str = Field(None)
+    avatar: str = Field(None)
+    qrcode: str = Field(None)
+
+
 class ApplicationCreate(BaseModel):
     name: str
     description: str = Field(None)
@@ -24,6 +31,7 @@ class ApplicationUpdate(BaseModel):
     description: str = Field(None)
     chatbot_id: int = Field(None)
     properties: ApplicationProperties = Field(None)
+    login_info: ApplicationLoginInfo = Field(None)
 
 
 class Application(BaseModel):
@@ -36,6 +44,7 @@ class Application(BaseModel):
     updatedAt: int = Field(0)
     api_key: str
     properties: ApplicationProperties = Field(None)
+    login_info: ApplicationLoginInfo = Field(None)
     chatbot: ChatbotSimple = Field(None)
 
     class Config:

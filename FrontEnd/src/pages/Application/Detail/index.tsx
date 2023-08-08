@@ -1,23 +1,14 @@
 import React, { useEffect } from 'react';
 import { useParams } from '@umijs/max';
 import { Spin, notification } from 'antd';
-import ComTabs from '@/components/Tabs';
-import { getChatbot, updateChatbot } from '@/services/chatbot';
-import BaseInfo from './components/BaseInfo';
-import Configuration from './components/Configuration';
+import { getApplication, updateApplication } from '@/services/application';
 import styles from './index.less';
 
-const Chatbot: React.FC = () => {
+const ApplicationDetail: React.FC = () => {
   const params = useParams();
 
-  const tabs = ['模型配置', '基础信息'];
-  const [activeTab, setActiveTab] = React.useState(0);
   const [loading, setLoading] = React.useState<boolean>(false);
-  const [chatbot, setChatbot] = React.useState<Chatbot_API.Chatbot>();
-
-  const handleTabChange = (index: number) => {
-    setActiveTab(index);
-  };
+  const [application, setApplication] = React.useState<Application_API.Application>();
 
   const handleBack = () => {
     history.back();
@@ -28,17 +19,17 @@ const Chatbot: React.FC = () => {
       return;
     }
     try {
-      const data = await getChatbot(params.id);
-      setChatbot(data);
+      const data = await getApplication(params.id);
+      setApplication(data);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleUpdate = async (id: string, data: Chatbot_API.ChatbotUpdate) => {
+  const handleUpdate = async (id: string, data: Application_API.ApplicationUpdate) => {
     try {
-      const newDate = await updateChatbot(id, data);
-      setChatbot(newDate);
+      const newDate = await updateApplication(id, data);
+      setApplication(newDate);
       notification.success({
         message: '更新成功',
       });
@@ -49,6 +40,8 @@ const Chatbot: React.FC = () => {
       throw error;
     }
   };
+
+  console.log(application, handleUpdate);
 
   useEffect(() => {
     setLoading(true);
@@ -63,15 +56,11 @@ const Chatbot: React.FC = () => {
         <img src="/imgs/backArrow.png" alt="" className={styles.backIcon} />
         <div>返回</div>
       </div>
-      <ComTabs items={tabs} onChange={handleTabChange} />
       <div className={styles.pageContent}>
-        <Spin spinning={loading}>
-          {activeTab === 0 && <Configuration data={chatbot} updateRequest={handleUpdate} />}
-          {activeTab === 1 && <BaseInfo data={chatbot} updateRequest={handleUpdate} />}
-        </Spin>
+        <Spin spinning={loading}></Spin>
       </div>
     </div>
   );
 };
 
-export default Chatbot;
+export default ApplicationDetail;

@@ -70,7 +70,7 @@ const ChatbotList = () => {
         request={async () => {
           const list = await getChatbotList();
           return {
-            data: [...list, { id: '', name: '' }],
+            data: [...list, { id: '', name: '' } as Chatbot_API.Chatbot],
           };
         }}
         metas={{
