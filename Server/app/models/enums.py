@@ -14,3 +14,8 @@ class FileStatus(Enum):
 class ReviewStatus(Enum):
     PENDING = "PENDING"
     PROCESSED = "PROCESSED"
+
+class ReviewType(Enum):
+    NEGLECT = "NEGLECT"
+    REPLACE = "REPLACE"
+    FUSION = "FUSION"

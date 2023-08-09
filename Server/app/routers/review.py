@@ -2,10 +2,11 @@ from fastapi import APIRouter, Depends
 from app.entities import similar_knowledge
 from sqlalchemy.orm import Session
 from app.dependencies import get_db
+from app.models.enums import ReviewType
 from app.service.user import oauth2_scheme
 from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import select
-
+from app.service.review import update_review_item
 
 router = APIRouter(
     tags=["review"],
@@ -25,4 +26,7 @@ def get_similar_knowledge(db: Session = Depends(get_db)):
     )
 
 
-
+@router.put("/review/{id}")
+def review_knowledge(id: int, type: ReviewType, db: Session = Depends(get_db)):
+    update_review_item(id=id, type=type, db=db)
+    return {}

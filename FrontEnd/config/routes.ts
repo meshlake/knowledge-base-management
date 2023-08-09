@@ -67,6 +67,11 @@ export default [
     hideInMenu: true,
   },
   {
+    name: '审核',
+    path: '/review',
+    component: './Review',
+  },
+  {
     name: '系统设置',
     path: '/system',
     access: 'system',
