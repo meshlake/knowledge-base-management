@@ -45,8 +45,8 @@ export function deleteApplication(id: string) {
   });
 }
 
-export async function getWechatBotInfo(id: number) {
-  return request<DEFAULT_API.Response<Application_API.WechatBotInfo>>(`/api/bot/${id}`, {
+export async function getWechatBotInfo(id: string) {
+  return request<DEFAULT_API.Response<Application_API.ApplicationLoginInfo>>(`/api/bot/${id}`, {
     method: 'GET',
     headers: {
       authorization: 'Bearer ' + localStorage.getItem('access_token'),
@@ -54,7 +54,7 @@ export async function getWechatBotInfo(id: number) {
   });
 }
 
-export async function wechatBotLogout(id: number) {
+export async function wechatBotLogout(id: string) {
   return request<DEFAULT_API.Response<any>>(`/api/bot/${id}/logout`, {
     method: 'POST',
     headers: {

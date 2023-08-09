@@ -2,6 +2,9 @@ import React, { useEffect } from 'react';
 import { useParams } from '@umijs/max';
 import { Spin, notification } from 'antd';
 import { getApplication, updateApplication } from '@/services/application';
+import BaseInfo from '@/pages/Chatbot/Detail/components/BaseInfo';
+import ChatbotConfig from './components/ChatbotConfig';
+import LoginInfo from './components/LoginInfo';
 import styles from './index.less';
 
 const ApplicationDetail: React.FC = () => {
@@ -14,7 +17,7 @@ const ApplicationDetail: React.FC = () => {
     history.back();
   };
 
-  const getChatbotDetail = async () => {
+  const getApplicationDetail = async () => {
     if (!params.id) {
       return;
     }
@@ -41,11 +44,9 @@ const ApplicationDetail: React.FC = () => {
     }
   };
 
-  console.log(application, handleUpdate);
-
   useEffect(() => {
     setLoading(true);
-    getChatbotDetail().finally(() => {
+    getApplicationDetail().finally(() => {
       setLoading(false);
     });
   }, []);
@@ -56,8 +57,17 @@ const ApplicationDetail: React.FC = () => {
         <img src="/imgs/backArrow.png" alt="" className={styles.backIcon} />
         <div>返回</div>
       </div>
+      <div className={styles.pageTitle}>
+        {application ? (application?.category === 'WX_PUBLIC' ? '公众号配置' : '企业微信配置') : ''}
+      </div>
       <div className={styles.pageContent}>
-        <Spin spinning={loading}></Spin>
+        <Spin spinning={loading}>
+          <BaseInfo data={application} updateRequest={handleUpdate} />
+          <ChatbotConfig data={application} updateRequest={handleUpdate} />
+          {application && application.category === 'WX_CHATBOT' ? (
+            <LoginInfo data={application} />
+          ) : null}
+        </Spin>
       </div>
     </div>
   );

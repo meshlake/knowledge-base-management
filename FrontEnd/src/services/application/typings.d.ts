@@ -24,7 +24,7 @@ declare namespace Application_API {
     category: 'WX_PUBLIC' | 'WX_CHATBOT';
     name: string;
     description: string;
-    chatbot_id: string;
+    chatbot: BaseModel;
     properties?: ApplicationProperties;
     login_info?: ApplicationLoginInfo;
     createdAt: string;
@@ -38,11 +38,5 @@ declare namespace Application_API {
     description?: string;
     chatbot_id?: string;
     properties?: ApplicationProperties | null;
-  };
-
-  type WechatBotInfo = {
-    name?: string;
-    avatar?: string;
-    qrcode?: string;
   };
 }

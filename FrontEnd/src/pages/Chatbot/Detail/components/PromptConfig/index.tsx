@@ -135,7 +135,11 @@ const PromptConfig: React.FC<Props> = (props) => {
     <>
       <Form.Item label="" name="prompt" rules={[{ required: true, message: '请输入' }]}>
         {editable ? (
-          <Input.TextArea rows={10} maxLength={500} placeholder="输入预设提示词，最多500字" />
+          <Input.TextArea
+            autoSize={{ minRows: 3, maxRows: 20 }}
+            maxLength={500}
+            placeholder="输入预设提示词，最多500字"
+          />
         ) : (
           <div style={{ whiteSpace: 'pre-line', lineHeight: '24px' }}>
             {data?.prompt_config?.prompt}

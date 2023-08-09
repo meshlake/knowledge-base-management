@@ -1,0 +1,55 @@
+@import '/src/styles/common.less';
+
+.comContainer {
+  position: relative;
+  margin-top: 32px;
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    line-height: 32px;
+    margin-bottom: 12px;
+    .title {
+      font-size: 16px;
+      font-weight: 500;
+      .subTitle {
+        margin-left: 12px;
+        font-size: 12px;
+        font-weight: normal;
+      }
+    }
+  }
+  .formBottom {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 24px;
+  }
+  .cardList {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-between;
+    .cardListItem {
+      width: 44%;
+      border-radius: 5px;
+      background: #ffffff;
+      box-sizing: border-box;
+      border: 1px solid #d6d7d9;
+      padding: 16px 32px;
+      cursor: pointer;
+      .cardListItemTitle {
+        font-size: 16px;
+        font-weight: 600;
+        color: #3d3d3d;
+        margin-bottom: 10px;
+        .single-line-ellipsis();
+      }
+      .cardListItemDes {
+        height: 40px;
+        line-height: 20px;
+        font-size: 14px;
+        .multi-line-ellipsis(2);
+      }
+    }
+  }
+}
