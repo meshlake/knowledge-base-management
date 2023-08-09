@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, validator
 from datetime import datetime
 
+from app.models.base import AppBaseModel
 
 class KnowledgeBase(BaseModel):
     id: int = Field(0, description="knowledge base id")
@@ -24,7 +25,6 @@ class KnowledgeBase(BaseModel):
     @validator("createdAt", "updatedAt", pre=True)
     @classmethod
     def datetime_convert(cls, v):
-        print(f"v: {v} ({type(v)})")
         if isinstance(v, int):
             return v
         elif isinstance(v, datetime):
@@ -42,3 +42,10 @@ class KnowledgeBaseSimple(BaseModel):
     description: str = Field(None, description="description for the knowledge base")
     class Config:
         orm_mode = True
+
+class KnowledgeBaseTag(AppBaseModel):
+    id: int = Field(None, description="knowledge base tag id")
+    name: str = Field(..., description="name of knowledge base tag")
+    knowledgeBaseId: int = Field(None, alias="knowledge_base_id", description="knowledge base id")
+    parentId: int = Field(None, alias="parent_id", description="parent knowledge base tag id")
+    description: str = Field(None, description="description for the knowledge base tag")

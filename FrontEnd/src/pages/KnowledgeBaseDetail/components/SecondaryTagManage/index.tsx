@@ -34,11 +34,9 @@ export default function SecondaryTagManager(props: SecondaryTagManagerProps) {
       return (
         <ManageableSecondaryTag
           model={item}
+          mode={item.id ? 'view' : 'create'}
           onDeleted={() => actionRef.current?.reload()}
-          onCreated={() => {
-            console.log('Created');
-            actionRef.current?.reload();
-          }}
+          onCreated={() => actionRef.current?.reload()}
         />
       );
     },
@@ -47,7 +45,7 @@ export default function SecondaryTagManager(props: SecondaryTagManagerProps) {
         onClick: () => {},
         onDoubleClick: () => {
           if (item.id) {
-            console.log(`Edit mode activated, item => ${item.id}`);
+            console.info(`Edit mode activated, item => ${item.id}`);
           }
         },
       };

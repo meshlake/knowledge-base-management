@@ -17,6 +17,7 @@ type ManagableTagItemProps = {
   model: KnowledgeBaseTagModel;
   editMode?: boolean;
   onEdit?: (active: boolean) => void;
+  onCreated?: (model: KnowledgeBaseTagModel) => void;
   onChanged?: (model: KnowledgeBaseTagModel) => void;
   onDeleted?: (model: KnowledgeBaseTagModel) => void;
   onBlur?: (model: KnowledgeBaseTagModel) => void;
@@ -29,6 +30,7 @@ export default function ManagableTagItem(props: ManagableTagItemProps) {
     onEdit: editModeChangedCallback,
     onChanged: tagChangedCallback,
     onDeleted: tagDeletedCallback,
+    onCreated: tagCreatedCallback,
     onBlur: tagBlurredCallback,
   } = props;
   const [editMode, setEditMode] = useState<boolean>(initialEditMode);
@@ -55,8 +57,9 @@ export default function ManagableTagItem(props: ManagableTagItemProps) {
       e.preventDefault();
     }
     setEditMode(false);
-    if (actionRef.current && actionRef.current.innerText !== model.name) {
-      const toUpdateName = actionRef.current.innerText;
+    const toUpdateName = actionRef.current?.innerText?.trim();
+    if (toUpdateName && toUpdateName !== model.name) {
+      const mode = model.id === 0 ? 'create' : 'update';
       persistKnowledgeBaseTag(model.knowledge_base_id, model.id, {
         name: toUpdateName,
       } as KnowledgeBaseTagModel)
@@ -64,8 +67,14 @@ export default function ManagableTagItem(props: ManagableTagItemProps) {
           model.name = toUpdateName;
           model.id = res.id;
         })
-        .then(() => console.log(`Tag ${model.name} (${model.id}) updated to ${toUpdateName}`))
-        .then(() => tagChangedCallback?.(model))
+        .then(() => {
+          if (mode === 'create') {
+            console.log(`Tag ${model.name} (${model.id}) created`);
+          } else {
+            console.log(`Tag ${model.name} (${model.id}) updated to ${toUpdateName}`);
+          }
+        })
+        .then(() => (mode === 'create' ? tagCreatedCallback?.(model) : tagChangedCallback?.(model)))
         .catch((err) => {
           console.error(err);
           if (actionRef.current) {

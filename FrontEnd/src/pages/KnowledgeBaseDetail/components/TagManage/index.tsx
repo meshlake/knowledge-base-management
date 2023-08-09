@@ -65,6 +65,7 @@ export default function TagManager(props: TagManagerProps) {
         <ManagableTagItem
           model={tag}
           editMode={editMode}
+          onCreated={() => setLoading(true)}
           onDeleted={() => setLoading(true)}
           onBlur={onTagBlur}
         />
@@ -72,10 +73,15 @@ export default function TagManager(props: TagManagerProps) {
       key: tag.id,
     } as DataNode;
   };
-  const onSelect = (selectedKeys: React.Key[], info: any) => {
-    console.log(`selected(${selectedKeys?.[0]})`, selectedKeys, info);
+  const onSelect = (selectedKeys: React.Key[]) => {
+    if (selectedKeys.length === 0) {
+      console.debug('Ignoring unselect event');
+      return;
+    }
     const selectedNode = tags.find((node) => node.id === (selectedKeys?.[0] as number));
-    setSelectedTag(selectedNode || null);
+    if (selectedNode) {
+      setSelectedTag(selectedNode);
+    }
   };
   const onTagCreationTriggered = () => {
     if (
@@ -105,6 +111,7 @@ export default function TagManager(props: TagManagerProps) {
     if (!loading) {
       return;
     }
+    setSelectedTag(null);
     getKnowledgeBaseTags(model.id)
       .then((res) => res.items)
       .then((tags) => transformToTagHierarchy(tags))
@@ -116,6 +123,12 @@ export default function TagManager(props: TagManagerProps) {
       .then((nodes) => setTagHierarchyNodes(nodes))
       .finally(() => setLoading(false));
   }, [model, loading]);
+
+  useEffect(() => {
+    if (tagHierarchyNodes.length > 0) {
+      onSelect([tagHierarchyNodes[0].key]);
+    }
+  }, [tagHierarchyNodes]);
 
   return (
     <>
@@ -130,6 +143,7 @@ export default function TagManager(props: TagManagerProps) {
             <Skeleton loading={loading} />
             {!loading && (
               <Tree
+                selectedKeys={selectedTag ? [selectedTag.id] : []}
                 showLine={true}
                 showIcon={false}
                 expandAction={false}
