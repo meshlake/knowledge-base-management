@@ -10,8 +10,10 @@ import { useParams } from '@umijs/max';
 import { getKnowledgeItems } from '@/services/knowledgeItem';
 
 type TPagination = Omit<DEFAULT_API.Paginate<any>, 'items'>;
-type KnowledgeMansgeProps = {
+
+type KnowledgeManageProps = {
   knowledgeBase: KnowledgeBaseModel;
+  toggleLabelManage?: () => void;
 };
 
 const treeData: DataNode[] = [
@@ -36,8 +38,8 @@ const treeData: DataNode[] = [
   },
 ];
 
-const App: React.FC<KnowledgeMansgeProps> = (props) => {
-  const { knowledgeBase } = props;
+const App: React.FC<KnowledgeManageProps> = (props) => {
+  const { knowledgeBase, toggleLabelManage = () => {} } = props;
   const params = useParams();
 
   const [tree, setTree] = useState<DataNode[]>(treeData);
@@ -149,7 +151,7 @@ const App: React.FC<KnowledgeMansgeProps> = (props) => {
           {knowledgeBase?.name}：{total}条知识
         </div>
         <div>
-          <Button type="primary" ghost>
+          <Button type="primary" ghost onClick={toggleLabelManage}>
             标签管理
           </Button>
         </div>

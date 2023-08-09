@@ -1,23 +1,41 @@
-.KnowledgeManage {
+.TagManager {
   .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 24px 0 18px 0;
+    margin: 1.5rem 0 1rem 0;
+    height: 2rem;
+    font-size: large;
+    font-weight: 600;
   }
   .content {
     display: flex;
     width: 100%;
     .tree {
-      width: 300px;
+      width: 15rem;
+      display: flex;
+      flex-direction: column;
       border-right: 1px solid #ebf1fd;
-      margin-right: 80px;
+      margin-right: 5rem;
+      padding-right: 1rem;
+      font-size: large;
+
+      > * + * {
+        margin-top: 1rem; /* 16px */
+      }
+
+      .title {
+        display: flex;
+
+        > * + * {
+          margin-left: 1rem; /* 16px */
+        }
+      }
     }
     .knowledgeList {
       flex: 1;
       display: flex;
       justify-content: center;
-      height: calc(100vh - 56px - 24px - 34px - 32px - 50px);
       .paginationWrapper {
         display: flex;
         justify-content: center;
@@ -49,5 +67,10 @@
     .contenteditable:focus-visible {
       outline: none;
     }
+  }
+  .action {
+    font-size: small;
+    font-weight: 600;
+    cursor: pointer;
   }
 }
