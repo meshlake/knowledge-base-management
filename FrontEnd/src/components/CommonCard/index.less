@@ -1,0 +1,41 @@
+@import '/src/styles/common.less';
+
+.cardItem {
+  position: relative;
+  width: 100%;
+  font-family: MiSans;
+  color: #3d3d3d;
+  overflow: hidden;
+  .cardItemTop {
+    display: flex;
+    align-items: center;
+    .icon {
+      width: 50px;
+      height: 50px;
+      margin-right: 20px;
+      border-radius: 50%;
+    }
+    .title {
+      flex: 1;
+      font-size: 20px;
+      font-weight: 600;
+      .single-line-ellipsis();
+    }
+  }
+  .description {
+    height: 40px;
+    line-height: 20px;
+    margin-top: 20px;
+    font-size: 14px;
+    letter-spacing: 0em;
+    .multi-line-ellipsis(2);
+  }
+  .actions {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: baseline;
+  }
+}

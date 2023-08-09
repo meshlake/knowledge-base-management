@@ -9,7 +9,7 @@ from app.util import generate_api_key
 
 def get_all_applications(db: Session, user: User):
     return db.query(Application).order_by(
-        Application.createdAt.desc()).all()
+        Application.createdAt.asc()).all()
 
 
 def get_application(id: int, db: Session, user: User):
