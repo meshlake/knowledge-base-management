@@ -2,10 +2,9 @@ import React from 'react';
 import { Modal } from 'antd';
 import ContentLayout from '../../components/ContentLayout';
 import { deleteKnowledgeBase, getKnowledgeBaseList } from '@/services/knowledgeBase';
-import KnowledgeBaseItem from './components/CardItem';
 import { KnowledgeBaseModel } from './types';
 import KnowledgeBase from '@/components/ContentLayout/types';
-import AddKnowledgeBaseItemCard from './components/AddCard';
+import CommonCard from '@/components/CommonCard';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { ActionType } from '@ant-design/pro-components';
 import AddKnowledgeBaseItemForm from './components/AddForm';
@@ -43,14 +42,19 @@ export default function KnowledgeBaseList() {
     },
     display: (dom: React.ReactNode, item: KnowledgeBaseModel) => {
       return item.id !== -1 ? (
-        <KnowledgeBaseItem
-          data={item}
-          onItemDelete={() => {
-            handleDelete(item);
-          }}
-        />
+        <CommonCard key={item.id} data={item} deleteable handleDelete={() => handleDelete(item)} />
       ) : (
-        <AddKnowledgeBaseItemCard />
+        <CommonCard
+          key={item.id}
+          data={{
+            id: item.id,
+            name: '创建知识库',
+            description: '基于业务需要创建知识库，导入对应知识点，用于训练AI机器人。',
+          }}
+          icon="/images/add_icon.png"
+          iconSize={30}
+          iconBorderRadius={0}
+        />
       );
     },
     events: (item: KnowledgeBaseModel) => {
