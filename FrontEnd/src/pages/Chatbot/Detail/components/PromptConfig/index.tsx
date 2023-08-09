@@ -64,6 +64,14 @@ const PromptConfig: React.FC<Props> = (props) => {
     resetMode();
     if (data?.prompt_config) {
       form.setFieldsValue(data.prompt_config);
+    } else {
+      form.setFieldsValue({
+        prompt: '',
+        role: '',
+        name: '',
+        work: '',
+        style: '',
+      });
     }
   };
 
