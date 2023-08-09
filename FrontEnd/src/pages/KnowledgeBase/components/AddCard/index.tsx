@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from '../../../Chatbot/List/components/AddCard/index.less';
+import styles from './index.less';
 
 const AddKnowledgeBaseItemCard: React.FC = () => {
   return (
