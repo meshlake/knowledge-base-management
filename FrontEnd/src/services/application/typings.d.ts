@@ -6,10 +6,10 @@ declare namespace Application_API {
   };
 
   type ApplicationProperties = {
-    webhook_url: string;
-    puppet_token: string;
-    private_enable: boolean;
-    room_enable: boolean;
+    webhook_url?: string;
+    puppet_token?: string;
+    private_enable?: boolean;
+    room_enable?: boolean;
   };
 
   type ApplicationLoginInfo = {

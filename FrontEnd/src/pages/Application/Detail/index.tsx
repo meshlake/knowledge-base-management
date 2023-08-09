@@ -5,6 +5,7 @@ import { getApplication, updateApplication } from '@/services/application';
 import BaseInfo from '@/pages/Chatbot/Detail/components/BaseInfo';
 import ChatbotConfig from './components/ChatbotConfig';
 import LoginInfo from './components/LoginInfo';
+import ExtraConfig from './components/ExtraConfig';
 import styles from './index.less';
 
 const ApplicationDetail: React.FC = () => {
@@ -65,7 +66,10 @@ const ApplicationDetail: React.FC = () => {
           <BaseInfo data={application} updateRequest={handleUpdate} />
           <ChatbotConfig data={application} updateRequest={handleUpdate} />
           {application && application.category === 'WX_CHATBOT' ? (
-            <LoginInfo data={application} />
+            <>
+              <LoginInfo data={application} />
+              <ExtraConfig data={application} updateRequest={handleUpdate} />
+            </>
           ) : null}
         </Spin>
       </div>

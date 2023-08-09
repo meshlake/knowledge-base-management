@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Avatar, Button, QRCode, Modal, notification, Badge } from 'antd';
-import { ExclamationCircleFilled } from '@ant-design/icons';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { getWechatBotInfo, wechatBotLogout } from '@/services/application';
 import styles from './index.less';
 
@@ -10,7 +10,7 @@ type Props = {
 
 let timer: any = null;
 
-const ChatbotConfig: React.FC<Props> = ({ data }) => {
+const LoginInfo: React.FC<Props> = ({ data }) => {
   const [loginInfo, setLoginInfo] = useState<Application_API.ApplicationLoginInfo>();
 
   const getBotStatus = async () => {
@@ -37,7 +37,7 @@ const ChatbotConfig: React.FC<Props> = ({ data }) => {
   const handleLogout = async () => {
     Modal.confirm({
       title: '确定要退出登录吗？',
-      icon: <ExclamationCircleFilled />,
+      icon: <ExclamationCircleOutlined />,
       content: '退出登录当前账号，机器人将暂停工作',
       onOk: () => {
         if (!data) {
@@ -115,4 +115,4 @@ const ChatbotConfig: React.FC<Props> = ({ data }) => {
   );
 };
 
-export default ChatbotConfig;
+export default LoginInfo;
