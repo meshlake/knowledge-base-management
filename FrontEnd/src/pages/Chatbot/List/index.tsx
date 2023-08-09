@@ -1,16 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Modal } from 'antd';
+import { Modal, notification } from 'antd';
+import { history } from '@umijs/max';
 import { ActionType, PageContainer, ProList } from '@ant-design/pro-components';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { getChatbotList, deleteChatbot } from '@/services/chatbot';
-import AddForm from './component/AddForm';
-import CardItem from './component/CardItem';
-import AddCard from './component/AddCard';
+import AddForm from './components/AddForm';
+import CardItem from './components/CardItem';
+import AddCard from './components/AddCard';
 import styles from './index.less';
 
-const OrgManagement = () => {
-  const ref = useRef<ActionType>();
+const ChatbotList = () => {
   const { confirm } = Modal;
+  const ref = useRef<ActionType>();
   const handleRefresh = () => ref?.current?.reload();
 
   const [addVisible, setAddVisible] = useState(false);
@@ -30,12 +31,18 @@ const OrgManagement = () => {
       okText: '确定删除',
       cancelText: '取消',
       onOk() {
-        return deleteChatbot(bot.id).then((result) => {
-          console.log(result);
-          if (result.success) {
-            handleRefresh();
-          }
-        });
+        return deleteChatbot(bot.id)
+          .then((response) => {
+            if (response.code === 200) {
+              handleRefresh();
+            } else if (response.code === 400) {
+              notification.error({
+                message: '删除失败',
+                description: '机器人已被应用绑定，请先解除绑定',
+              });
+            }
+          })
+          .catch(() => {});
       },
       onCancel() {},
     });
@@ -61,9 +68,9 @@ const OrgManagement = () => {
         ghost
         actionRef={ref}
         request={async () => {
-          const data = await getChatbotList();
+          const list = await getChatbotList();
           return {
-            data: [...data.items, { id: '', name: '' }],
+            data: [...list, { id: '', name: '' }],
           };
         }}
         metas={{
@@ -89,7 +96,7 @@ const OrgManagement = () => {
           return {
             onClick: () => {
               if (record.id) {
-                console.log('navigate to detail');
+                history.push(`/chatbot/${record.id}`);
               } else {
                 setAddVisible(true);
               }
@@ -105,4 +112,4 @@ const OrgManagement = () => {
   );
 };
 
-export default OrgManagement;
+export default ChatbotList;

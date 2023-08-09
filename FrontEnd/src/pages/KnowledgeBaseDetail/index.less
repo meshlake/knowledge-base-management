@@ -1,20 +1,24 @@
 .knowledgeBaseDetail {
   position: relative;
-  .backBtn {
+  height: 100%;
+  .tips {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-weight: 600;
-    color: #3d3d3d;
-    font-size: 16px;
-    position: absolute;
-    left: 0;
-    top: 10px;
-    cursor: pointer;
-    .icon {
-      width: 18px;
-      height: 18px;
-      margin-right: 10px;
+    font-weight: 700;
+    color: #fff;
+    font-size: 14px;
+    margin-top: -24px;
+    margin-bottom: 6px;
+    height: 25px;
+    position: relative;
+    .close {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 25px;
+      height: 25px;
+      cursor: pointer;
     }
   }
 
@@ -23,6 +27,25 @@
     width: 100%;
     justify-content: center;
     align-items: center;
+
+    .TagManagerBack {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      color: #3d3d3d;
+      font-size: medium;
+      font-weight: 600;
+      position: absolute;
+      left: 0;
+      top: 11px;
+
+      > img {
+        width: 18px;
+        height: 18px;
+        margin-right: 10px;
+      }
+    }
 
     .tagTitleItem {
       width: fit-content;

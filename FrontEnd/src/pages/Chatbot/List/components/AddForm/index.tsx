@@ -25,12 +25,12 @@ const OrgForm = (props: OrgFormProps) => {
             form.resetFields();
             refresh(true);
             notification.success({
-              message: '添加成功',
+              message: '创建成功',
             });
           })
           .catch(() => {
             notification.error({
-              message: '添加失败',
+              message: '创建失败',
             });
           });
       })
@@ -45,11 +45,11 @@ const OrgForm = (props: OrgFormProps) => {
   // 初始化数据
   useEffect(() => {
     form.resetFields();
-  }, []);
+  }, [visible]);
 
   return (
     <Modal
-      title="创建知识库"
+      title="创建机器人"
       width={640}
       bodyStyle={{ marginTop: '24px' }}
       open={visible}
@@ -58,14 +58,14 @@ const OrgForm = (props: OrgFormProps) => {
     >
       <Form form={form} layout="vertical" requiredMark={false}>
         <Form.Item name="name" label="机器人名称" rules={[{ required: true, message: '请输入' }]}>
-          <TrimInput placeholder="请输入" maxLength={50} />
+          <TrimInput placeholder="请输入" maxLength={255} />
         </Form.Item>
         <Form.Item
           name="description"
           label="机器人描述"
           rules={[{ required: true, message: '请输入' }]}
         >
-          <TextArea rows={4} placeholder="请输入" maxLength={200} />
+          <TextArea rows={4} placeholder="请输入" maxLength={255} />
         </Form.Item>
       </Form>
     </Modal>

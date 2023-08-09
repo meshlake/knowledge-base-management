@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import Styles from './index.less';
-import { Button, Pagination, Tree } from 'antd';
+import { Button, Col, Pagination, Row, Spin, Tree } from 'antd';
 import { FileOutlined } from '@ant-design/icons';
 import type { DataNode } from 'antd/es/tree';
 import KnowledgeItem from '../KnowledgeItem';
+import { KnowledgeBaseModel } from '@/pages/KnowledgeBase/types';
+import { getFiles } from '@/services/file';
+import { useParams } from '@umijs/max';
+import { getKnowledgeItems } from '@/services/knowledgeItem';
 
 type TPagination = Omit<DEFAULT_API.Paginate<any>, 'items'>;
 
 type KnowledgeManageProps = {
+  knowledgeBase: KnowledgeBaseModel;
   toggleLabelManage?: () => void;
 };
 
@@ -15,6 +20,7 @@ const treeData: DataNode[] = [
   {
     title: '标签分类',
     key: '0-0',
+    selectable: false,
     children: [
       {
         title: '申报业务',
@@ -30,60 +36,122 @@ const treeData: DataNode[] = [
       },
     ],
   },
-  {
-    title: '文件筛选',
-    key: '0-1',
-    children: [
-      {
-        title: (
-          <div>
-            <FileOutlined /> aaa.xlsx
-          </div>
-        ),
-        key: '0-1-0',
-      },
-    ],
-  },
 ];
 
 const App: React.FC<KnowledgeManageProps> = (props) => {
-  const { toggleLabelManage } = props;
-  const [knowledgeBase, setKnowledgeBase] = useState<any>({
-    name: 'lalal',
-    count: 0,
-  });
+  const { knowledgeBase, toggleLabelManage = () => {} } = props;
+  const params = useParams();
 
-  const [pagination, setPagination] = React.useState<TPagination>({
+  const [tree, setTree] = useState<DataNode[]>(treeData);
+  const [pagination, setPagination] = useState<TPagination>({
     page: 1,
     pages: 0,
     total: 0,
     size: 10,
   });
+  const [files, setFiles] = useState<FILE_API.File[]>([]);
+  const [knowledgeList, setKnowledgeList] = useState<KNOWLEDGE_ITEM_API.KnowledgeItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [currentKey, setCurrentKey] = useState<string>('');
+  const [total, setTotal] = useState<number>(0);
 
-  const onSelect = (selectedKeys: React.Key[], info: any) => {
-    console.log('selected', selectedKeys, info);
+  const getAllKnowledgeItems = async () => {
+    const data = await getKnowledgeItems(Number(params.id), 1);
+    setTotal(data.total);
+  };
+
+  const getKnowledgeItemsByFile = async (key: string, page: number) => {
+    const id = key.split('-')[2];
+    const filepath = files.find((v) => v.id === Number(id))?.path;
+    if (filepath) {
+      setLoading(true);
+      try {
+        const data = await getKnowledgeItems(Number(params.id), page, filepath);
+        setKnowledgeList(data.items);
+        setPagination({
+          page: data.page,
+          pages: data.pages,
+          total: data.total,
+          size: data.size,
+        });
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+      }
+    }
+  };
+
+  const onSelect = (selectedKeys: React.Key[]) => {
+    console.log('selected', selectedKeys);
+    if (selectedKeys.length === 0) {
+      setKnowledgeList([]);
+      setCurrentKey('');
+      return;
+    }
+    const key = selectedKeys[0];
+    setCurrentKey(`${key}`);
+    if (`${key}`.startsWith('0-1')) {
+      getKnowledgeItemsByFile(`${key}`, 1);
+    }
+  };
+
+  const handleChangePage = (page: number) => {
+    if (currentKey.startsWith('0-1')) {
+      getKnowledgeItemsByFile(currentKey, page);
+    }
+  };
+
+  const getFileList = async () => {
+    const { data: files } = await getFiles(Number(params.id));
+    //只显示状态为向量化成功的文件
+    const filterFiles = files.filter((v) => v.status === 'SUCCESS');
+    setFiles(filterFiles);
+    if (filterFiles.length === 0) {
+      setTree(tree.filter((v) => v.key !== '0-1'));
+      return;
+    }
+
+    const fileData = {
+      title: '文件筛选',
+      key: '0-1',
+      selectable: false,
+      children: filterFiles.map((v) => {
+        return {
+          title: (
+            <div>
+              <FileOutlined /> {v.name}
+            </div>
+          ),
+          key: `0-1-${v.id}`,
+        };
+      }),
+    };
+    if (tree.find((v) => v.key === '0-1')) {
+      const newTree = tree.map((v) => {
+        if (v.key === '0-1') {
+          return fileData;
+        }
+        return v;
+      });
+      setTree(newTree);
+    } else {
+      setTree([...tree, fileData]);
+    }
   };
 
   useEffect(() => {
-    setKnowledgeBase({
-      name: 'lalal',
-    });
-    setPagination({
-      page: 1,
-      pages: 0,
-      total: 0,
-      size: 10,
-    } as TPagination);
+    getFileList();
+    getAllKnowledgeItems();
   }, []);
 
   return (
     <div className={Styles.KnowledgeManage}>
       <div className={Styles.header}>
         <div>
-          {knowledgeBase.name}：{knowledgeBase.count}条知识
+          {knowledgeBase?.name}：{total}条知识
         </div>
         <div>
-          <Button type="primary" ghost onClick={toggleLabelManage ? toggleLabelManage : () => {}}>
+          <Button type="primary" ghost onClick={toggleLabelManage}>
             标签管理
           </Button>
         </div>
@@ -96,25 +164,37 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
             showIcon={false}
             defaultExpandedKeys={['0-0-0']}
             onSelect={onSelect}
-            treeData={treeData}
+            treeData={tree}
           />
         </div>
         <div className={Styles.knowledgeList}>
-          <div style={{ width: '100%' }}>
-            <KnowledgeItem
-              data={{ id: 1, source: '手动添加', tags: ['税务登记'], content: '我是内容' }}
-            ></KnowledgeItem>
-          </div>
-          <div className={Styles.paginationWrapper}>
-            <Pagination
-              total={pagination.total}
-              showTotal={(total) => `共${pagination.pages}页/${total}条`}
-              defaultPageSize={pagination.size}
-              defaultCurrent={1}
-              showSizeChanger={false}
-              size="small"
-            />
-          </div>
+          <Spin spinning={loading} style={{ height: '100px' }}>
+            <div style={{ width: '100%' }}>
+              <Row gutter={[16, 16]}>
+                {knowledgeList.map((item) => {
+                  return (
+                    <Col span={12} key={item.id}>
+                      <KnowledgeItem key={item.id} data={item}></KnowledgeItem>
+                    </Col>
+                  );
+                })}
+              </Row>
+            </div>
+          </Spin>
+          {knowledgeList.length > 0 && (
+            <div className={Styles.paginationWrapper}>
+              <Pagination
+                total={pagination.total}
+                showTotal={(total) => `共${pagination.pages}页/${total}条`}
+                defaultPageSize={pagination.size}
+                defaultCurrent={1}
+                showSizeChanger={false}
+                size="small"
+                disabled={loading}
+                onChange={(page) => handleChangePage(page)}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

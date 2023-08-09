@@ -25,7 +25,13 @@ const CardItem: React.FC<{ data: Chatbot_API.Chatbot; handleDelete: () => void }
       <div className={styles.description}>{data.description}</div>
       {active ? (
         <div className={styles.actions}>
-          <DeleteOutlined style={{ fontSize: 20, color: '#F40909' }} onClick={handleDelete} />
+          <DeleteOutlined
+            style={{ fontSize: 20, color: '#F40909' }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete();
+            }}
+          />
         </div>
       ) : null}
     </div>

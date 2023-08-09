@@ -1,6 +1,8 @@
 @import '/src/styles/common.less';
 
 .cardItem {
+  position: relative;
+  width: 100%;
   font-family: MiSans;
   color: #3d3d3d;
   overflow: hidden;
@@ -8,8 +10,8 @@
     display: flex;
     align-items: center;
     .icon {
-      width: 30px;
-      height: 30px;
+      width: 50px;
+      height: 50px;
       margin-right: 20px;
     }
     .title {
@@ -26,5 +28,15 @@
     font-size: 14px;
     letter-spacing: 0em;
     .multi-line-ellipsis(2);
+  }
+  .actions {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: baseline;
   }
 }
