@@ -3,7 +3,11 @@ import React, { useEffect, useState } from 'react';
 import styles from './index.less';
 
 type Props = {
-  data?: Chatbot_API.Chatbot;
+  data?: {
+    id: string;
+    name: string;
+    description: string;
+  };
   updateRequest: (id: string, data: { name: string; description: string }) => Promise<void>;
 };
 
@@ -89,7 +93,8 @@ const BaseInfo: React.FC<Props> = (props) => {
           name="description"
           rules={[{ required: true, message: '请输入' }]}
         >
-          <Input
+          <Input.TextArea
+            autoSize={{ minRows: 2, maxRows: 10 }}
             maxLength={255}
             disabled={!editable}
             placeholder={editable ? '请输入' : ''}

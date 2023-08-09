@@ -11,12 +11,21 @@ type CommonData = {
 
 type ComProps = {
   data: CommonData;
-  deleteable?: boolean;
   icon?: string;
+  iconSize?: number;
+  iconBorderRadius?: number;
+  deleteable?: boolean;
   handleDelete?: () => void;
 };
 
-const Card: React.FC<ComProps> = ({ data, deleteable, icon, handleDelete }) => {
+const Card: React.FC<ComProps> = ({
+  data,
+  deleteable,
+  icon,
+  iconBorderRadius,
+  iconSize,
+  handleDelete,
+}) => {
   const [active, setActive] = useState(false);
 
   return (
@@ -30,7 +39,13 @@ const Card: React.FC<ComProps> = ({ data, deleteable, icon, handleDelete }) => {
       }}
     >
       <div className={styles.cardItemTop}>
-        {data.icon || icon ? <img className={styles.icon} src={data.icon || icon} alt="" /> : null}
+        {data.icon || icon ? (
+          <img
+            className={styles.icon}
+            src={data.icon || icon}
+            style={{ borderRadius: iconBorderRadius, width: iconSize ? iconSize : undefined }}
+          />
+        ) : null}
         <div className={styles.title}>{data.name}</div>
       </div>
       <div className={styles.description}>{data.description}</div>

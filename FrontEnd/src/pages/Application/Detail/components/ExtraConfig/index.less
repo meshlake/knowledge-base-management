@@ -1,0 +1,40 @@
+.comContainer {
+  position: relative;
+  margin-top: 32px;
+  margin-bottom: 32px;
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    line-height: 32px;
+    margin-bottom: 12px;
+    .title {
+      font-size: 16px;
+      font-weight: 500;
+      .subTitle {
+        margin-left: 12px;
+        font-size: 12px;
+        font-weight: normal;
+      }
+    }
+  }
+  .editableForm {
+    :global {
+      .ant-form-item {
+        margin-bottom: 12px;
+      }
+    }
+  }
+  .switchItemList {
+    display: flex;
+    .switchItem {
+      display: flex;
+      align-items: center;
+      width: 40%;
+      min-width: 200px;
+      .switchItemLabel {
+        margin-right: 8px;
+      }
+    }
+  }
+}

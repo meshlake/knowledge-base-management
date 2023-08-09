@@ -65,7 +65,7 @@ const OrgForm = (props: OrgFormProps) => {
           label="机器人描述"
           rules={[{ required: true, message: '请输入' }]}
         >
-          <TextArea rows={4} placeholder="请输入" maxLength={255} />
+          <TextArea autoSize={{ minRows: 2, maxRows: 6 }} placeholder="请输入" maxLength={255} />
         </Form.Item>
       </Form>
     </Modal>
