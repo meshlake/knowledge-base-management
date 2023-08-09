@@ -16,9 +16,9 @@ type ManageableSecondaryTagProps = {
   model: KnowledgeBaseTagModel;
   mode?: 'create' | 'edit' | 'view';
   onCreated?: (model: KnowledgeBaseTagModel) => void;
-  onBlurred?: (model: KnowledgeBaseTagModel) => void;
-  onDeleted?: (model: KnowledgeBaseTagModel) => void;
   onChanged?: (model: KnowledgeBaseTagModel) => void;
+  onDeleted?: (model: KnowledgeBaseTagModel) => void;
+  onBlurred?: (model: KnowledgeBaseTagModel, mode: string) => void;
 };
 
 const { confirm } = Modal;
@@ -36,15 +36,14 @@ export default function ManageableSecondaryTag(props: ManageableSecondaryTagProp
   const [mode, setMode] = React.useState<'create' | 'edit' | 'view'>(initialMode);
 
   const onTagEditing = (e?: MouseEvent<HTMLSpanElement>) => {
+    console.debug(`Editing secondary tag ${model.name} (${model.id})...`);
     if (e) {
       e.stopPropagation();
       e.preventDefault();
     }
     if (mode === 'edit') {
-      console.log(`Edit mode already activated, item => ${model.id}`);
       return;
     }
-    console.log(`Edit mode activated, item => ${model.id}`);
     setMode('edit');
   };
 
@@ -53,7 +52,7 @@ export default function ManageableSecondaryTag(props: ManageableSecondaryTagProp
       e.stopPropagation();
       e.preventDefault();
     }
-    const modeFlag = model.id ? 'edit' : 'create';
+    const mode = model.id ? 'edit' : 'create';
     const toUpdateName = actionRef.current?.innerText?.trim();
     setMode(model.id || toUpdateName ? 'view' : 'create');
     if (toUpdateName && toUpdateName !== model.name) {
@@ -68,20 +67,26 @@ export default function ManageableSecondaryTag(props: ManageableSecondaryTagProp
             name: toUpdateName,
           } as KnowledgeBaseTagModel);
         })
-        .then(() => console.log(`Tag ${model.name} (${model.id}) updated to ${toUpdateName}`))
-        .then(() =>
-          modeFlag === 'create' ? tagCreatedCallback?.(model) : tagChangedCallback?.(model),
-        )
+        .then(() => {
+          if (mode === 'create') {
+            console.info(`Secondary tag ${toUpdateName} created`);
+          } else {
+            console.info(`Secondary tag ${model.name} (${model.id}) updated to ${toUpdateName}`);
+          }
+        })
+        .then(() => (mode === 'create' ? tagCreatedCallback?.(model) : tagChangedCallback?.(model)))
         .catch((err) => {
+          console.error(mode === 'create' ? '创建标签失败' : '更新标签失败');
           console.error(err);
           if (actionRef.current) {
             actionRef.current.innerText = model.name;
+            setMode(model.id || model.name ? 'view' : 'create');
           }
         })
-        .finally(() => tagBlurredCallback?.(model));
+        .finally(() => tagBlurredCallback?.(model, mode));
       return;
     }
-    tagBlurredCallback?.(model);
+    tagBlurredCallback?.(model, mode);
   };
 
   const onTagEditCancelled = (e?: MouseEvent<HTMLSpanElement>) => {
@@ -93,11 +98,9 @@ export default function ManageableSecondaryTag(props: ManageableSecondaryTagProp
       actionRef.current.innerText = model.name;
     }
     setMode(model.id ? 'view' : 'create');
-    console.log(`Tag ${model.name} (${model.id}) update cancelled`);
   };
 
   const onTagDelete = (e: MouseEvent<HTMLSpanElement>) => {
-    console.log(`Delete mode activated, item => ${model.id}`);
     e.stopPropagation();
     e.preventDefault();
     confirm({
@@ -108,15 +111,9 @@ export default function ManageableSecondaryTag(props: ManageableSecondaryTagProp
       onOk() {
         deleteKnowledgeBaseTag(model.knowledge_base_id, model.id)
           .then(() => tagDeletedCallback?.(model))
-          .then(() => console.log(`Tag ${model.name} (${model.id}) deleted`));
+          .then(() => console.info(`Secondary tag ${model.name} (${model.id}) deleted`));
       },
     });
-  };
-
-  const onTagCreating = (e: MouseEvent<HTMLSpanElement>) => {
-    e.stopPropagation();
-    e.preventDefault();
-    setMode('edit');
   };
 
   useEffect(() => {
@@ -161,7 +158,7 @@ export default function ManageableSecondaryTag(props: ManageableSecondaryTagProp
       )}
       {mode === 'create' && (
         <div className={styles.create}>
-          <PlusCircleFilled onClick={(e) => onTagCreating(e)} />
+          <PlusCircleFilled onClick={(e) => onTagEditing(e)} />
         </div>
       )}
     </div>
