@@ -4,7 +4,7 @@ from app.entities.users import User
 from app.dependencies import get_db
 from sqlalchemy.orm import Session
 from app.entities import applications
-from app.models.application import Application, ApplicationCreate, ApplicationUpdate
+from app.models.application import Application, ApplicationCreate, ApplicationUpdate, ApplicationWithChatbotDetail
 from app.service.user import get_current_user, oauth2_scheme
 import app.service.application as applicationService
 from app.db import engine
@@ -24,6 +24,16 @@ def get_all_applications(
         db: Session = Depends(get_db),
         user: User = Depends(get_current_user)):
     return applicationService.get_all_applications(db, user)
+
+
+@router.get("/applications/detail", dependencies=[Depends(oauth2_scheme)], response_model=ApplicationWithChatbotDetail)
+def get_application_by_api_key(
+    api_key: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
+):
+    print(api_key)
+    return applicationService.get_application_by_api_key(api_key, db, user)
 
 
 @router.get("/applications/{id}", dependencies=[Depends(oauth2_scheme)], response_model=Application)
