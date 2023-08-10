@@ -7,11 +7,12 @@ import styles from './index.less';
 
 type Props = {
   data?: Chatbot_API.Chatbot;
+  multiple?: boolean;
   updateRequest: (id: string, data: Chatbot_API.ChatbotUpdate) => Promise<void>;
 };
 
 const KnowledgeConfig: React.FC<Props> = (props) => {
-  const { data, updateRequest } = props;
+  const { data, multiple, updateRequest } = props;
   const [form] = Form.useForm();
   const [editable, setEditable] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -29,10 +30,10 @@ const KnowledgeConfig: React.FC<Props> = (props) => {
   };
 
   const resetForm = () => {
-    if (data?.knowledge_bases) {
+    if (Array.isArray(data?.knowledge_bases) && data?.knowledge_bases.length) {
       form.setFieldsValue({ list: data.knowledge_bases.map((item) => ({ id: item.id })) });
     } else {
-      form.setFieldsValue({ list: [] });
+      form.setFieldsValue({ list: [{ id: undefined }] });
     }
   };
 
@@ -83,6 +84,7 @@ const KnowledgeConfig: React.FC<Props> = (props) => {
 
   useEffect(() => {
     if (data && data.knowledge_bases.length === 0) {
+      form.setFieldsValue({ list: [{ id: '' }] });
       handleEdit();
     }
     resetForm();
@@ -135,14 +137,18 @@ const KnowledgeConfig: React.FC<Props> = (props) => {
                       ))}
                     </Select>
                   </Form.Item>
-                  <MinusCircleOutlined style={{ color: 'red' }} onClick={() => remove(name)} />
+                  {multiple ? (
+                    <MinusCircleOutlined style={{ color: 'red' }} onClick={() => remove(name)} />
+                  ) : null}
                 </div>
               ))}
-              <Form.Item style={{ marginTop: 24 }}>
-                <Button type="primary" ghost onClick={() => add()} block icon={<PlusOutlined />}>
-                  添加关联知识库
-                </Button>
-              </Form.Item>
+              {multiple ? (
+                <Form.Item style={{ marginTop: 24 }}>
+                  <Button type="primary" ghost onClick={() => add()} block icon={<PlusOutlined />}>
+                    添加关联知识库
+                  </Button>
+                </Form.Item>
+              ) : null}
             </>
           )}
         </Form.List>
