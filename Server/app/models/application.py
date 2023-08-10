@@ -1,6 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel, Field, validator
-from app.models.chatbot import ChatbotSimple
+from app.models.chatbot import ChatbotBase, ChatbotSimple
 from app.entities.applications import Category
 
 
@@ -58,3 +58,13 @@ class Application(BaseModel):
         elif isinstance(v, datetime):
             return int(v.timestamp() * 1000)
         return v
+
+class ApplicationWithChatbotDetail(BaseModel):
+    id: int
+    name: str
+    description: str
+    category: Category
+    chatbot: ChatbotBase = Field(None)
+
+    class Config:
+        orm_mode = True
