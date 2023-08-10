@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.models.userDto import User
 from app.models.chatbot import ChatbotBase, ChatbotUpdate
+from app.entities.applications import Application
 from app.entities.chatbots import Chatbot as ChatbotEntity
 from app.entities.knowledge_bases import KnowledgeBase as KnowledgeBaseEntity
 import app.crud.chatbot as chatbotCurd
@@ -74,6 +75,18 @@ def delete_chatbot(db: Session, user: User, id: int):
     if db_chatbot is None:
         raise HTTPException(
             status_code=404, detail=f"chatbot with id {id} not found")
+
+    applications = db.query(Application).filter(Application.chatbot_id == id).all()
+    if applications:
+        return {
+            "code": 400,
+            "message": "Cannot delete Chatbot record due to foreign key constraints"
+        }
+
     db.knowledge_bases = []
     db.delete(db_chatbot)
     db.commit()
+    return {
+        "code": 200,
+        "message": "Chatbot deleted successfully"
+    }

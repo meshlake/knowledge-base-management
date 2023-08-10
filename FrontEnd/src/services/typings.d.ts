@@ -3,6 +3,7 @@
 
 declare namespace DEFAULT_API {
   type Response<T> = {
+    code?: number;
     data: T;
   };
 

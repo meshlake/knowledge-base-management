@@ -51,6 +51,18 @@ export default [
     hideInMenu: true,
   },
   {
+    path: '/application',
+    name: '应用管理',
+    icon: 'appstore',
+    component: 'Application/List',
+  },
+  {
+    path: '/application/:id',
+    name: '应用详情',
+    component: 'Application/Detail',
+    hideInMenu: true,
+  },
+  {
     path: '*',
     layout: false,
     component: './404',

@@ -8,7 +8,7 @@ from sqlalchemy.event import listens_for
 class BaseModel:
 
     createdAt = Column(DateTime, default=datetime.utcnow, nullable=False)
-    
+
     updatedAt = Column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )

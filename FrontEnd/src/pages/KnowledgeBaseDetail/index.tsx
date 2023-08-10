@@ -8,6 +8,7 @@ import { KnowledgeBaseModel } from '@/pages/KnowledgeBase/types';
 import { getKnowledgeBase } from '@/services/knowledgeBase';
 import { useParams } from '@umijs/max';
 import { Spin } from 'antd';
+import TagManager from './components/TagManage';
 import { getFiles } from '@/services/file';
 import { CloseOutlined } from '@ant-design/icons';
 
@@ -22,31 +23,37 @@ const App: React.FC = () => {
   const params = useParams();
 
   const tabs = ['知识点列表', '知识点管理', '基础信息'];
+
   const [activeTab, setActiveTab] = useState(0);
   const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeBaseModel>({} as KnowledgeBaseModel); // 知识库基础信息
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [fileStatus, setFileStatus] = useState<FilesStatus>({} as FilesStatus); // 向量化中的文件
 
+  const toggleLabelManage = () => {
+    setActiveTab(3);
+  };
   const handleTabChange = (index: number) => {
     console.log(index);
     setActiveTab(index);
   };
 
   const getKnowledgeBaseData = async () => {
-    setLoading(true);
+    // setLoading(true);
     try {
       const { data: knowledgeBaseData } = await getKnowledgeBase(Number(params.id));
       setKnowledgeBase(knowledgeBaseData);
-      setLoading(false);
     } catch (error) {
       console.log(error);
+    } finally {
       setLoading(false);
     }
   };
 
   const handleRefreshStatus = () => {
     const knowledgeBaseId = Number(params.id);
-    if (!knowledgeBaseId) return;
+    if (!knowledgeBaseId) {
+      return;
+    }
     if (refreshTimer) {
       clearTimeout(refreshTimer);
     }
@@ -106,7 +113,22 @@ const App: React.FC = () => {
           )}
         </div>
       )}
-      <KnowledgeBaseTabs items={tabs} onChange={handleTabChange} />
+      {activeTab <= 2 ? (
+        <KnowledgeBaseTabs items={tabs} onChange={handleTabChange} />
+      ) : (
+        <div className={Styles.tagTitleContainer}>
+          <div
+            className={Styles.TagManagerBack}
+            onClick={() => {
+              setActiveTab(2);
+            }}
+          >
+            <img src="/imgs/backArrow.png" alt="" className={Styles.icon} />
+            <div>返回</div>
+          </div>
+          <div className={Styles.tagTitleItem}>标签管理</div>
+        </div>
+      )}
       <Spin spinning={loading}>
         {activeTab === 0 && (
           <KnowledgeList
@@ -115,8 +137,14 @@ const App: React.FC = () => {
             refresh={handleRefreshStatus}
           ></KnowledgeList>
         )}
-        {activeTab === 1 && <KnowledgeManage knowledgeBase={knowledgeBase}></KnowledgeManage>}
+        {activeTab === 1 && (
+          <KnowledgeManage
+            knowledgeBase={knowledgeBase}
+            toggleLabelManage={toggleLabelManage}
+          ></KnowledgeManage>
+        )}
         {activeTab === 2 && <KnowledgeBaseInfo knowledgeBase={knowledgeBase}></KnowledgeBaseInfo>}
+        {activeTab === 3 && <TagManager model={knowledgeBase}></TagManager>}
       </Spin>
     </div>
   );

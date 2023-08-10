@@ -4,6 +4,7 @@ import { history } from '@umijs/max';
 
 type TabsProps = {
   items: string[];
+  visible?: boolean;
   onChange?: (index: number) => void;
 };
 

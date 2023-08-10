@@ -1,0 +1,76 @@
+.TagManager {
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem 0 1rem 0;
+    height: 2rem;
+    font-size: large;
+    font-weight: 600;
+  }
+  .content {
+    display: flex;
+    width: 100%;
+    .tree {
+      width: 15rem;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #ebf1fd;
+      margin-right: 5rem;
+      padding-right: 1rem;
+      font-size: large;
+
+      > * + * {
+        margin-top: 1rem; /* 16px */
+      }
+
+      .title {
+        display: flex;
+
+        > * + * {
+          margin-left: 1rem; /* 16px */
+        }
+      }
+    }
+    .knowledgeList {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      .paginationWrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: absolute;
+        bottom: 40px;
+      }
+    }
+    .contenteditable {
+      display: inline-block;
+      margin: 0 0 1px;
+      padding: 0;
+      border-left: none;
+      border-right: none;
+      border-top: none;
+      border-bottom: 1px solid #dadce0;
+      cursor: text;
+      position: relative;
+      min-width: fit-content;
+      transition: border-color 0.5s ease-in-out;
+    }
+
+    .contenteditable:focus {
+      border-bottom: 2px solid #1a73e8;
+      background: transparent;
+      margin-bottom: 0;
+    }
+
+    .contenteditable:focus-visible {
+      outline: none;
+    }
+  }
+  .action {
+    font-size: small;
+    font-weight: 600;
+    cursor: pointer;
+  }
+}

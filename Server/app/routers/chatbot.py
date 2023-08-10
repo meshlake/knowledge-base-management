@@ -62,5 +62,4 @@ def delete_chatbot(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user)
 ):
-    chatbotService.delete_chatbot(db, user, id)
-    return {"message": "success"}
+    return chatbotService.delete_chatbot(db, user, id)

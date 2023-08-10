@@ -1,0 +1,42 @@
+.TagItem {
+  display: flex;
+  font-size: medium;
+  // cursor: text;
+
+  .TagTitle {
+    min-width: 5rem;
+    min-height: 2rem;
+    padding: 0.25rem 0.5rem;
+    transition: all 0.2s ease 0s;
+    :focus {
+      background: transparent;
+    }
+  }
+
+  .actions {
+    display: none;
+    align-items: center;
+    cursor: pointer;
+    padding-right: 0.5rem;
+
+    > * + * {
+      --tw-space-x-reverse: 0;
+      margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+      margin-right: calc(0.5rem * var(--tw-space-x-reverse));
+    }
+  }
+
+  .TagItemAction {
+    width: 0.75rem;
+  }
+
+  > * + * {
+    --tw-space-x-reverse: 0;
+    margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+    margin-right: calc(0.5rem * var(--tw-space-x-reverse));
+  }
+}
+
+.TagItem:hover .actions {
+  display: flex;
+}

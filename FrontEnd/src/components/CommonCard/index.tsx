@@ -2,8 +2,28 @@ import React, { useState } from 'react';
 import styles from './index.less';
 import { DeleteOutlined } from '@ant-design/icons';
 
-const CardItem: React.FC<{ data: Chatbot_API.Chatbot; handleDelete: () => void }> = ({
+type CommonData = {
+  id: string;
+  name: string;
+  description: string;
+  icon?: string;
+};
+
+type ComProps = {
+  data: CommonData;
+  icon?: string;
+  iconSize?: number;
+  iconBorderRadius?: number;
+  deleteable?: boolean;
+  handleDelete?: () => void;
+};
+
+const Card: React.FC<ComProps> = ({
   data,
+  deleteable,
+  icon,
+  iconBorderRadius,
+  iconSize,
   handleDelete,
 }) => {
   const [active, setActive] = useState(false);
@@ -19,17 +39,23 @@ const CardItem: React.FC<{ data: Chatbot_API.Chatbot; handleDelete: () => void }
       }}
     >
       <div className={styles.cardItemTop}>
-        <img className={styles.icon} src="/images/chatbot_icon.png" alt="" />
+        {data.icon || icon ? (
+          <img
+            className={styles.icon}
+            src={data.icon || icon}
+            style={{ borderRadius: iconBorderRadius, width: iconSize ? iconSize : undefined }}
+          />
+        ) : null}
         <div className={styles.title}>{data.name}</div>
       </div>
       <div className={styles.description}>{data.description}</div>
-      {active ? (
+      {active && deleteable ? (
         <div className={styles.actions}>
           <DeleteOutlined
             style={{ fontSize: 20, color: '#F40909' }}
             onClick={(e) => {
               e.stopPropagation();
-              handleDelete();
+              handleDelete?.();
             }}
           />
         </div>
@@ -38,4 +64,4 @@ const CardItem: React.FC<{ data: Chatbot_API.Chatbot; handleDelete: () => void }
   );
 };
 
-export default CardItem;
+export default Card;

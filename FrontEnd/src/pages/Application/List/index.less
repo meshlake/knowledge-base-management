@@ -1,0 +1,28 @@
+.pageContainer {
+  position: relative;
+  background-color: #fff;
+  .cardItem {
+    :global {
+      .ant-pro-card {
+        border-radius: 15px;
+      }
+    }
+  }
+
+  .moduleHeader {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    .moduleIcon {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+    }
+    .moduleDescription {
+      margin-left: 8px;
+      font-size: 14px;
+      opacity: 0.8;
+      font-weight: normal;
+    }
+  }
+}

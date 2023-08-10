@@ -2,6 +2,8 @@ declare namespace KnowledgeBase {
   interface BaseModel {
     id: int;
     name: string;
+    createdAt?: int;
+    updatedAt?: int;
   }
 
   interface ContentItemRender<T extends KnowledgeBase.BaseModel> {

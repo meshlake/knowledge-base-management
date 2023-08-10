@@ -7,7 +7,7 @@ import BaseInfo from './components/BaseInfo';
 import Configuration from './components/Configuration';
 import styles from './index.less';
 
-const App: React.FC = () => {
+const Chatbot: React.FC = () => {
   const params = useParams();
 
   const tabs = ['模型配置', '基础信息'];
@@ -74,4 +74,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default Chatbot;

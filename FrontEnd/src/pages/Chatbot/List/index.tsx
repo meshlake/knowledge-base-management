@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Modal } from 'antd';
+import { Modal, notification } from 'antd';
 import { history } from '@umijs/max';
 import { ActionType, PageContainer, ProList } from '@ant-design/pro-components';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { getChatbotList, deleteChatbot } from '@/services/chatbot';
+import CommonCard from '@/components/CommonCard';
 import AddForm from './components/AddForm';
-import CardItem from './components/CardItem';
-import AddCard from './components/AddCard';
 import styles from './index.less';
 
 const ChatbotList = () => {
@@ -31,9 +30,18 @@ const ChatbotList = () => {
       okText: '确定删除',
       cancelText: '取消',
       onOk() {
-        return deleteChatbot(bot.id).then(() => {
-          handleRefresh();
-        });
+        return deleteChatbot(bot.id)
+          .then((response) => {
+            if (response.code === 200) {
+              handleRefresh();
+            } else if (response.code === 400) {
+              notification.error({
+                message: '删除失败',
+                description: '机器人已被应用绑定，请先解除绑定',
+              });
+            }
+          })
+          .catch(() => {});
       },
       onCancel() {},
     });
@@ -61,25 +69,34 @@ const ChatbotList = () => {
         request={async () => {
           const list = await getChatbotList();
           return {
-            data: [...list, { id: '', name: '' }],
+            data: [...list, { id: '', name: '' } as Chatbot_API.Chatbot],
           };
         }}
         metas={{
           content: {
             render: (i, item: Chatbot_API.Chatbot) => {
-              if (item.id) {
-                return (
-                  <CardItem
-                    key={item.id}
-                    data={item}
-                    handleDelete={() => {
-                      handleDelete(item);
-                    }}
-                  />
-                );
-              } else {
-                return <AddCard />;
-              }
+              return item.id ? (
+                <CommonCard
+                  key={item.id}
+                  data={item}
+                  deleteable
+                  handleDelete={() => handleDelete(item)}
+                  icon="/images/chatbot_icon.png"
+                  iconBorderRadius={0}
+                />
+              ) : (
+                <CommonCard
+                  key={item.id}
+                  data={{
+                    id: '',
+                    name: '添加机器人',
+                    description: '基于业务需要创建机器人，选择对应知识库，进行训练与调试。',
+                  }}
+                  icon="/images/add_icon.png"
+                  iconSize={30}
+                  iconBorderRadius={0}
+                />
+              );
             },
           },
         }}
