@@ -4,10 +4,12 @@ import { Button, Col, Pagination, Row, Spin, Tree } from 'antd';
 import { FileOutlined } from '@ant-design/icons';
 import type { DataNode } from 'antd/es/tree';
 import KnowledgeItem from '../KnowledgeItem';
-import { KnowledgeBaseModel } from '@/pages/KnowledgeBase/types';
+import { KnowledgeBaseModel, KnowledgeBaseTagModel } from '@/pages/KnowledgeBase/types';
 import { getFiles } from '@/services/file';
 import { useParams } from '@umijs/max';
 import { getKnowledgeItems } from '@/services/knowledgeItem';
+import { getKnowledgeBaseTags } from '@/services/knowledgeBaseTags';
+import { HierarchyTagModel } from '../../types';
 
 type TPagination = Omit<DEFAULT_API.Paginate<any>, 'items'>;
 
@@ -20,21 +22,7 @@ const treeData: DataNode[] = [
   {
     title: '标签分类',
     key: '0-0',
-    selectable: false,
-    children: [
-      {
-        title: '申报业务',
-        key: '0-0-0',
-        children: [
-          { title: 'leaf', key: '0-0-0-0', icon: null },
-          {
-            title: '印花税',
-            key: '0-0-0-1',
-          },
-          { title: 'leaf', key: '0-0-0-2' },
-        ],
-      },
-    ],
+    children: [],
   },
 ];
 
@@ -139,7 +127,62 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
     }
   };
 
+  const transformToTagHierarchy = (tags: KnowledgeBaseTagModel[]): HierarchyTagModel[] => {
+    const result: HierarchyTagModel[] = [];
+    const tagMap: Map<string, HierarchyTagModel> = new Map<string, HierarchyTagModel>();
+    tags.forEach((tag) => {
+      if (tag.parent_id === null || tag.parent_id <= 0) {
+        const hierarchyTag: HierarchyTagModel = {
+          ...tag,
+          children: [],
+        };
+        result.push(hierarchyTag);
+        tagMap.set(tag.id, hierarchyTag);
+      } else {
+        const parentTag = tagMap.get(tag.parent_id);
+        if (parentTag) {
+          parentTag.children.push({
+            ...tag,
+            children: [],
+          } as HierarchyTagModel);
+        }
+      }
+    });
+    return result;
+  };
+
+  const transformToDataNode = (tag: HierarchyTagModel): DataNode => {
+    return {
+      title: tag.name,
+      key: tag.id,
+    } as DataNode;
+  };
+
+  const transformToDataNodes = (tags: HierarchyTagModel[]): DataNode[] => {
+    if (!tags) {
+      return [];
+    }
+    return tags.map((tag) => {
+      return {
+        ...transformToDataNode(tag),
+        children: transformToDataNodes(tag.children),
+      };
+    });
+  };
+
+  const fetchKnowledgeTags = async () => {
+    getKnowledgeBaseTags(knowledgeBase.id)
+      .then((res) => res.items)
+      .then((tags) => transformToTagHierarchy(tags))
+      .then((tags) => {
+        treeData[0].children = transformToDataNodes(tags);
+        return [...treeData];
+      })
+      .then((nodes) => setTree(nodes));
+  };
+
   useEffect(() => {
+    fetchKnowledgeTags();
     getFileList();
     getAllKnowledgeItems();
   }, []);
@@ -162,7 +205,7 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
           <Tree
             showLine={true}
             showIcon={false}
-            defaultExpandedKeys={['0-0-0']}
+            defaultExpandedKeys={['0-0']}
             onSelect={onSelect}
             treeData={tree}
           />

@@ -3,6 +3,7 @@ import Styles from './index.less';
 import { Skeleton, Tree } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import { KnowledgeBaseModel, KnowledgeBaseTagModel } from '@/pages/KnowledgeBase/types';
+import { HierarchyTagModel } from '@/pages/KnowledgeBaseDetail/types';
 import { getKnowledgeBaseTags } from '@/services/knowledgeBaseTags';
 import ManagableTagItem from '@/components/ManagableTagItem';
 import { PlusOutlined } from '@ant-design/icons';
@@ -11,10 +12,6 @@ import SecondaryTagManager from '../SecondaryTagManage';
 type TagManagerProps = {
   model: KnowledgeBaseModel;
 };
-
-interface HierarchyTagModel extends KnowledgeBaseTagModel {
-  children: HierarchyTagModel[];
-}
 
 const transformToTagHierarchy = (tags: KnowledgeBaseTagModel[]): HierarchyTagModel[] => {
   const result: HierarchyTagModel[] = [];
