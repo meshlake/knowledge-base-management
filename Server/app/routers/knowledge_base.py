@@ -124,29 +124,25 @@ def get(id: int, db: Session = Depends(get_db)):
 def create_one_piece_of_knowledge(
     id: int, model: KnowledgeItem, user: User = Depends(get_current_user)
 ):
-    knowledge_item = create_knowledge_item(id, user, model)
-    return {"data": knowledge_item}
+    knowledge_item, is_need_review = create_knowledge_item(id, user, model)
+    return {"data": {**knowledge_item.__dict__, "isNeedReview": is_need_review}}
 
 
 @router.get("/knowledge_bases/{id}/item", dependencies=[Depends(oauth2_scheme)])
-def get_knowledge(id: int, filepath: Union[str, None] = None ,page: int = 1, size: int = 15):
+def get_knowledge(
+    id: int, filepath: Union[str, None] = None, page: int = 1, size: int = 15
+):
     knowledge_items = get_knowledge_items(id, page, size, filepath)
     return knowledge_items
 
 
-@router.put(
-    "/knowledge_bases/item/{item_id}", 
-    dependencies=[Depends(oauth2_scheme)]
-)
+@router.put("/knowledge_bases/item/{item_id}", dependencies=[Depends(oauth2_scheme)])
 def update_knowledge_item(item_id: int, model: KnowledgeItem):
     knowledge_item = update_knowledge_item_service(item_id, model)
     return {"data": knowledge_item}
 
 
-@router.delete(
-    "/knowledge_bases/item/{item_id}", 
-    dependencies=[Depends(oauth2_scheme)]
-)
+@router.delete("/knowledge_bases/item/{item_id}", dependencies=[Depends(oauth2_scheme)])
 def delete_knowledge_item(item_id: int):
     delete_knowledge_item_service(item_id)
     return {"data": "success"}

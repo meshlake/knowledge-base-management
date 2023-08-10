@@ -11,6 +11,7 @@ from .routers import (
     knowledge_base,
     chatbot,
     file_manage,
+    review,
     application,
     wechat_bot,
 )
@@ -38,6 +39,7 @@ app.include_router(knowledge_base.router)
 app.include_router(chatbot.router)
 app.include_router(application.router)
 app.include_router(file_manage.router)
+app.include_router(review.router)
 app.include_router(wechat_bot.router)
 
 
