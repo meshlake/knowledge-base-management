@@ -1,13 +1,7 @@
 from __future__ import annotations
 
 from langchain.vectorstores.supabase import SupabaseVectorStore
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Iterable,
-    List,
-    Optional
-)
+from typing import TYPE_CHECKING, Any, Iterable, List, Optional
 
 from langchain.docstore.document import Document
 from langchain.embeddings.base import Embeddings
@@ -18,9 +12,8 @@ if TYPE_CHECKING:
 
 
 class CustomizeSupabaseVectorStore(SupabaseVectorStore):
-
     def limit_size_add_documents(
-        self, documents: List[Document], knowledge_base_id: int, **kwargs: Any
+        self, documents: List[Document], **kwargs: Any
     ) -> List[str]:
         """Run more documents through the embeddings and add to the vectorstore.
 
@@ -33,12 +26,15 @@ class CustomizeSupabaseVectorStore(SupabaseVectorStore):
         # TODO: Handle the case where the user doesn't provide ids on the Collection
         texts = [doc.page_content for doc in documents]
         metadatas = [doc.metadata for doc in documents]
-        return self.limit_size_add_texts(texts, metadatas, knowledge_base_id, **kwargs)
+        return self.limit_size_add_texts(
+            texts=texts,
+            metadatas=metadatas,
+            **kwargs,
+        )
 
     def limit_size_add_texts(
         self,
         texts: Iterable[str],
-        knowledge_base_id: int,
         metadatas: Optional[List[dict[Any, Any]]] = None,
         **kwargs: Any,
     ) -> List[str]:
@@ -46,7 +42,9 @@ class CustomizeSupabaseVectorStore(SupabaseVectorStore):
 
         vectors = self._embedding.embed_documents(list(texts))
 
-        new_vectors, new_docs = query_similar_knowledge(vectors, docs, knowledge_base_id)
+        new_vectors, new_docs = query_similar_knowledge(
+            vectors, docs
+        )
 
         return self.limit_size_add_vectors(new_vectors, new_docs)
 

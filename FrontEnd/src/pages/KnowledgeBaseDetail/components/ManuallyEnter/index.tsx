@@ -39,8 +39,12 @@ const App: React.FC<ManuallyEnterProps> = (props) => {
   const handleCreate = async (formValues: any) => {
     setLoading(true);
     try {
-      await createKnowledgeItem(Number(params.id), { content: formValues.content });
-      notification.success({ message: '创建成功' });
+      const res = await createKnowledgeItem(Number(params.id), { content: formValues.content });
+      if (res.data.isNeedReview) {
+        notification.warning({ message: '新建知识点存在重复情况，请等待审核员处理' });
+      } else {
+        notification.success({ message: '创建成功' });
+      }
       onClose(true);
       setLoading(false);
     } catch (error) {

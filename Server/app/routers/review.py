@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends
-from app.entities import similar_knowledge
+from fastapi_pagination import Page
+from app.entities.similar_knowledge import SimilarKnowledge
+from app.models.similar_knowledge import SimilarKnowledge as SimilarKnowledgeModel
 from sqlalchemy.orm import Session
 from app.dependencies import get_db
 from app.models.enums import ReviewType
@@ -16,17 +18,17 @@ router = APIRouter(
 
 
 # 获取相似知识分页
-@router.get("/review")
+@router.get("/review", response_model=Page[SimilarKnowledgeModel])
 def get_similar_knowledge(db: Session = Depends(get_db)):
     return paginate(
         db,
-        select(similar_knowledge.SimilarKnowledge).order_by(
-            similar_knowledge.SimilarKnowledge.createdAt.desc()
-        ),
+        select(SimilarKnowledge).order_by(SimilarKnowledge.createdAt.desc()),
     )
 
 
 @router.put("/review/{id}")
-def review_knowledge(id: int, type: ReviewType, db: Session = Depends(get_db)):
-    update_review_item(id=id, type=type, db=db)
-    return {}
+def review_knowledge(
+    id: int, action: str, db: Session = Depends(get_db)
+):
+    update_review_item(id=id, action=action, db=db)
+    return {"data": True}

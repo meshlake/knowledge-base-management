@@ -19,3 +19,4 @@ class ReviewType(Enum):
     NEGLECT = "NEGLECT"
     REPLACE = "REPLACE"
     FUSION = "FUSION"
+    ADD = "ADD"

@@ -11,8 +11,6 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
     data: { content, metadata },
   } = props;
 
-  const fromDisplay = metadata.type === 'MANUALLY' ? '手动录入' : metadata.source;
-
   return (
     <Card
       hoverable
@@ -22,7 +20,7 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
       <div className={Styles.knowledgeItemContent}>
         <p>{content}</p>
         <div className={Styles.footer}>
-          <div>上传者：{fromDisplay}</div>
+          <div>上传者：{metadata.user.nickname}</div>
           {metadata.tags?.length && metadata.tags?.length > 0 ? (
             <Tag color="#D9F0FD" className={Styles.normalTags}>
               {metadata.tags[0]}

@@ -11,15 +11,7 @@ from langchain.docstore.document import Document
 from app.models.enums import FileStatus, KnowledgeItemType
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from app.service.file_manage import update_file_status
-from app.service.review import query_similar_knowledge
-
-def create_embedding_client():
-    os.environ["OPENAI_API_TYPE"] = "azure"
-    os.environ["OPENAI_API_BASE"] = os.getenv("AZURE_OPENAI_API_BASE")
-    os.environ["OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")
-    os.environ["OPENAI_API_VERSION"] = "2023-05-15"
-    embeddings = OpenAIEmbeddings(deployment="text-embedding-ada-002", chunk_size=1)
-    return embeddings
+from app.service.embedding_client import create_embedding_client
 
 
 def create_knowledge_item(
@@ -36,15 +28,14 @@ def create_knowledge_item(
         "tags": model.tags,
     }
     docs = [Document(page_content=model.content, metadata=metadata)]
-    CustomizeSupabaseVectorStore.limit_size_add_documents(vector_store, documents=docs, knowledge_base_id=knowledge_base_id)
+    ids = CustomizeSupabaseVectorStore.limit_size_add_documents(vector_store, documents=docs)
     logging.info(f"knowledge item created: {model}")
-    return model
+    return model, len(ids) == 0
 
 
 def get_knowledge_items(
     knowledge_base_id: int, page: int, size: int, filepath: str = None
 ):
-    print(filepath)
     supabase = create_supabase_client()
     offset = (page - 1) * size
     if filepath:
@@ -152,7 +143,7 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
 
         vector_store = CustomizeSupabaseVectorStore(supabase, embeddings, "knowledge")
 
-        CustomizeSupabaseVectorStore.limit_size_add_documents(vector_store, documents=docs, knowledge_base_id=knowledge_base_id)
+        CustomizeSupabaseVectorStore.limit_size_add_documents(vector_store, documents=docs)
 
         db = next(get_db())
         update_file_status(db=db, filepath=filepath, status=FileStatus.SUCCESS)

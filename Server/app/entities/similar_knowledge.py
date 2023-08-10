@@ -18,6 +18,9 @@ class SimilarKnowledge(Base, BaseModel):
     status = Column(String(255))
     source = Column(String(255))
 
+    new_knowledge_user = relationship("User", backref="new_knowledge_user", foreign_keys="SimilarKnowledge.new_knowledge_user_id")
+    old_knowledge_user = relationship("User", backref="old_knowledge_user", foreign_keys="SimilarKnowledge.old_knowledge_user_id")
+
     __table_args__ = {
         "mysql_charset": "utf8mb4",
     }
