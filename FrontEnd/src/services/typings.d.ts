@@ -14,4 +14,9 @@ declare namespace DEFAULT_API {
     size: number;
     pages: number;
   };
+
+  type PageParams = {
+    page: number;
+    size: number;
+  };
 }

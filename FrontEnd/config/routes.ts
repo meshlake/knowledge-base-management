@@ -51,6 +51,12 @@ export default [
     hideInMenu: true,
   },
   {
+    path: '/chat',
+    name: '对话',
+    icon: 'message',
+    component: 'Chat',
+  },
+  {
     path: '/application',
     name: '应用管理',
     icon: 'appstore',
