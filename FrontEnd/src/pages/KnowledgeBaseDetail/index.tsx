@@ -114,13 +114,13 @@ const App: React.FC = () => {
         </div>
       )}
       {activeTab <= 2 ? (
-        <KnowledgeBaseTabs items={tabs} onChange={handleTabChange} />
+        <KnowledgeBaseTabs items={tabs} onChange={handleTabChange} activeIndex={activeTab} />
       ) : (
         <div className={Styles.tagTitleContainer}>
           <div
             className={Styles.TagManagerBack}
             onClick={() => {
-              setActiveTab(2);
+              setActiveTab(1);
             }}
           >
             <img src="/imgs/backArrow.png" alt="" className={Styles.icon} />

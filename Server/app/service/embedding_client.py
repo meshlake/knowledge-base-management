@@ -1,6 +1,9 @@
 
 import os
 from langchain.embeddings import OpenAIEmbeddings
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def create_embedding_client():
     os.environ["OPENAI_API_TYPE"] = "azure"

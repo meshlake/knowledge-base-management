@@ -16,7 +16,7 @@ from unstructured.documents.elements import Element, ElementMetadata, Table
 import pandas as pd
 import lxml.html
 
-from .xlsx_loader import xlsx_loader
+from .xlsx_loader import xlsx_loader, csv_loader
 
 load_dotenv()
 
@@ -54,6 +54,8 @@ class S3FileLoader(BaseLoader):
                 elements: List[Element] = []
                 if (filetype == FileType.XLSX) or (filetype == FileType.XLS):
                     elements = xlsx_loader(file_path)
+                elif filetype == FileType.CSV:
+                    elements = csv_loader(file_path)
                 else:
                     elements = loader.load()
                 metadata = loader._get_metadata()

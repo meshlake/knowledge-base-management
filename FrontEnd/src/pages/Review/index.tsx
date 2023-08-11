@@ -130,7 +130,9 @@ const App: React.FC = () => {
                         <Button type="link" onClick={() => handleReview(item.id, 'REPLACE')}>
                           替换
                         </Button>
-                        <Button type="link">合并</Button>
+                        <Button type="link" onClick={() => handleReview(item.id, 'FUSION')}>
+                          合并
+                        </Button>
                         <Button type="link" onClick={() => handleReview(item.id, 'NEGLECT')}>
                           放弃
                         </Button>

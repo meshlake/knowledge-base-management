@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Styles from './index.less';
 import { history } from '@umijs/max';
 
@@ -6,11 +6,11 @@ type TabsProps = {
   items: string[];
   visible?: boolean;
   onChange?: (index: number) => void;
+  activeIndex: number;
 };
 
 const App: React.FC<TabsProps> = (props) => {
-  const { items, onChange } = props;
-  const [activeIndex, setActiveIndex] = useState(0);
+  const { items, onChange, activeIndex } = props;
 
   const handleBack = () => {
     history.push('/knowledgeBase');
@@ -30,7 +30,6 @@ const App: React.FC<TabsProps> = (props) => {
               if (onChange) {
                 onChange(index);
               }
-              setActiveIndex(index);
             }}
             className={Styles.tab}
             style={activeIndex === index ? { background: '#3d73ec', color: '#fff' } : {}}
