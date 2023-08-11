@@ -77,3 +77,17 @@ def persist_message(
     
     return entity
 
+def ask_bot(
+    db: Session,
+    model: MessageCreateModel,
+    conversation: ConversationEntity,
+) -> MessageCreateModel:
+    "TODO: Implement asking bot for user message"
+    
+    result = MessageCreateModel(
+        content=f"[Bot] {model.content}",
+        role="bot",
+    )
+
+    return result
+

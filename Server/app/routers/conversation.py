@@ -19,7 +19,8 @@ from app.service.user import (
 from app.service.conversation import (
     fetch_conversations,
     fetch_conversation,
-    persist_message
+    persist_message, 
+    ask_bot
 )
 
 router = APIRouter(
@@ -98,9 +99,12 @@ def send_message(
 ): 
     conversation = fetch_conversation(db, id, user)
     user_message = persist_message(db, model, conversation)
-
+    bot_reply = ask_bot(db, model, conversation)
+    bot_message = persist_message(db, bot_reply, conversation) if bot_reply else None
+    messages = [user_message, bot_message] if bot_message else [user_message]
     return Page(
-        items=[user_message],
+        items=messages,
+        size=len(messages),
         page=1,
         total=1
     )
