@@ -2,11 +2,6 @@ from pydantic import BaseModel, Field, validator
 from datetime import datetime
 
 class AppBaseModel(BaseModel): 
-    userId: int = Field(
-        -1,
-        alias="user_id",
-        description="user id of the user who created the knowledge base",
-    )
     createdAt: int = Field(
         0, description="time in milliseconds since epoch when the base was created"
     )
