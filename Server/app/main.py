@@ -14,6 +14,7 @@ from .routers import (
     review,
     application,
     wechat_bot,
+    conversation
 )
 from fastapi_pagination import add_pagination
 from fastapi.routing import APIRoute
@@ -41,6 +42,7 @@ app.include_router(application.router)
 app.include_router(file_manage.router)
 app.include_router(review.router)
 app.include_router(wechat_bot.router)
+app.include_router(conversation.router)
 
 
 add_pagination(app)

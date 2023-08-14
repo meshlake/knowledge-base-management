@@ -49,3 +49,8 @@ class KnowledgeBaseTag(AppBaseModel):
     knowledgeBaseId: int = Field(None, alias="knowledge_base_id", description="knowledge base id")
     parentId: int = Field(None, alias="parent_id", description="parent knowledge base tag id")
     description: str = Field(None, description="description for the knowledge base tag")
+    userId: int = Field(
+        -1,
+        alias="user_id",
+        description="user id of the user who created the knowledge base",
+    )
