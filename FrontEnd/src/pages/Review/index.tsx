@@ -5,12 +5,15 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import KnowledgeItem from './components/KnowledgeItem';
 import { get_review_items, review } from '@/services/review/api';
 import { CheckOutlined } from '@ant-design/icons';
+import { getKnowledgeBaseAllTags } from '@/services/knowledgeBaseTags';
+import { KnowledgeBaseTagModel } from '../KnowledgeBase/types';
 
 const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<REVIEW_API.SimilarKnowledge[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [tags, setTags] = useState<KnowledgeBaseTagModel[]>([]);
 
   const loadMoreData = async () => {
     if (loading) {
@@ -49,6 +52,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     loadMoreData();
+    getKnowledgeBaseAllTags().then((res) => {
+      setTags(res);
+    });
   }, []);
 
   return (
@@ -107,6 +113,7 @@ const App: React.FC = () => {
                           user: item.new_knowledge_user,
                         },
                       }}
+                      tags={tags}
                     ></KnowledgeItem>
                   </Col>
                   <Col span={9}>
@@ -119,6 +126,7 @@ const App: React.FC = () => {
                           user: item.old_knowledge_user,
                         },
                       }}
+                      tags={tags}
                     ></KnowledgeItem>
                   </Col>
                   <Col span={2} className={Styles.listContent}>

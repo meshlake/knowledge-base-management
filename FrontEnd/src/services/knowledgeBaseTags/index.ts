@@ -51,3 +51,15 @@ export function deleteKnowledgeBaseTag(id: number, tagId: number) {
     },
   });
 }
+
+export function getKnowledgeBaseAllTags(knowledgeBaseId?: number) {
+  return request<KnowledgeBaseTagModel[]>(`/knowledge_bases/tags/all`, {
+    method: 'GET',
+    params: {
+      knowledge_base_id: knowledgeBaseId,
+    },
+    headers: {
+      authorization: 'Bearer ' + localStorage.getItem('access_token'),
+    },
+  });
+}

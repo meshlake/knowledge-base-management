@@ -1,4 +1,5 @@
 import logging
+from typing import Union
 
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -73,6 +74,19 @@ def get_knowledge_base_tags(
         query = query.filter(KnowledgeBaseTagEntity.parent_id == parent_id)
     query.order_by(KnowledgeBaseTagEntity.createdAt.desc())
     return paginate(db, query)
+
+def get_knowledge_base_tags_all(
+        db: Session, 
+        knowledge_base_id: Union[int, None] = None,
+) -> Page[KnowledgeBaseTagModel]:
+    
+    logging.debug("Fetching all tags")
+    query = db.query(KnowledgeBaseTagEntity)
+    if knowledge_base_id is not None:
+        query = query.filter(KnowledgeBaseTagEntity.knowledge_base_id == knowledge_base_id)
+    query = query.filter(KnowledgeBaseTagEntity.parent_id != None)
+    query.order_by(KnowledgeBaseTagEntity.createdAt.desc())
+    return query.all()
 
 def get_knowledge_base_tag(
     db: Session,

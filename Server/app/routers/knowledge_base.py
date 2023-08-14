@@ -4,9 +4,7 @@ from sqlalchemy import select
 from fastapi import APIRouter, Depends
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
-from app.entities.knowledge_bases import (
-    KnowledgeBase as KnowledgeBaseEntity
-)
+from app.entities.knowledge_bases import KnowledgeBase as KnowledgeBaseEntity
 from app.models.knowledge_base import (
     KnowledgeBase as KnowledgeBaseModel,
     KnowledgeBaseUpdate,
@@ -20,11 +18,12 @@ from app.service.knowledge_base import (
     create_knowledge_base,
     get_knowledge_base,
     update_knowledge_base,
-    create_knowledge_base_tag, 
-    get_knowledge_base_tags, 
+    create_knowledge_base_tag,
+    get_knowledge_base_tags,
     get_knowledge_base_tag,
     partial_update_tag_by_id,
     delete_tag_by_id,
+    get_knowledge_base_tags_all,
 )
 
 from app.service.knowledge_item import (
@@ -149,81 +148,66 @@ def delete_knowledge_item(item_id: int):
 
 
 @router.get(
-    "/knowledge_bases/{id}/tags", 
+    "/knowledge_bases/{id}/tags",
     response_model=Page[KnowledgeBaseTagModel],
-    dependencies=[Depends(oauth2_scheme)]
+    dependencies=[Depends(oauth2_scheme)],
 )
 def retrieve_knowledge_base_tags(
-    id: int,
-    parent_id: Union[int, None] = None,
-    db: Session = Depends(get_db)
+    id: int, parent_id: Union[int, None] = None, db: Session = Depends(get_db)
 ):
     return get_knowledge_base_tags(db, id, parent_id)
+
 
 @router.get(
     "/knowledge_bases/{id}/tags/{tag_id}",
     response_model=KnowledgeBaseTagModel,
-    dependencies=[Depends(oauth2_scheme)]
+    dependencies=[Depends(oauth2_scheme)],
 )
-def retrieve_knowledge_base_tag(
-    id: int,
-    tag_id: int,
-    db: Session = Depends(get_db)
-):
-   return get_knowledge_base_tag(db, tag_id, id)
+def retrieve_knowledge_base_tag(id: int, tag_id: int, db: Session = Depends(get_db)):
+    return get_knowledge_base_tag(db, tag_id, id)
+
 
 @router.post(
     "/knowledge_bases/{knowledge_base_id}/tags",
     response_model=KnowledgeBaseTagModel,
-    dependencies=[Depends(oauth2_scheme)]
+    dependencies=[Depends(oauth2_scheme)],
 )
 def post_kb_tags(
     knowledge_base_id: int,
     model: KnowledgeBaseTagModel,
-    db: Session = Depends(get_db), 
-    user: User = Depends(get_current_user)
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
-    return create_knowledge_base_tag(
-        db, 
-        knowledge_base_id, 
-        model,
-        user
-    )
+    return create_knowledge_base_tag(db, knowledge_base_id, model, user)
+
 
 @router.patch(
     "/knowledge_bases/{knowledge_base_id}/tags/{tag_id}",
-    dependencies=[Depends(oauth2_scheme)]
+    dependencies=[Depends(oauth2_scheme)],
 )
 def partial_update_kb_tag(
     knowledge_base_id: int,
     tag_id: int,
     model: KnowledgeBaseTagModel,
-    db: Session = Depends(get_db)
-): 
-    result = partial_update_tag_by_id(
-        db, 
-        knowledge_base_id, 
-        tag_id,
-        model
-    )
+    db: Session = Depends(get_db),
+):
+    result = partial_update_tag_by_id(db, knowledge_base_id, tag_id, model)
     if result:
         logging.info(f"tag {tag_id} updated")
-    return {
-        "message": "tag updated"
-    }
+    return {"message": "tag updated"}
+
 
 @router.delete(
     "/knowledge_bases/{knowledge_base_id}/tags/{tag_id}",
-    dependencies=[Depends(oauth2_scheme)]
+    dependencies=[Depends(oauth2_scheme)],
 )
-def delete_kb_tag(
-    knowledge_base_id: int,
-    tag_id: int,
-    db: Session = Depends(get_db)
-): 
+def delete_kb_tag(knowledge_base_id: int, tag_id: int, db: Session = Depends(get_db)):
     count = delete_tag_by_id(db, tag_id, knowledge_base_id)
     if count > 0:
         logging.info(f"tag {tag_id} or all tags associated with {tag_id} deleted")
-    return {
-        "message": "tag deleted"
-    }
+    return {"message": "tag deleted"}
+
+
+@router.get("/knowledge_bases/tags/all", dependencies=[Depends(oauth2_scheme)])
+def retrieve_knowledge_base_tags_all(knowledge_base_id: int | None = None, db: Session = Depends(get_db)):
+    return get_knowledge_base_tags_all(db, knowledge_base_id)

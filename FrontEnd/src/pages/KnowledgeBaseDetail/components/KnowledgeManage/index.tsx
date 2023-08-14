@@ -8,7 +8,7 @@ import { KnowledgeBaseModel, KnowledgeBaseTagModel } from '@/pages/KnowledgeBase
 import { getFiles } from '@/services/file';
 import { useParams } from '@umijs/max';
 import { getKnowledgeItems } from '@/services/knowledgeItem';
-import { getKnowledgeBaseTags } from '@/services/knowledgeBaseTags';
+import { getKnowledgeBaseAllTags, getKnowledgeBaseTags } from '@/services/knowledgeBaseTags';
 import { HierarchyTagModel } from '../../types';
 
 type TPagination = Omit<DEFAULT_API.Paginate<any>, 'items'>;
@@ -42,6 +42,7 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [currentKey, setCurrentKey] = useState<string>('');
   const [total, setTotal] = useState<number>(0);
+  const [tags, setTags] = useState<KnowledgeBaseTagModel[]>([]);
 
   const getAllKnowledgeItems = async () => {
     const data = await getKnowledgeItems(Number(params.id), 1);
@@ -185,6 +186,9 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
     fetchKnowledgeTags();
     getFileList();
     getAllKnowledgeItems();
+    getKnowledgeBaseAllTags(Number(params.id)).then((res) => {
+      setTags(res);
+    });
   }, []);
 
   return (
@@ -217,7 +221,7 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
                 {knowledgeList.map((item) => {
                   return (
                     <Col span={12} key={item.id}>
-                      <KnowledgeItem key={item.id} data={item}></KnowledgeItem>
+                      <KnowledgeItem key={item.id} data={item} tags={tags}></KnowledgeItem>
                     </Col>
                   );
                 })}

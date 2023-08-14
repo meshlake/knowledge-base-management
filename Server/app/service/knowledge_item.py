@@ -25,7 +25,7 @@ def create_knowledge_item(
         "source": "",
         "knowledge_base_id": knowledge_base_id,
         "user_id": user.id,
-        "tags": model.tags,
+        "tag": model.tag,
     }
     docs = [Document(page_content=model.content, metadata=metadata)]
     ids = CustomizeSupabaseVectorStore.limit_size_add_documents(vector_store, documents=docs)
