@@ -33,7 +33,6 @@ const App: React.FC = () => {
     setActiveTab(3);
   };
   const handleTabChange = (index: number) => {
-    console.log(index);
     setActiveTab(index);
   };
 
@@ -63,7 +62,7 @@ const App: React.FC = () => {
           setFileStatus({} as FilesStatus);
           refreshTimer = setTimeout(() => {
             handleRefreshStatus();
-          }, 5000);
+          }, 10000);
           return;
         }
 
@@ -78,7 +77,7 @@ const App: React.FC = () => {
         }
         refreshTimer = setTimeout(() => {
           handleRefreshStatus();
-        }, 5000);
+        }, 10000);
       })
       .catch((err) => {
         console.log(err);
