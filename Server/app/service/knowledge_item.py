@@ -12,7 +12,10 @@ from app.models.enums import FileStatus, KnowledgeItemType
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from app.service.file_manage import update_file_status
 from app.service.embedding_client import create_embedding_client
-
+from unstructured.file_utils.filetype import (
+    FileType,
+    detect_filetype,
+)
 
 def create_knowledge_item(
     knowledge_base_id: int, user: User, model: KnowledgeItemModel
@@ -125,25 +128,39 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
 
         bucket_name, key = filepath.split("/", 1)
         loader = S3FileLoader(bucket_name, key)
+        filetype = detect_filetype(filepath)
+        embedding_docs = []
+        if (filetype == FileType.XLSX) or (filetype == FileType.XLS) or (filetype == FileType.CSV):
+            documents = loader.excel_load(knowledge_base_id=knowledge_base_id, user_id=user.id)
+            for doc in documents:
+                doc.metadata = {
+                    "type": KnowledgeItemType.FILE.name,
+                    "source": filepath,
+                    "knowledge_base_id": knowledge_base_id,
+                    "user_id": user.id,
+                    "tag": doc.metadata["tag"] if "tag" in doc.metadata else None,
+                }
+            embedding_docs = documents
+        else:
+            documents = loader.load()
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=0)
+            docs = text_splitter.split_documents(documents)
 
-        documents = loader.load()
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=0)
-        docs = text_splitter.split_documents(documents)
-
-        metadata = {
-            "type": KnowledgeItemType.FILE.name,
-            "source": filepath,
-            "knowledge_base_id": knowledge_base_id,
-            "user_id": user.id,
-            "tags": None,
-        }
-        # 因为S3Loader加载文件是下载后从临时文件夹中获取的，所以metadata中的source是临时文件夹中的文件路径，需要修改为S3中的文件路径
-        for doc in docs:
-            doc.metadata = metadata
+            metadata = {
+                "type": KnowledgeItemType.FILE.name,
+                "source": filepath,
+                "knowledge_base_id": knowledge_base_id,
+                "user_id": user.id,
+                "tag": None,
+            }
+            # 因为S3Loader加载文件是下载后从临时文件夹中获取的，所以metadata中的source是临时文件夹中的文件路径，需要修改为S3中的文件路径
+            for doc in docs:
+                doc.metadata = metadata
+            embedding_docs = docs
 
         vector_store = CustomizeSupabaseVectorStore(supabase, embeddings, "knowledge")
 
-        CustomizeSupabaseVectorStore.limit_size_add_documents(vector_store, documents=docs)
+        CustomizeSupabaseVectorStore.limit_size_add_documents(vector_store, documents=embedding_docs)
 
         db = next(get_db())
         update_file_status(db=db, filepath=filepath, status=FileStatus.SUCCESS)

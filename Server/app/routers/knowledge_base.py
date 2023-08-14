@@ -208,6 +208,6 @@ def delete_kb_tag(knowledge_base_id: int, tag_id: int, db: Session = Depends(get
     return {"message": "tag deleted"}
 
 
-@router.get("/knowledge_bases/tags/all", dependencies=[Depends(oauth2_scheme)])
-def retrieve_knowledge_base_tags_all(knowledge_base_id: int | None = None, db: Session = Depends(get_db)):
+@router.get("/knowledge_bases/{knowledge_base_id}/all/tags", dependencies=[Depends(oauth2_scheme)])
+def retrieve_knowledge_base_tags_all(knowledge_base_id: int, db: Session = Depends(get_db)):
     return get_knowledge_base_tags_all(db, knowledge_base_id)

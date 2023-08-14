@@ -120,7 +120,6 @@ def csv_loader(
     path = Path(file_path)
     data: dict[int | str, DataFrame] = pd.read_csv(
         file_path,
-        sheet_name=None,
         header=0 if header_row_included else None,
     )
 
@@ -156,6 +155,12 @@ def deprecated_loader(file_path):
         elements.append(table)
     return elements
 
+
+def xlsx_to_list(file_path: str):
+    df = pd.read_excel(file_path, engine="openpyxl")
+    # 将dataframe转化为二维列表
+    data = df.values.tolist()
+    return data
 
 import typer
 

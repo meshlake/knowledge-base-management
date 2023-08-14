@@ -59,26 +59,26 @@ const App: React.FC = () => {
     }
     getFiles(knowledgeBaseId)
       .then((res) => {
-        const embeddingFiles = res?.data.filter((v) => v.status === 'EMBEDDING');
-        const failedFiles = res?.data.filter((v) => v.status === 'FAILED');
-        if (embeddingFiles.length > 0) {
-          setFileStatus({
-            name: embeddingFiles[0].name,
-            status: embeddingFiles[0].status,
-          });
+        if (res.data.length === 0) {
+          setFileStatus({} as FilesStatus);
           refreshTimer = setTimeout(() => {
             handleRefreshStatus();
           }, 5000);
-        } else if (failedFiles.length > 0) {
+          return;
+        }
+
+        const latestFile = res.data[res.data.length - 1];
+        if (latestFile.status === 'EMBEDDING' || latestFile.status === 'FAILED') {
           setFileStatus({
-            name: failedFiles[0].name,
-            status: failedFiles[0].status,
+            name: latestFile.name,
+            status: latestFile.status,
           });
-          clearTimeout(refreshTimer);
         } else {
           setFileStatus({} as FilesStatus);
-          clearTimeout(refreshTimer);
         }
+        refreshTimer = setTimeout(() => {
+          handleRefreshStatus();
+        }, 5000);
       })
       .catch((err) => {
         console.log(err);
@@ -88,6 +88,10 @@ const App: React.FC = () => {
   useEffect(() => {
     getKnowledgeBaseData();
     handleRefreshStatus();
+
+    return () => {
+      clearTimeout(refreshTimer);
+    };
   }, []);
 
   return (

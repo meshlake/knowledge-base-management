@@ -44,12 +44,12 @@ def query_similar_knowledge(vectors, docs):
             if (old_knowledge["similarity"]) > 0.8:
                 similar_knowledge = SimilarKnowledgeCreate(
                     new_knowledge=docs[idx].page_content,
-                    new_knowledge_tags=docs[idx].metadata["tags"],
-                    new_knowledge_user=docs[idx].metadata["user_id"],
+                    new_knowledge_tag_id=docs[idx].metadata["tag"],
+                    new_knowledge_user_id=docs[idx].metadata["user_id"],
                     old_knowledge_id=old_knowledge["id"],
                     old_knowledge=old_knowledge["content"],
-                    old_knowledge_tags=old_knowledge["metadata"]["tags"],
-                    old_knowledge_user=old_knowledge["metadata"]["user_id"],
+                    old_knowledge_tag_id=old_knowledge["metadata"]["tag"],
+                    old_knowledge_user_id=old_knowledge["metadata"]["user_id"],
                     status=ReviewStatus.PENDING.name,
                     source=docs[idx].metadata["source"],
                     knowledge_base_id=knowledge_base_id,
@@ -75,10 +75,10 @@ def create_review_item(similar_knowledge: SimilarKnowledgeCreate):
         new_knowledge=similar_knowledge.new_knowledge,
         old_knowledge_id=similar_knowledge.old_knowledge_id,
         old_knowledge=similar_knowledge.old_knowledge,
-        new_knowledge_tags=similar_knowledge.new_knowledge_tags,
-        old_knowledge_tags=similar_knowledge.old_knowledge_tags,
-        new_knowledge_user_id=similar_knowledge.new_knowledge_user,
-        old_knowledge_user_id=similar_knowledge.old_knowledge_user,
+        new_knowledge_tag_id=similar_knowledge.new_knowledge_tag_id,
+        old_knowledge_tag_id=similar_knowledge.old_knowledge_tag_id,
+        new_knowledge_user_id=similar_knowledge.new_knowledge_user_id,
+        old_knowledge_user_id=similar_knowledge.old_knowledge_user_id,
         source=similar_knowledge.source,
         status=ReviewStatus.PENDING.name,
         createdAt=datetime.now(),
@@ -147,7 +147,7 @@ def add_knowledge(silimar_knowledge: SimilarKnowledge):
         {
             "content": silimar_knowledge.new_knowledge,
             "metadata": {
-                "tags": silimar_knowledge.new_knowledge_tags,
+                "tag": silimar_knowledge.new_knowledge_tag_id,
                 "user_id": silimar_knowledge.new_knowledge_user_id,
                 "type": KnowledgeItemType.FILE.name
                 if silimar_knowledge.source != None
