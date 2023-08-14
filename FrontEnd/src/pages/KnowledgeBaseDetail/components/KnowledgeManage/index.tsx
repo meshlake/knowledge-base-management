@@ -18,19 +18,11 @@ type KnowledgeManageProps = {
   toggleLabelManage?: () => void;
 };
 
-const treeData: DataNode[] = [
-  {
-    title: '标签分类',
-    key: '0-0',
-    children: [],
-  },
-];
-
 const App: React.FC<KnowledgeManageProps> = (props) => {
   const { knowledgeBase, toggleLabelManage = () => {} } = props;
   const params = useParams();
 
-  const [tree, setTree] = useState<DataNode[]>(treeData);
+  const [tree, setTree] = useState<DataNode[]>([]);
   const [pagination, setPagination] = useState<TPagination>({
     page: 1,
     pages: 0,
@@ -119,10 +111,6 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
     //只显示状态为向量化成功的文件
     const filterFiles = files.filter((v) => v.status === 'SUCCESS');
     setFiles(filterFiles);
-    if (filterFiles.length === 0) {
-      setTree(tree.filter((v) => v.key !== '0-1'));
-      return;
-    }
 
     const fileData = {
       title: '文件筛选',
@@ -139,17 +127,7 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
         };
       }),
     };
-    if (tree.find((v) => v.key === '0-1')) {
-      const newTree = tree.map((v) => {
-        if (v.key === '0-1') {
-          return fileData;
-        }
-        return v;
-      });
-      setTree(newTree);
-    } else {
-      setTree([...tree, fileData]);
-    }
+    return fileData;
   };
 
   const transformToTagHierarchy = (tags: KnowledgeBaseTagModel[]): HierarchyTagModel[] => {
@@ -196,19 +174,26 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
   };
 
   const fetchKnowledgeTags = async () => {
-    getKnowledgeBaseTags(knowledgeBase.id)
+    return getKnowledgeBaseTags(knowledgeBase.id)
       .then((res) => res.items)
       .then((tags) => transformToTagHierarchy(tags))
       .then((tags) => {
-        treeData[0].children = transformToDataNodes(tags);
-        return [...treeData];
-      })
-      .then((nodes) => setTree(nodes));
+        return {
+          title: '标签分类',
+          key: '0-0',
+          children: transformToDataNodes(tags),
+        };
+      });
+  };
+
+  const setTreeData = async () => {
+    const files = await getFileList();
+    const tags = await fetchKnowledgeTags();
+    setTree([tags, files]);
   };
 
   useEffect(() => {
-    fetchKnowledgeTags();
-    getFileList();
+    setTreeData();
     getAllKnowledgeItems();
     getKnowledgeBaseAllTags(Number(params.id)).then((res) => {
       setTags(res);
