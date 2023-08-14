@@ -1,6 +1,6 @@
+import os
 from sqlalchemy import select
-from sqlalchemy.orm import Session, defer
-from sqlalchemy.engine.row import Row
+from sqlalchemy.orm import Session
 from app.models.userDto import User
 from datetime import datetime
 from fastapi import HTTPException
@@ -8,14 +8,17 @@ from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from app.models.conversation import (
     ConversationModel,
-    MessageModel, 
     MessageCreateModel,
 )
-
 from app.entities.conversations import (
     Conversation as ConversationEntity,
     Message as MessageEntity,
 )
+from dotenv import load_dotenv
+
+load_dotenv()
+
+CHAT_SERVICE_BASE_URL = os.getenv("CHAT_SERVICE_BASE_URL", "https://doc-search.meshlake.com")
     
 def fetch_conversations(
     db: Session,
@@ -77,17 +80,47 @@ def persist_message(
     
     return entity
 
-def ask_bot(
-    db: Session,
+import aiohttp
+
+async def ask_bot(
     model: MessageCreateModel,
     conversation: ConversationEntity,
+    user: User,
 ) -> MessageCreateModel:
-    "TODO: Implement asking bot for user message"
-    
-    result = MessageCreateModel(
-        content=f"[Bot] {model.content}",
-        role="bot",
+    reply = ""
+    async with aiohttp.ClientSession() as session:
+        async with build_chat_service_request(model, conversation, user, session) as response:
+            if response.status != 200:
+                raise HTTPException(
+                    status_code=500, 
+                    detail=f"Failed to infer the reply for the user message, error reason: \n {response.text}"
+                )
+            response_data = await response.json()
+            if is_error_response(response_data):
+                raise HTTPException(
+                    status_code=500, 
+                    detail=f"Failed to infer the reply for the user message, error reason: \n {response_data}"
+                )
+            reply = response_data.get("data")
+    return MessageCreateModel(content=reply, role="bot")
+
+def build_chat_service_request(
+    model : MessageCreateModel, 
+    conversation: ConversationEntity, 
+    user: User, 
+    session: aiohttp.ClientSession
+):
+    payload = {
+        "content": model.content, 
+        "user": user.id,
+        "bot_id": conversation.bot_id,
+    }
+    return session.post(
+        f"{CHAT_SERVICE_BASE_URL}/query",
+        json=payload
     )
 
-    return result
-
+def is_error_response(response):
+    error = response.get("error")
+    data = response.get("data")
+    return (error is not None and error != "") or data == "error"
