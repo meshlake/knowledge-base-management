@@ -87,3 +87,7 @@ def get_application_by_api_key(api_key: str, db: Session, user: User):
         db_application.chatbot.prompt = generate_prompt(db_application.chatbot)
 
     return db_application
+
+def get_application_by_bot(db: Session, bot: int | Chatbot) -> Application:
+    bot_id = bot.id if isinstance(bot, Chatbot) else bot
+    return db.query(Application).filter(Application.chatbot_id == bot_id).first()

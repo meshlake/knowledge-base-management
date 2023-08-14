@@ -91,7 +91,7 @@ def delete_conversation(
     dependencies=[Depends(oauth2_scheme)],
     response_model=Page[MessageModel]
 )
-def send_message(
+async def send_message(
     id: int,
     model: MessageCreateModel,
     db: Session = Depends(get_db),
@@ -99,7 +99,7 @@ def send_message(
 ): 
     conversation = fetch_conversation(db, id, user)
     user_message = persist_message(db, model, conversation)
-    bot_reply = ask_bot(db, model, conversation)
+    bot_reply = await ask_bot(model, conversation, user)
     bot_message = persist_message(db, bot_reply, conversation) if bot_reply else None
     messages = [user_message, bot_message] if bot_message else [user_message]
     return Page(

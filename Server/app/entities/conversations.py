@@ -21,7 +21,7 @@ class Conversation(Base, BaseModel):
     
 class Message(Base, BaseModel):
     
-    __tablename__ = "messages"
+    __tablename__ = "conversation_messages"
 
     id = Column(Integer, primary_key=True)
     content = Column(Text, nullable=False)
