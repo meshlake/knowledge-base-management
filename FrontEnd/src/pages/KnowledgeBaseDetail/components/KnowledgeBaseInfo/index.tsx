@@ -48,24 +48,22 @@ const App: React.FC<KnowledgeBaseInfoProps> = (props) => {
       </div>
       {editabled ? (
         <div>
-          <Form
-            form={form}
-            name="control-hooks"
-            style={{ maxWidth: 600 }}
-            colon={false}
-            onFinish={handleUpdateKnowledgeBase}
-          >
+          <Form form={form} colon={false} onFinish={handleUpdateKnowledgeBase}>
             <Form.Item name="name" label="名称" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
             <Form.Item name="description" label="描述" rules={[{ required: true }]}>
               <Input />
             </Form.Item>
-            <Form.Item>
-              <Button htmlType="button" onClick={handleCancel}>
+            <Form.Item style={{ display: 'flex', flexDirection: 'row-reverse' }}>
+              <Button
+                htmlType="button"
+                onClick={handleCancel}
+                style={{ width: '140px', marginRight: '20px' }}
+              >
                 取消
               </Button>
-              <Button type="primary" htmlType="submit">
+              <Button type="primary" htmlType="submit" style={{ width: '140px' }}>
                 保存
               </Button>
             </Form.Item>

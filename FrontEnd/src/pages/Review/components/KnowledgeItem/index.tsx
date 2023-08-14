@@ -21,9 +21,9 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
         <p>{content}</p>
         <div className={Styles.footer}>
           <div>上传者：{metadata.user.nickname}</div>
-          {metadata.tags?.length && metadata.tags?.length > 0 ? (
+          {metadata.tag ? (
             <Tag color="#D9F0FD" className={Styles.normalTags}>
-              {metadata.tags[0]}
+              {metadata.tag.name}
             </Tag>
           ) : null}
         </div>

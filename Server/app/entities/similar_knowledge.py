@@ -9,17 +9,20 @@ class SimilarKnowledge(Base, BaseModel):
     id = Column(Integer, primary_key=True)
     new_knowledge = Column(Text)
     new_knowledge_user_id = Column(Integer, ForeignKey("users.id"))
-    new_knowledge_tags = Column(String(255))
+    new_knowledge_tag_id = Column(Integer, ForeignKey("knowledge_base_tags.id"))
     old_knowledge_id = Column(Integer)
     old_knowledge = Column(Text)
     old_knowledge_user_id = Column(Integer, ForeignKey("users.id"))
-    old_knowledge_tags = Column(String(255))
+    old_knowledge_tag_id = Column(Integer, ForeignKey("knowledge_base_tags.id"))
     knowledge_base_id = Column(Integer)
     status = Column(String(255))
     source = Column(String(255))
 
     new_knowledge_user = relationship("User", backref="new_knowledge_user", foreign_keys="SimilarKnowledge.new_knowledge_user_id")
     old_knowledge_user = relationship("User", backref="old_knowledge_user", foreign_keys="SimilarKnowledge.old_knowledge_user_id")
+
+    old_knowledge_tag = relationship("KnowledgeBaseTag", backref="old_knowledge_tag", foreign_keys="SimilarKnowledge.old_knowledge_tag_id")
+    new_knowledge_tag = relationship("KnowledgeBaseTag", backref="new_knowledge_tag", foreign_keys="SimilarKnowledge.new_knowledge_tag_id")
 
     __table_args__ = {
         "mysql_charset": "utf8mb4",

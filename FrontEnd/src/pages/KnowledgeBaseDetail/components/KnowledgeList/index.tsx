@@ -4,9 +4,10 @@ import Styles from './index.less';
 import KnowledgeItem from '../KnowledgeItem';
 import ImportFile from '../ImportFile';
 import ManuallyEnter from '../ManuallyEnter';
-import { KnowledgeBaseModel } from '@/pages/KnowledgeBase/types';
+import { KnowledgeBaseModel, KnowledgeBaseTagModel } from '@/pages/KnowledgeBase/types';
 import { getKnowledgeItems, deleteKnowledgeItem } from '@/services/knowledgeItem';
 import { useParams } from '@umijs/max';
+import { getKnowledgeBaseAllTags } from '@/services/knowledgeBaseTags';
 
 type TPagination = Omit<DEFAULT_API.Paginate<KNOWLEDGE_ITEM_API.KnowledgeItem>, 'items'>;
 type KnowledgeListProps = {
@@ -38,6 +39,8 @@ const App: React.FC<KnowledgeListProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const [modal, contextHolder] = Modal.useModal();
+
+  const [tags, setTags] = useState<KnowledgeBaseTagModel[]>([]);
 
   const getKnowledgeList = async (page: number) => {
     setLoading(true);
@@ -119,11 +122,14 @@ const App: React.FC<KnowledgeListProps> = (props) => {
 
   useEffect(() => {
     getKnowledgeList(1);
+    getKnowledgeBaseAllTags(Number(params.id)).then((res) => {
+      setTags(res);
+    });
   }, []);
 
   return (
     <div className={Styles.knowledgeList}>
-      <Spin spinning={loading} style={{ height: '100px' }}>
+      <Spin spinning={loading}>
         <div className={Styles.header}>
           <div>
             {knowledgeBase.name}：{knowledgeList.length}条知识
@@ -148,6 +154,7 @@ const App: React.FC<KnowledgeListProps> = (props) => {
                       key={item.id}
                       data={item}
                       onDelete={() => handleDeleteKnowledgeItem(item.id)}
+                      tags={tags}
                     ></KnowledgeItem>
                   </Col>
                 );

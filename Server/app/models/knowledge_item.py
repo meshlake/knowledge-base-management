@@ -3,5 +3,5 @@ from typing import Union
 
 class KnowledgeItem(BaseModel):
     content: str
-    tags: Union[list[str], None] = None
+    tag: Union[int, None] = None
    

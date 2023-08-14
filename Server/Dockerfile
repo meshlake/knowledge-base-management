@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.9 as build
+FROM --platform=linux/amd64 python:3.10 as build
 
 RUN apt-get update && apt-get install -y libmagic-dev
 

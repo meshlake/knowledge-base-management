@@ -1,6 +1,13 @@
 import request from '@/utils/request';
 
-export function getKnowledgeItems(knowledge_base_id: number, page: number, filepath?: string) {
+export function getKnowledgeItems(
+  knowledge_base_id: number,
+  page: number,
+  search?: {
+    filepath?: string;
+    tag_id?: number;
+  },
+) {
   return request<DEFAULT_API.Paginate<KNOWLEDGE_ITEM_API.KnowledgeItem>>(
     `/knowledge_bases/${knowledge_base_id}/item`,
     {
@@ -9,7 +16,8 @@ export function getKnowledgeItems(knowledge_base_id: number, page: number, filep
       },
       params: {
         page,
-        filepath,
+        filepath: search?.filepath,
+        tag_id: search?.tag_id,
       },
     },
   );
