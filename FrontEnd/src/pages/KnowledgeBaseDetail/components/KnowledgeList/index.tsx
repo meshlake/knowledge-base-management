@@ -129,7 +129,7 @@ const App: React.FC<KnowledgeListProps> = (props) => {
 
   return (
     <div className={Styles.knowledgeList}>
-      <Spin spinning={loading} style={{ height: '100px' }}>
+      <Spin spinning={loading}>
         <div className={Styles.header}>
           <div>
             {knowledgeBase.name}：{knowledgeList.length}条知识

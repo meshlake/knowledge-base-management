@@ -55,7 +55,27 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
     if (filepath) {
       setLoading(true);
       try {
-        const data = await getKnowledgeItems(Number(params.id), page, filepath);
+        const data = await getKnowledgeItems(Number(params.id), page, { filepath });
+        setKnowledgeList(data.items);
+        setPagination({
+          page: data.page,
+          pages: data.pages,
+          total: data.total,
+          size: data.size,
+        });
+        setLoading(false);
+      } catch (error) {
+        setLoading(false);
+      }
+    }
+  };
+
+  const getKnowledgeItemsByTag = async (key: string, page: number) => {
+    const tag_id = key.split('-')[2];
+    if (tag_id) {
+      setLoading(true);
+      try {
+        const data = await getKnowledgeItems(Number(params.id), page, { tag_id: Number(tag_id) });
         setKnowledgeList(data.items);
         setPagination({
           page: data.page,
@@ -81,12 +101,16 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
     setCurrentKey(`${key}`);
     if (`${key}`.startsWith('0-1')) {
       getKnowledgeItemsByFile(`${key}`, 1);
+    } else if (`${key}`.startsWith('0-0')) {
+      getKnowledgeItemsByTag(`${key}`, 1);
     }
   };
 
   const handleChangePage = (page: number) => {
     if (currentKey.startsWith('0-1')) {
       getKnowledgeItemsByFile(currentKey, page);
+    } else if (currentKey.startsWith('0-0')) {
+      getKnowledgeItemsByTag(currentKey, page);
     }
   };
 
@@ -155,7 +179,7 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
   const transformToDataNode = (tag: HierarchyTagModel): DataNode => {
     return {
       title: tag.name,
-      key: tag.id,
+      key: `0-0-${tag.id}`,
     } as DataNode;
   };
 
@@ -193,29 +217,30 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
 
   return (
     <div className={Styles.KnowledgeManage}>
-      <div className={Styles.header}>
-        <div>
-          {knowledgeBase?.name}：{total}条知识
+      <Spin spinning={loading}>
+        <div className={Styles.header}>
+          <div>
+            {knowledgeBase?.name}：{total}条知识
+          </div>
+          <div>
+            <Button type="primary" ghost onClick={toggleLabelManage}>
+              标签管理
+            </Button>
+          </div>
         </div>
-        <div>
-          <Button type="primary" ghost onClick={toggleLabelManage}>
-            标签管理
-          </Button>
-        </div>
-      </div>
-      <div className={Styles.content}>
-        <div className={Styles.tree}>
-          <div>目录</div>
-          <Tree
-            showLine={true}
-            showIcon={false}
-            defaultExpandedKeys={['0-0']}
-            onSelect={onSelect}
-            treeData={tree}
-          />
-        </div>
-        <div className={Styles.knowledgeList}>
-          <Spin spinning={loading} style={{ height: '100px' }}>
+        <div className={Styles.content}>
+          <div className={Styles.tree}>
+            <div>目录</div>
+            <Tree
+              showLine={true}
+              showIcon={false}
+              defaultExpandedKeys={['0-0']}
+              onSelect={onSelect}
+              treeData={tree}
+            />
+          </div>
+
+          <div className={Styles.knowledgeList}>
             <div style={{ width: '100%' }}>
               <Row gutter={[16, 16]}>
                 {knowledgeList.map((item) => {
@@ -227,23 +252,23 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
                 })}
               </Row>
             </div>
-          </Spin>
-          {knowledgeList.length > 0 && (
-            <div className={Styles.paginationWrapper}>
-              <Pagination
-                total={pagination.total}
-                showTotal={(total) => `共${pagination.pages}页/${total}条`}
-                defaultPageSize={pagination.size}
-                defaultCurrent={1}
-                showSizeChanger={false}
-                size="small"
-                disabled={loading}
-                onChange={(page) => handleChangePage(page)}
-              />
-            </div>
-          )}
+            {knowledgeList.length > 0 && (
+              <div className={Styles.paginationWrapper}>
+                <Pagination
+                  total={pagination.total}
+                  showTotal={(total) => `共${pagination.pages}页/${total}条`}
+                  defaultPageSize={pagination.size}
+                  defaultCurrent={1}
+                  showSizeChanger={false}
+                  size="small"
+                  disabled={loading}
+                  onChange={(page) => handleChangePage(page)}
+                />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </Spin>
     </div>
   );
 };

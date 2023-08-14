@@ -129,9 +129,9 @@ def create_one_piece_of_knowledge(
 
 @router.get("/knowledge_bases/{id}/item", dependencies=[Depends(oauth2_scheme)])
 def get_knowledge(
-    id: int, filepath: Union[str, None] = None, page: int = 1, size: int = 15
+    id: int, filepath: Union[str, None] = None, tag_id: Union[int, None] = None, page: int = 1, size: int = 15
 ):
-    knowledge_items = get_knowledge_items(id, page, size, filepath)
+    knowledge_items = get_knowledge_items(id, page, size, filepath, tag_id)
     return knowledge_items
 
 

@@ -17,6 +17,7 @@ from unstructured.file_utils.filetype import (
     detect_filetype,
 )
 
+
 def create_knowledge_item(
     knowledge_base_id: int, user: User, model: KnowledgeItemModel
 ):
@@ -31,13 +32,19 @@ def create_knowledge_item(
         "tag": model.tag,
     }
     docs = [Document(page_content=model.content, metadata=metadata)]
-    ids = CustomizeSupabaseVectorStore.limit_size_add_documents(vector_store, documents=docs)
-    logging.info(f"knowledge item created: {model}")
+    ids = CustomizeSupabaseVectorStore.limit_size_add_documents(
+        vector_store, documents=docs
+    )
+    logging.debug(f"knowledge item created: {model}")
     return model, len(ids) == 0
 
 
 def get_knowledge_items(
-    knowledge_base_id: int, page: int, size: int, filepath: str = None
+    knowledge_base_id: int,
+    page: int,
+    size: int,
+    filepath: str = None,
+    tag_id: int = None,
 ):
     supabase = create_supabase_client()
     offset = (page - 1) * size
@@ -58,6 +65,23 @@ def get_knowledge_items(
             .eq("metadata->>source", filepath)
             .execute()
         )
+    elif tag_id:
+        response = (
+            supabase.table("knowledge")
+            .select("id, content, metadata")
+            .eq("metadata->knowledge_base_id", knowledge_base_id)
+            .eq("metadata->tag", tag_id)
+            .limit(size)
+            .range(offset, offset + size)
+            .execute()
+        )
+        total_res = (
+            supabase.table("knowledge")
+            .select("*", count="exact")
+            .eq("metadata->knowledge_base_id", knowledge_base_id)
+            .eq("metadata->tag", tag_id)
+            .execute()
+        )
     else:
         response = (
             supabase.table("knowledge")
@@ -73,7 +97,7 @@ def get_knowledge_items(
             .eq("metadata->knowledge_base_id", knowledge_base_id)
             .execute()
         )
-    logging.info(f"knowledge items: {response}")
+    logging.debug(f"knowledge items: {response}")
     return {
         "items": response.data,
         "total": total_res.count,
@@ -130,8 +154,14 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
         loader = S3FileLoader(bucket_name, key)
         filetype = detect_filetype(filepath)
         embedding_docs = []
-        if (filetype == FileType.XLSX) or (filetype == FileType.XLS) or (filetype == FileType.CSV):
-            documents = loader.excel_load(knowledge_base_id=knowledge_base_id, user_id=user.id)
+        if (
+            (filetype == FileType.XLSX)
+            or (filetype == FileType.XLS)
+            or (filetype == FileType.CSV)
+        ):
+            documents = loader.excel_load(
+                knowledge_base_id=knowledge_base_id, user_id=user.id
+            )
             for doc in documents:
                 doc.metadata = {
                     "type": KnowledgeItemType.FILE.name,
@@ -143,7 +173,9 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
             embedding_docs = documents
         else:
             documents = loader.load()
-            text_splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=0)
+            text_splitter = RecursiveCharacterTextSplitter(
+                chunk_size=300, chunk_overlap=0
+            )
             docs = text_splitter.split_documents(documents)
 
             metadata = {
@@ -160,7 +192,9 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
 
         vector_store = CustomizeSupabaseVectorStore(supabase, embeddings, "knowledge")
 
-        CustomizeSupabaseVectorStore.limit_size_add_documents(vector_store, documents=embedding_docs)
+        CustomizeSupabaseVectorStore.limit_size_add_documents(
+            vector_store, documents=embedding_docs
+        )
 
         db = next(get_db())
         update_file_status(db=db, filepath=filepath, status=FileStatus.SUCCESS)

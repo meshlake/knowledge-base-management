@@ -110,6 +110,7 @@ def is_tag_available(
     knowledge_base_id: int,
     id: int | None = None,
     name: str | None = None,
+    parent_id: int | None = None,
 ) -> bool:
     if id is not None:
         return get_knowledge_base_tag(db, id, knowledge_base_id) is not None
@@ -118,9 +119,13 @@ def is_tag_available(
     query = query.filter(KnowledgeBaseTagEntity.knowledge_base_id == knowledge_base_id)
 
     if name is not None:
-        query = query.filter(KnowledgeBaseTagEntity.name == name)
-        return query.first() is not None
-
+        if parent_id is not None:
+            query = query.filter(KnowledgeBaseTagEntity.name == name).filter(KnowledgeBaseEntity.parent_id == parent_id)
+            return query.first() is not None
+        else:
+            query = query.filter(KnowledgeBaseTagEntity.name == name)
+            return query.first() is not None
+        
     raise ValueError("Either id or name must be provided.")
 
 
@@ -135,7 +140,7 @@ def create_knowledge_base_tag(
             status_code=400,
             detail=f"Knowledge base {knowledge_base_id} is not available.",
         )
-    if is_tag_available(db, knowledge_base_id, name=model.name):
+    if is_tag_available(db, knowledge_base_id, name=model.name, parent_id=model.parentId):
         raise HTTPException(
             status_code=400, detail=f"Tag {model.name} is already available."
         )
