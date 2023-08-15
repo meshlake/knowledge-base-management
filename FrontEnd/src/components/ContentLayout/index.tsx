@@ -1,5 +1,5 @@
 import { PageContainer, ProList } from '@ant-design/pro-components';
-import styles from '@/components/CommonCard/index.less';
+import styles from './index.less';
 import KnowledgeBase from './types';
 
 export default function ContentLayout({
