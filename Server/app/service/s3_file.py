@@ -14,9 +14,14 @@ import logging
 
 from unstructured.documents.elements import Element, ElementMetadata, Table
 
-from .xlsx_loader import xlsx_loader, csv_loader, xlsx_to_list
+from .xlsx_loader import xlsx_loader, csv_loader
 from .knowledge_base import batch_create_knowledge_base_tag
 import pandas as pd
+import nltk
+
+os.environ["NLTK_DATA"] = os.path.join(os.path.dirname(os.path.dirname(__file__)), "nltk_data")
+
+# from unstructured.partition.text import partition_text
 
 load_dotenv()
 
@@ -50,6 +55,16 @@ class S3FileLoader(BaseLoader):
                 os.makedirs(os.path.dirname(file_path), exist_ok=True)
                 s3.download_file(self.bucket, self.key, file_path)
                 loader = UnstructuredFileLoader(file_path)
+                filetype = detect_filetype(file_path)
+                # if filetype == FileType.TXT:
+                #     elements = partition_text(
+                #         filename=file_path,
+                #         file=None,
+                #         encoding=None,
+                #         paragraph_grouper=None,
+                #     )
+                # else:
+                #     elements = loader.load()
                 elements = loader.load()
                 metadata = loader._get_metadata()
                 text = "\n\n".join([str(el) for el in elements])
@@ -80,13 +95,13 @@ class S3FileLoader(BaseLoader):
                 os.makedirs(os.path.dirname(file_path), exist_ok=True)
                 s3.download_file(self.bucket, self.key, file_path)
                 filetype = detect_filetype(file_path)
-               
+
                 elements = []
                 if (filetype == FileType.XLSX) or (filetype == FileType.XLS):
                     elements = xlsx_loader(file_path, revision=1)
                 elif filetype == FileType.CSV:
                     elements = csv_loader(file_path, revision=1)
-                    
+
                 documents = []
                 tags = []
                 for el in elements:
@@ -118,9 +133,7 @@ class S3FileLoader(BaseLoader):
                                 ][0].id
                             }
                         text = "\n\n".join([str(el) for el in data.data])
-                        documents.append(
-                            Document(page_content=text, metadata=metadata)
-                        )
+                        documents.append(Document(page_content=text, metadata=metadata))
                 return documents
         except Exception as e:
             print(e)
