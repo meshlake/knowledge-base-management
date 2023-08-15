@@ -2,6 +2,7 @@ import { Button, Form, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { getChatbotList } from '@/services/chatbot';
 import { history } from '@umijs/max';
+import { OptionProps } from 'antd/es/select';
 import styles from './index.less';
 
 type Props = {
@@ -14,12 +15,22 @@ const ChatbotConfig: React.FC<Props> = (props) => {
   const [form] = Form.useForm();
   const [editable, setEditable] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [chatbotList, setChatbotList] = useState<{ id: string; name: string }[]>([]);
+  const [chatbotList, setChatbotList] = useState<OptionProps[]>([]);
 
   const getList = async () => {
     try {
       const data = await getChatbotList();
-      setChatbotList(data);
+      const list = data
+        .map((item) => {
+          return {
+            value: item.id,
+            label: item.name,
+            disabled: item.knowledge_bases.length === 0,
+            children: [],
+          };
+        })
+        .sort((a, b) => (a.disabled ? 1 : 0) - (b.disabled ? 1 : 0));
+      setChatbotList(list);
     } catch (e) {
       console.log(e);
     }
@@ -91,13 +102,7 @@ const ChatbotConfig: React.FC<Props> = (props) => {
           name="chatbot_id"
           rules={[{ required: true, message: '请选择' }]}
         >
-          <Select placeholder="请选择">
-            {chatbotList.map((item) => (
-              <Select.Option key={item.id} value={item.id}>
-                {item.name}
-              </Select.Option>
-            ))}
-          </Select>
+          <Select options={chatbotList} placeholder="请选择"></Select>
         </Form.Item>
       </Form>
       <div className={styles.formBottom}>

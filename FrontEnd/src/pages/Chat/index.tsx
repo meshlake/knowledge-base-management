@@ -11,6 +11,7 @@ import Button from 'antd/es/button';
 import * as conversationServices from '@/services/conversation';
 import * as chatbotServices from '@/services/chatbot';
 import { Form, Modal, Select, Spin, message } from 'antd';
+import { OptionProps } from 'antd/es/select';
 import Chat, { Bubble, useMessages } from '@chatui/core';
 import '@chatui/core/dist/index.css';
 import styles from './index.less';
@@ -29,9 +30,7 @@ const ChatComponent: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [conversationList, setConversationList] = useState<Conversation_API.Conversation[]>([]);
   const [botId, setBotId] = useState<string>();
-  const [chatbotList, setChatbotList] = useState<
-    { id: string; name: string; disabled?: boolean }[]
-  >([]);
+  const [chatbotList, setChatbotList] = useState<OptionProps[]>([]);
 
   const { messages, appendMsg, setTyping, resetList } = useMessages([]);
   const [messageLoading, setMessageLoading] = useState<boolean>(false);
@@ -41,7 +40,12 @@ const ChatComponent: React.FC = () => {
       const data = await chatbotServices.getChatbotList();
       const list = data
         .map((item) => {
-          return { id: item.id + '', name: item.name, disabled: item.knowledge_bases.length === 0 };
+          return {
+            value: item.id + '',
+            label: item.name,
+            disabled: item.knowledge_bases.length === 0,
+            children: [],
+          };
         })
         .sort((a, b) => (a.disabled ? 1 : 0) - (b.disabled ? 1 : 0));
       setChatbotList(list);
@@ -51,7 +55,6 @@ const ChatComponent: React.FC = () => {
   };
 
   const getConversationList = () => {
-    setLoading(true);
     return conversationServices
       .getConversationList({ page: 1, size: 100 })
       .then((data) => {
@@ -59,9 +62,6 @@ const ChatComponent: React.FC = () => {
       })
       .catch(() => {
         return [];
-      })
-      .finally(() => {
-        setLoading(false);
       });
   };
 
@@ -90,7 +90,9 @@ const ChatComponent: React.FC = () => {
     resetList();
     setActiveConversationId(undefined);
     setBotId(undefined);
+    setLoading(true);
     getConversationList().then((list) => {
+      setLoading(false);
       setConversationList(list);
       if (pageQuery.get('botId')) {
         chatbotForm.setFieldsValue({ chatbotId: pageQuery.get('botId') });
@@ -255,13 +257,7 @@ const ChatComponent: React.FC = () => {
             style={{ maxWidth: '80%' }}
           >
             <Form.Item label="" name="chatbotId" rules={[{ required: true, message: '请选择' }]}>
-              <Select placeholder="请选择">
-                {chatbotList.map((item) => (
-                  <Select.Option key={item.id} value={item.id} disabled={item.disabled}>
-                    {item.name}
-                  </Select.Option>
-                ))}
-              </Select>
+              <Select options={chatbotList} placeholder="请选择"></Select>
             </Form.Item>
           </Form>
           <div className={styles.chooseChatbotButtonContainer}>
@@ -331,7 +327,7 @@ const ChatComponent: React.FC = () => {
       <div className={styles.rightContainer} style={{ opacity: loading ? 0 : 1 }}>
         {!activeConversationId && !botId && !loading ? newConversation : null}
         <div className={styles.topBar}>
-          <span>{chatbotList.find((item) => item.id === botId)?.name}</span>
+          <span>{chatbotList.find((item) => item.value === botId)?.label}</span>
           <Button
             type="link"
             className={styles.settingIcon}
