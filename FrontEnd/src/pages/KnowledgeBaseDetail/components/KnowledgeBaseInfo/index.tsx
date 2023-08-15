@@ -11,6 +11,10 @@ type KnowledgeBaseInfoProps = {
 const App: React.FC<KnowledgeBaseInfoProps> = (props) => {
   const { knowledgeBase } = props;
   const [editabled, setEditabled] = useState(false);
+  const [info, setInfo] = useState<{ name: string; description: string }>({
+    name: knowledgeBase.name,
+    description: knowledgeBase.description,
+  });
   const [form] = Form.useForm();
 
   const handleCancel = () => {
@@ -20,14 +24,15 @@ const App: React.FC<KnowledgeBaseInfoProps> = (props) => {
 
   const handleFillFrom = () => {
     setEditabled(true);
-    form.setFieldsValue(knowledgeBase);
+    form.setFieldsValue(info);
   };
 
   const handleUpdateKnowledgeBase = () => {
     form.validateFields().then((values: { name: string; description: string }) => {
-      console.log(values);
       const { name, description } = values;
-      updateKnowledgeBase({ id: knowledgeBase.id, name, description }).then(() => {
+      updateKnowledgeBase({ id: knowledgeBase.id, name, description }).then((data) => {
+        const { name, description } = data.data;
+        setInfo({ name, description });
         setEditabled(false);
         notification.success({
           message: '更新成功',
@@ -73,11 +78,11 @@ const App: React.FC<KnowledgeBaseInfoProps> = (props) => {
         <div className={Styles.infoWrapper}>
           <div className={Styles.infoItem}>
             <div className={Styles.label}>名称</div>
-            <div>{knowledgeBase?.name}</div>
+            <div>{info.name}</div>
           </div>
           <div className={Styles.infoItem}>
             <div className={Styles.label}>描述</div>
-            <div>{knowledgeBase?.description}</div>
+            <div>{info.description}</div>
           </div>
         </div>
       )}
