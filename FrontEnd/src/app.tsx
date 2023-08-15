@@ -11,6 +11,8 @@ import React from 'react';
 import { AvatarDropdown, AvatarName } from './components/RightContent/AvatarDropdown';
 import { getRolePermissions } from './services/auth/api';
 import { ConfigProvider } from 'antd';
+import './styles/reset.less';
+
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
 

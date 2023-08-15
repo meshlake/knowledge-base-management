@@ -1,0 +1,145 @@
+@import '/src/styles/common.less';
+
+.pageContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  display: flex;
+  flex-flow: row nowrap;
+  .leftContainer {
+    height: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    border-right: 1px solid #d6d7d9;
+    .listContainer {
+      flex: 1;
+      overflow-y: scroll;
+      width: 296px;
+      padding: 12px;
+      .conversationCard {
+        position: relative;
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        box-sizing: border-box;
+        padding: 8px 12px;
+        margin: 16px 0;
+        line-height: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #3d3d3d;
+        border-radius: 5px;
+        overflow: hidden;
+        cursor: pointer;
+        &:hover {
+          background: #f2f4fb;
+          box-shadow: 0px 4px 6px 0px rgba(0, 0, 0, 0.1);
+          .conversationCardContent {
+            padding-right: 12px;
+          }
+        }
+        &.active {
+          background: #f2f4fb;
+          &:hover {
+            box-shadow: none;
+          }
+        }
+        .conversationIcon {
+          width: 18px;
+          margin-right: 14px;
+        }
+        .conversationCardContent {
+          flex: 1;
+          overflow: hidden;
+          .conversationTopic {
+            font-weight: 500;
+            color: #3d3d3d;
+            .single-line-ellipsis();
+          }
+          .conversationDescription {
+            margin-top: 10px;
+            font-weight: normal;
+            .single-line-ellipsis();
+          }
+        }
+        .actions {
+          position: absolute;
+          top: 10px;
+          right: 12px;
+          display: flex;
+          flex-flow: row nowrap;
+          align-items: center;
+        }
+      }
+    }
+    .addButton {
+      width: 160px;
+      height: 40px;
+      margin: 16px auto;
+    }
+  }
+  .rightContainer {
+    position: relative;
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-flow: column nowrap;
+    .topBar {
+      position: relative;
+      height: 60px;
+      line-height: 60px;
+      padding: 0 64px 0 24px;
+      font-size: 18px;
+      font-weight: 500;
+      text-align: center;
+      border-bottom: 1px solid #d6d7d9;
+      .single-line-ellipsis();
+      .settingIcon {
+        position: absolute;
+        top: 50%;
+        right: 24px;
+        transform: translateY(-50%);
+      }
+    }
+    .messageContainer {
+      flex: 1;
+      overflow: hidden;
+    }
+    .newConversationContainer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 999;
+      display: flex;
+      flex-flow: row;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      .chooseChatbotContainer {
+        width: 565px;
+        padding: 40px;
+        box-sizing: border-box;
+        border-radius: 10px;
+        background: #f2f4fb;
+        .chooseChatbotTitle {
+          font-size: 16px;
+          font-weight: 600;
+        }
+        .chooseChatbotDes {
+          margin: 14px 0;
+          font-size: 14px;
+        }
+        .chooseChatbotButtonContainer {
+          text-align: right;
+        }
+      }
+    }
+  }
+}
