@@ -118,7 +118,7 @@ def update_knowledge_item(item_id: int, model: KnowledgeItemModel):
     embeddings = create_embedding_client()
     vector = embeddings.embed_query(model.content)
     metadata = get_knowledge_item(item_id)["metadata"]
-    metadata["tags"] = model.tags
+    metadata["tag"] = model.tag
     supabase.table("knowledge").update(
         {
             "metadata": metadata,

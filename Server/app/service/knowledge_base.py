@@ -120,7 +120,7 @@ def is_tag_available(
 
     if name is not None:
         if parent_id is not None:
-            query = query.filter(KnowledgeBaseTagEntity.name == name).filter(KnowledgeBaseEntity.parent_id == parent_id)
+            query = query.filter(KnowledgeBaseTagEntity.name == name).filter(KnowledgeBaseTagEntity.parent_id == parent_id)
             return query.first() is not None
         else:
             query = query.filter(KnowledgeBaseTagEntity.name == name)
