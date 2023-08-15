@@ -58,22 +58,22 @@ def update_chatbot(db: Session, user: User, id: int, model: ChatbotUpdate):
 
 
 def get_all_chatbot(db: Session, user: User):
-    db_chatbots = db.query(ChatbotEntity).order_by(
+    db_chatbots = db.query(ChatbotEntity).filter_by(deleted=False).order_by(
         ChatbotEntity.createdAt.desc()).all()
     return db_chatbots
 
 
 def get_chatbot(db: Session, user: User, id: int):
-    db_chatbot = db.query(ChatbotEntity).get(id)
-    db_chatbot.prompt = generate_prompt(db_chatbot)
+    db_chatbot = db.query(ChatbotEntity).filter_by(id=id, deleted=False).first()
     if db_chatbot is None:
         raise HTTPException(
             status_code=404, detail=f"chatbot with id {id} not found")
+    db_chatbot.prompt = generate_prompt(db_chatbot)
     return db_chatbot
 
 
 def delete_chatbot(db: Session, user: User, id: int):
-    db_chatbot = db.query(ChatbotEntity).get(id)
+    db_chatbot = db.query(ChatbotEntity).filter_by(id=id, deleted=False).first()
     if db_chatbot is None:
         raise HTTPException(
             status_code=404, detail=f"chatbot with id {id} not found")
@@ -86,8 +86,9 @@ def delete_chatbot(db: Session, user: User, id: int):
             "message": "Cannot delete Chatbot record due to foreign key constraints"
         }
 
-    db.knowledge_bases = []
-    db.delete(db_chatbot)
+    db_chatbot.knowledge_bases = []
+    db_chatbot.deleted = True
+    # db.delete(db_chatbot)
     db.commit()
     return {
         "code": 200,
