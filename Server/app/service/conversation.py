@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-CHAT_SERVICE_BASE_URL = os.getenv("CHAT_SERVICE_BASE_URL", "https://doc-search.meshlake.com")
+CHAT_SERVICE_BASE_URL = os.getenv("CHAT_SERVICE_BASE_URL", "https://knowledge-base.meshlake.com")
     
 def fetch_conversations(
     db: Session,
