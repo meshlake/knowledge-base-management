@@ -29,7 +29,7 @@ def create_chatbot(db: Session, user: User, model: ChatbotBase):
 
 
 def update_chatbot(db: Session, user: User, id: int, model: ChatbotUpdate):
-    db_chatbot = db.query(ChatbotEntity).get(id)
+    db_chatbot = db.query(ChatbotEntity).filter_by(id=id, deleted=False).first()
     if db_chatbot is None:
         raise HTTPException(
             status_code=404, detail=f"chatbot with id {id} not found")
@@ -79,7 +79,7 @@ def delete_chatbot(db: Session, user: User, id: int):
             status_code=404, detail=f"chatbot with id {id} not found")
 
     applications = db.query(Application).filter(
-        Application.chatbot_id == id).all()
+        Application.chatbot_id == id, Application.deleted == False).all()
     if applications:
         return {
             "code": 400,
