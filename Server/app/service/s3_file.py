@@ -17,11 +17,10 @@ from unstructured.documents.elements import Element, ElementMetadata, Table
 from .xlsx_loader import xlsx_loader, csv_loader
 from .knowledge_base import batch_create_knowledge_base_tag
 import pandas as pd
+
+NLTK_DATA_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "nltk_data")
 import nltk
-
-os.environ["NLTK_DATA"] = os.path.join(os.path.dirname(os.path.dirname(__file__)), "nltk_data")
-
-# from unstructured.partition.text import partition_text
+nltk.data.path = [NLTK_DATA_PATH] + nltk.data.path
 
 load_dotenv()
 
