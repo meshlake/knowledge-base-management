@@ -46,9 +46,11 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
               <DeleteOutlined className={Styles.deleteBtn} onClick={handleDelete} />
             </div>
           ) : metadata?.tag ? (
-            <Tag color="#D9F0FD" className={Styles.normalTags}>
-              {tags.find((item) => item.id === metadata.tag)?.name}
-            </Tag>
+            <div>
+              <Tag color="#D9F0FD" className={Styles.normalTags}>
+                {tags.find((item) => item.id === metadata.tag)?.name}
+              </Tag>
+            </div>
           ) : null}
         </div>
       </div>
