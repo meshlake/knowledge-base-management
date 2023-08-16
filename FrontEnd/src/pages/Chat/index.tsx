@@ -224,6 +224,7 @@ const ChatComponent: React.FC = () => {
             avatar: '/images/bot_avatar.png',
           },
         });
+        updateConversationList();
       } catch (error: any) {
         message.error(error.message);
         setTyping(false);
