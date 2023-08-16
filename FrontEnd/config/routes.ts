@@ -23,14 +23,8 @@ export default [
     ],
   },
   {
-    path: '/welcome',
-    name: '欢迎',
-    icon: 'smile',
-    component: './Welcome',
-  },
-  {
     path: '/',
-    redirect: '/welcome',
+    redirect: '/knowledgeBase',
   },
   {
     name: '知识库',
@@ -96,11 +90,13 @@ export default [
     path: '/review',
     access: 'review',
     component: './Review',
+    icon: 'solutionOutlined',
   },
   {
     name: '系统设置',
     path: '/system',
     access: 'system',
+    icon: 'settingOutlined',
     routes: [
       {
         name: '账号管理',
