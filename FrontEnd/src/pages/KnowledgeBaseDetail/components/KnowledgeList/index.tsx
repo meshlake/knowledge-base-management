@@ -132,7 +132,7 @@ const App: React.FC<KnowledgeListProps> = (props) => {
       <Spin spinning={loading}>
         <div className={Styles.header}>
           <div>
-            {knowledgeBase.name}：{knowledgeList.length}条知识
+            {knowledgeBase.name}：{pagination.total}条知识
           </div>
           {/* <div>搜索</div> */}
           <div>
