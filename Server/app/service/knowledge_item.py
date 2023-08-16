@@ -49,6 +49,7 @@ def get_knowledge_items(
 ):
     supabase = create_supabase_client()
     offset = (page - 1) * size
+  
     list_query =  supabase.table("knowledge").select("id, content, metadata").eq("metadata->knowledge_base_id", knowledge_base_id)
     count_query = supabase.table("knowledge").select("*", count="exact").eq("metadata->knowledge_base_id", knowledge_base_id)
 
@@ -63,7 +64,7 @@ def get_knowledge_items(
         list_query = list_query.eq("metadata->tag", tag_id)
         count_query = count_query.eq("metadata->tag", tag_id)
 
-    response = list_query.limit(size).range(offset, offset + size).execute()
+    response = list_query.range(offset, offset + size).execute()
     total_res = count_query.execute()
     
     logging.debug(f"knowledge items: {response}")
