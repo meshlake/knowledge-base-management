@@ -246,7 +246,7 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
           </div>
 
           <div className={Styles.knowledgeList}>
-            <div style={{ width: '100%' }}>
+            <div style={{ width: '100%', maxHeight: '680px', overflow: 'scroll' }}>
               <Row gutter={[16, 16]}>
                 {knowledgeList.map((item) => {
                   return (
