@@ -29,6 +29,8 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
     pagePermissions?.includes('/tag') || false,
   );
 
+  const [expandKeys, setExpandKeys] = useState<React.Key[]>([]);
+
   const params = useParams();
 
   const [tree, setTree] = useState<DataNode[]>([]);
@@ -206,6 +208,20 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
     const files = await getFileList();
     const tags = await fetchKnowledgeTags();
     setTree([tags, files]);
+    if (tags.children.length > 0) {
+      for (let i = 0; i < tags.children.length; i++) {
+        const tag = tags.children[i];
+        if (tag.children && tag.children.length > 0) {
+          onSelect([`${tag.children[0].key}`]);
+          setExpandKeys([`0-0`, `${tags.children[i].key}`]);
+          break;
+        }
+      }
+    }
+  };
+
+  const onExpand = (expandedKeys: React.Key[]) => {
+    setExpandKeys(expandedKeys);
   };
 
   useEffect(() => {
@@ -246,9 +262,11 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
             <Tree
               showLine={true}
               showIcon={false}
-              defaultExpandedKeys={['0-0']}
+              expandedKeys={expandKeys}
               onSelect={onSelect}
               treeData={tree}
+              onExpand={onExpand}
+              selectedKeys={[currentKey]}
             />
           </div>
 
@@ -258,6 +276,7 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
                 width: '100%',
                 maxHeight: 'calc(100vh - 56px - 24px - 34px - 32px - 50px - 100px)',
                 overflow: 'scroll',
+                padding: '10px',
               }}
             >
               <Row gutter={[16, 16]}>
