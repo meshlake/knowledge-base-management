@@ -46,8 +46,15 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
   const [tags, setTags] = useState<KnowledgeBaseTagModel[]>([]);
 
   const getAllKnowledgeItems = async () => {
-    const data = await getKnowledgeItems(Number(params.id), 1);
-    setTotal(data.total);
+    setLoading(true);
+    try {
+      const data = await getKnowledgeItems(Number(params.id), 1);
+      setTotal(data.total);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
   };
 
   const getKnowledgeItemsByFile = async (key: string, page: number) => {
@@ -246,7 +253,13 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
           </div>
 
           <div className={Styles.knowledgeList}>
-            <div style={{ width: '100%', maxHeight: '680px', overflow: 'scroll' }}>
+            <div
+              style={{
+                width: '100%',
+                maxHeight: 'calc(100vh - 56px - 24px - 34px - 32px - 50px - 100px)',
+                overflow: 'scroll',
+              }}
+            >
               <Row gutter={[16, 16]}>
                 {knowledgeList.map((item) => {
                   return (
