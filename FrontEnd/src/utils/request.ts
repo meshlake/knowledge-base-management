@@ -26,7 +26,7 @@ const errorHandler = (error: RequestError): Response => {
         notification.error({
           message: '无权限',
         });
-        history.push('/welcome');
+        history.push('/');
         break;
       default:
         notification.error({
