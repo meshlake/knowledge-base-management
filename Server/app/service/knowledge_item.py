@@ -52,7 +52,7 @@ def get_knowledge_items(
     list_query =  supabase.table("knowledge").select("id, content, metadata").eq("metadata->knowledge_base_id", knowledge_base_id)
     count_query = supabase.table("knowledge").select("*", count="exact").eq("metadata->knowledge_base_id", knowledge_base_id)
 
-    if user and user.role == 'user':
+    if user and user.role.code == 'user':
         list_query = list_query.eq("metadata->user_id", user.id)
         count_query = count_query.eq("metadata->user_id", user.id)
 
