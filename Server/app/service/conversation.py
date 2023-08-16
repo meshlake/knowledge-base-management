@@ -123,7 +123,7 @@ def build_chat_service_request(
 ):
     payload = {
         "content": model.content, 
-        "user": user.id,
+        "user": conversation.id, # user 是对话标识符，用于查找历史消息，所以传递 conversation.id
         "bot_id": conversation.bot_id,
     }
     return session.post(
