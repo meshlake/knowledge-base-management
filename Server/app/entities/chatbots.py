@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, Column, ForeignKey, Integer, String, Table
+from sqlalchemy import JSON, Boolean, Column, ForeignKey, Integer, String, Table
 from sqlalchemy.orm import relationship
 from app.db import Base
 from app.entities.base import BaseModel
@@ -20,6 +20,7 @@ class Chatbot(Base, BaseModel):
     description = Column(String(255), nullable=True)
     user_id = Column(Integer, name="user_id")
     prompt_config = Column(JSON)
+    deleted = Column(Boolean, default=False)
 
     knowledge_bases = relationship(
         "KnowledgeBase", secondary=chatbot_knowledge_association, back_populates="chatbots")

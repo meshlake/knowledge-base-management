@@ -1,4 +1,4 @@
-from sqlalchemy import Column, JSON, ForeignKey, String, Integer, Enum as SQLAlchemyEnum
+from sqlalchemy import Boolean, Column, JSON, ForeignKey, String, Integer, Enum as SQLAlchemyEnum
 from sqlalchemy.orm import relationship
 from app.db import Base
 from app.entities.base import BaseModel
@@ -23,6 +23,7 @@ class Application(Base, BaseModel):
     properties = Column(JSON)
     login_info = Column(JSON)
     chatbot_id = Column(Integer, ForeignKey("chatbots.id"))
+    deleted = Column(Boolean, default=False)
 
     chatbot = relationship("Chatbot", backref="applications")
 
