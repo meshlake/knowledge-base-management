@@ -45,58 +45,27 @@ def get_knowledge_items(
     size: int,
     filepath: str = None,
     tag_id: int = None,
+    user: User = None,
 ):
     supabase = create_supabase_client()
     offset = (page - 1) * size
+    list_query =  supabase.table("knowledge").select("id, content, metadata").eq("metadata->knowledge_base_id", knowledge_base_id)
+    count_query = supabase.table("knowledge").select("*", count="exact").eq("metadata->knowledge_base_id", knowledge_base_id)
+
+    if user and user.role == 'user':
+        list_query = list_query.eq("metadata->user_id", user.id)
+        count_query = count_query.eq("metadata->user_id", user.id)
+
     if filepath:
-        response = (
-            supabase.table("knowledge")
-            .select("id, content, metadata")
-            .eq("metadata->knowledge_base_id", knowledge_base_id)
-            .eq("metadata->>source", filepath)
-            .limit(size)
-            .range(offset, offset + size)
-            .execute()
-        )
-        total_res = (
-            supabase.table("knowledge")
-            .select("*", count="exact")
-            .eq("metadata->knowledge_base_id", knowledge_base_id)
-            .eq("metadata->>source", filepath)
-            .execute()
-        )
+        list_query = list_query.eq("metadata->>source", filepath)
+        count_query = count_query.eq("metadata->>source", filepath)
     elif tag_id:
-        response = (
-            supabase.table("knowledge")
-            .select("id, content, metadata")
-            .eq("metadata->knowledge_base_id", knowledge_base_id)
-            .eq("metadata->tag", tag_id)
-            .limit(size)
-            .range(offset, offset + size)
-            .execute()
-        )
-        total_res = (
-            supabase.table("knowledge")
-            .select("*", count="exact")
-            .eq("metadata->knowledge_base_id", knowledge_base_id)
-            .eq("metadata->tag", tag_id)
-            .execute()
-        )
-    else:
-        response = (
-            supabase.table("knowledge")
-            .select("id, content, metadata")
-            .eq("metadata->knowledge_base_id", knowledge_base_id)
-            .limit(size)
-            .range(offset, offset + size)
-            .execute()
-        )
-        total_res = (
-            supabase.table("knowledge")
-            .select("*", count="exact")
-            .eq("metadata->knowledge_base_id", knowledge_base_id)
-            .execute()
-        )
+        list_query = list_query.eq("metadata->tag", tag_id)
+        count_query = count_query.eq("metadata->tag", tag_id)
+
+    response = list_query.limit(size).range(offset, offset + size).execute()
+    total_res = count_query.execute()
+    
     logging.debug(f"knowledge items: {response}")
     return {
         "items": response.data,

@@ -6,7 +6,7 @@ import type { DataNode } from 'antd/es/tree';
 import KnowledgeItem from '../KnowledgeItem';
 import { KnowledgeBaseModel, KnowledgeBaseTagModel } from '@/pages/KnowledgeBase/types';
 import { getFiles } from '@/services/file';
-import { useParams } from '@umijs/max';
+import { useModel, useParams } from '@umijs/max';
 import { getKnowledgeItems } from '@/services/knowledgeItem';
 import { getKnowledgeBaseAllTags, getKnowledgeBaseTags } from '@/services/knowledgeBaseTags';
 import { HierarchyTagModel } from '../../types';
@@ -20,6 +20,15 @@ type KnowledgeManageProps = {
 
 const App: React.FC<KnowledgeManageProps> = (props) => {
   const { knowledgeBase, toggleLabelManage = () => {} } = props;
+
+  //标签管理权限
+  const { initialState } = useModel('@@initialState');
+  const { permissions } = initialState ?? {};
+  const pagePermissions = permissions?.filter((p) => p[1] === 'page').map((p) => p[2]);
+  const [isCanManageTag, setIsCanManageTag] = useState<boolean>(
+    pagePermissions?.includes('/tag') || false,
+  );
+
   const params = useParams();
 
   const [tree, setTree] = useState<DataNode[]>([]);
@@ -200,6 +209,15 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
     });
   }, []);
 
+  //标签管理权限
+  useEffect(() => {
+    if (initialState) {
+      const { permissions } = initialState ?? {};
+      const pagePermissions = permissions?.filter((p) => p[1] === 'page').map((p) => p[2]);
+      setIsCanManageTag(pagePermissions?.includes('/tag') || false);
+    }
+  }, [initialState]);
+
   return (
     <div className={Styles.KnowledgeManage}>
       <Spin spinning={loading}>
@@ -208,9 +226,11 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
             {knowledgeBase?.name}：{total}条知识
           </div>
           <div>
-            <Button type="primary" ghost onClick={toggleLabelManage}>
-              标签管理
-            </Button>
+            {isCanManageTag && (
+              <Button type="primary" ghost onClick={toggleLabelManage}>
+                标签管理
+              </Button>
+            )}
           </div>
         </div>
         <div className={Styles.content}>
