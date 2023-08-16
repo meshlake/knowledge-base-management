@@ -54,6 +54,14 @@ async def read_users_me(current_user: userDto.User = Depends(get_current_user)):
     current_user.organization
     return current_user
 
+@router.get(
+    "/users", dependencies=[Depends(oauth2_scheme)], response_model=Page[userDto.User]
+)
+def get_users(db: Session = Depends(get_db)):
+    return paginate(
+        db,
+        select(users.User).order_by(users.User.createdAt.desc()),
+    )
 
 @router.post("/users", dependencies=[Depends(oauth2_scheme)])
 def create_user(user: userDto.UserCreate, db: Session = Depends(get_db)):
@@ -67,15 +75,6 @@ def create_user(user: userDto.UserCreate, db: Session = Depends(get_db)):
     del user.password
     return user
 
-
-@router.get(
-    "/users", dependencies=[Depends(oauth2_scheme)], response_model=Page[userDto.User]
-)
-def get_users(db: Session = Depends(get_db)):
-    return paginate(
-        db,
-        select(users.User).order_by(users.User.createdAt.desc()),
-    )
 
 
 @router.put("/users/{user_id}", dependencies=[Depends(oauth2_scheme)])

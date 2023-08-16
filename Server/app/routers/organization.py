@@ -24,6 +24,15 @@ router = APIRouter(
     dependencies=[Depends(oauth2_scheme)],
 )
 
+# 获取组织分页
+@router.get("/organizations", response_model=Page[Organization])
+def get_all_roles(db: Session = Depends(get_db)):
+    return paginate(
+        db,
+        select(organizations.Organization).order_by(
+            organizations.Organization.createdAt.desc()
+        ),
+    )
 
 # 创建组织
 @router.post("/organizations")
@@ -42,16 +51,6 @@ def get_organizations(db: Session = Depends(get_db)):
     organizations = organizationCurd.get_organizations(db=db)
     return {"data": organizations}
 
-
-# 获取组织分页
-@router.get("/organizations", response_model=Page[Organization])
-def get_all_roles(db: Session = Depends(get_db)):
-    return paginate(
-        db,
-        select(organizations.Organization).order_by(
-            organizations.Organization.createdAt.desc()
-        ),
-    )
 
 
 # 获取单个组织

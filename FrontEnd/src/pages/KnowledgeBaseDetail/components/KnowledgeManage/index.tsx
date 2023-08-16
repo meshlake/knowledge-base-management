@@ -6,7 +6,7 @@ import type { DataNode } from 'antd/es/tree';
 import KnowledgeItem from '../KnowledgeItem';
 import { KnowledgeBaseModel, KnowledgeBaseTagModel } from '@/pages/KnowledgeBase/types';
 import { getFiles } from '@/services/file';
-import { useParams } from '@umijs/max';
+import { useModel, useParams } from '@umijs/max';
 import { getKnowledgeItems } from '@/services/knowledgeItem';
 import { getKnowledgeBaseAllTags, getKnowledgeBaseTags } from '@/services/knowledgeBaseTags';
 import { HierarchyTagModel } from '../../types';
@@ -20,6 +20,17 @@ type KnowledgeManageProps = {
 
 const App: React.FC<KnowledgeManageProps> = (props) => {
   const { knowledgeBase, toggleLabelManage = () => {} } = props;
+
+  //标签管理权限
+  const { initialState } = useModel('@@initialState');
+  const { permissions } = initialState ?? {};
+  const pagePermissions = permissions?.filter((p) => p[1] === 'page').map((p) => p[2]);
+  const [isCanManageTag, setIsCanManageTag] = useState<boolean>(
+    pagePermissions?.includes('/tag') || false,
+  );
+
+  const [expandKeys, setExpandKeys] = useState<React.Key[]>([]);
+
   const params = useParams();
 
   const [tree, setTree] = useState<DataNode[]>([]);
@@ -37,8 +48,15 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
   const [tags, setTags] = useState<KnowledgeBaseTagModel[]>([]);
 
   const getAllKnowledgeItems = async () => {
-    const data = await getKnowledgeItems(Number(params.id), 1);
-    setTotal(data.total);
+    setLoading(true);
+    try {
+      const data = await getKnowledgeItems(Number(params.id), 1);
+      setTotal(data.total);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setLoading(false);
+    }
   };
 
   const getKnowledgeItemsByFile = async (key: string, page: number) => {
@@ -190,6 +208,20 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
     const files = await getFileList();
     const tags = await fetchKnowledgeTags();
     setTree([tags, files]);
+    if (tags.children.length > 0) {
+      for (let i = 0; i < tags.children.length; i++) {
+        const tag = tags.children[i];
+        if (tag.children && tag.children.length > 0) {
+          onSelect([`${tag.children[0].key}`]);
+          setExpandKeys([`0-0`, `${tags.children[i].key}`]);
+          break;
+        }
+      }
+    }
+  };
+
+  const onExpand = (expandedKeys: React.Key[]) => {
+    setExpandKeys(expandedKeys);
   };
 
   useEffect(() => {
@@ -200,6 +232,15 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
     });
   }, []);
 
+  //标签管理权限
+  useEffect(() => {
+    if (initialState) {
+      const { permissions } = initialState ?? {};
+      const pagePermissions = permissions?.filter((p) => p[1] === 'page').map((p) => p[2]);
+      setIsCanManageTag(pagePermissions?.includes('/tag') || false);
+    }
+  }, [initialState]);
+
   return (
     <div className={Styles.KnowledgeManage}>
       <Spin spinning={loading}>
@@ -208,9 +249,11 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
             {knowledgeBase?.name}：{total}条知识
           </div>
           <div>
-            <Button type="primary" ghost onClick={toggleLabelManage}>
-              标签管理
-            </Button>
+            {isCanManageTag && (
+              <Button type="primary" ghost onClick={toggleLabelManage}>
+                标签管理
+              </Button>
+            )}
           </div>
         </div>
         <div className={Styles.content}>
@@ -219,14 +262,23 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
             <Tree
               showLine={true}
               showIcon={false}
-              defaultExpandedKeys={['0-0']}
+              expandedKeys={expandKeys}
               onSelect={onSelect}
               treeData={tree}
+              onExpand={onExpand}
+              selectedKeys={[currentKey]}
             />
           </div>
 
           <div className={Styles.knowledgeList}>
-            <div style={{ width: '100%' }}>
+            <div
+              style={{
+                width: '100%',
+                maxHeight: 'calc(100vh - 56px - 24px - 34px - 32px - 50px - 100px)',
+                overflow: 'scroll',
+                padding: '10px',
+              }}
+            >
               <Row gutter={[16, 16]}>
                 {knowledgeList.map((item) => {
                   return (

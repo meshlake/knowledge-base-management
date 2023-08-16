@@ -33,7 +33,7 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
       bodyStyle={{ height: '100%', padding: '15px' }}
     >
       <div className={Styles.knowledgeItemContent}>
-        <p>{content}</p>
+        <p className={Styles.knowledgeItemContentInner}>{content}</p>
         <div className={Styles.footer}>
           <div>来自：{fromDisplay}</div>
           {onDelete ? (
@@ -46,9 +46,11 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
               <DeleteOutlined className={Styles.deleteBtn} onClick={handleDelete} />
             </div>
           ) : metadata?.tag ? (
-            <Tag color="#D9F0FD" className={Styles.normalTags}>
-              {tags.find((item) => item.id === metadata.tag)?.name}
-            </Tag>
+            <div>
+              <Tag color="#D9F0FD" className={Styles.normalTags}>
+                {tags.find((item) => item.id === metadata.tag)?.name}
+              </Tag>
+            </div>
           ) : null}
         </div>
       </div>
