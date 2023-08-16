@@ -81,8 +81,8 @@ def delete_application(id: int, db: Session, user: User):
 
 
 def get_application_by_api_key(api_key: str, db: Session, user: User):
-    db_application = db.query(Application).filter(
-        Application.api_key == api_key, deleted=False).first()
+    db_application = db.query(Application).filter_by(
+        api_key=api_key, deleted=False).first()
 
     if db_application is None:
         raise HTTPException(

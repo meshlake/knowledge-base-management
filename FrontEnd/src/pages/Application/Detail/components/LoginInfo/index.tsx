@@ -66,7 +66,7 @@ const LoginInfo: React.FC<Props> = ({ data }) => {
     if (data?.login_info) {
       setLoginInfo(data.login_info);
     }
-    // getBotStatus();
+    getBotStatus();
     return () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       timer && clearTimeout(timer);
