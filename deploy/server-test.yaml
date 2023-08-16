@@ -49,6 +49,8 @@ spec:
           value: cn-northwest-1
         - name: CHAT_SERVICE_BASE_URL
           value: https://chat.meshlake.com
+        - name: WECHAT_BOT_SERVER
+          value: http://service-meshlake-wechat-bot.meshlake-wechat-bot-test.svc.cluster.local
       imagePullSecrets:
           - name: meshlake-harbor-auth
 ---
