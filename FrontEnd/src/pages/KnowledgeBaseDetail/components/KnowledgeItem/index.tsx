@@ -33,7 +33,7 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
       bodyStyle={{ height: '100%', padding: '15px' }}
     >
       <div className={Styles.knowledgeItemContent}>
-        <p>{content}</p>
+        <p className={Styles.knowledgeItemContentInner}>{content}</p>
         <div className={Styles.footer}>
           <div>来自：{fromDisplay}</div>
           {onDelete ? (
