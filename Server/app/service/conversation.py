@@ -74,6 +74,10 @@ def persist_message(
     
     if conversation.topic is None or conversation.description is None:
         existing_messages = db.query(MessageEntity).filter(MessageEntity.conversation_id == conversation.id).all()
+        if conversation.topic is None and len(existing_messages) == 0: 
+            conversation.topic = model.content
+        if conversation.description is None and len(existing_messages) == 1: 
+            conversation.description = model.content
         if conversation.topic is None and len(existing_messages) >= 1: 
             conversation.topic = existing_messages[0].content
         if conversation.description is None and len(existing_messages) >= 2:
