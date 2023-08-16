@@ -18,6 +18,14 @@ router = APIRouter(
 )
 
 
+# 获取所有角色
+@router.get("/roles", response_model=Page[roleDto.Role])
+def get_all_roles(db: Session = Depends(get_db)):
+    return paginate(
+        db,
+        select(roles.Role).order_by(roles.Role.createdAt.desc()),
+    )
+
 # 创建角色
 @router.post("/roles")
 def create_roles(role: roleDto.RoleCreate, db: Session = Depends(get_db)):
@@ -32,10 +40,3 @@ def get_all_roles(db: Session = Depends(get_db)):
     return {"data": roles}
 
 
-# 获取所有角色
-@router.get("/roles", response_model=Page[roleDto.Role])
-def get_all_roles(db: Session = Depends(get_db)):
-    return paginate(
-        db,
-        select(roles.Role).order_by(roles.Role.createdAt.desc()),
-    )

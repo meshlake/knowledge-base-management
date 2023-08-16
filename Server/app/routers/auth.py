@@ -14,6 +14,10 @@ router = APIRouter(
     dependencies=[Depends(oauth2_scheme)],
 )
 
+@router.get("/auth/roles/{role}/permissions")
+def get_role_permissions(role: str):
+    permissions = enforcer.get_permissions_for_user(role)
+    return {"data": permissions}
 
 # 修改角色权限
 @router.put("/auth/roles/{role}/permissions")
@@ -37,7 +41,4 @@ def get_all_permissions():
     return {"data": data}
 
 
-@router.get("/auth/roles/{role}/permissions")
-def get_role_permissions(role: str):
-    permissions = enforcer.get_permissions_for_user(role)
-    return {"data": permissions}
+
