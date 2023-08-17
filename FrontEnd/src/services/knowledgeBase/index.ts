@@ -1,8 +1,12 @@
 import { KnowledgeBaseModel } from '@/pages/KnowledgeBase/types';
 import request from '@/utils/request';
 
-export function getKnowledgeBaseList() {
+export function getKnowledgeBaseList(pagination: DEFAULT_API.PageParams = { page: 1, size: 1000 }) {
   return request<DEFAULT_API.Paginate<KnowledgeBaseModel>>('/knowledge_bases', {
+    method: 'GET',
+    params: {
+      ...pagination,
+    },
     headers: {
       authorization: 'Bearer ' + localStorage.getItem('access_token'),
     },

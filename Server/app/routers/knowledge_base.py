@@ -32,7 +32,12 @@ from app.service.knowledge_item import (
     delete_knowledge_item as delete_knowledge_item_service,
     update_knowledge_item as update_knowledge_item_service,
 )
+from pydantic.fields import Field
 from typing import Union
+
+Page = Page.with_custom_options(
+    size=Field(50, gt=0, le=2 ** 32 - 1),
+)
 
 router = APIRouter(
     tags=["knowledge_bases"],
@@ -40,17 +45,24 @@ router = APIRouter(
     dependencies=[Depends(oauth2_scheme)],
 )
 
-
 @router.get(
     "/knowledge_bases",
     dependencies=[Depends(oauth2_scheme)],
     response_model=Page[KnowledgeBaseModel],
 )
-def retrieve_knowledge_bases(db: Session = Depends(get_db)):
+def retrieve_knowledge_bases(
+    db: Session = Depends(get_db),
+):
     return paginate(
-        db, select(KnowledgeBaseEntity).order_by(KnowledgeBaseEntity.createdAt.desc())
+        db, 
+        (
+            select(KnowledgeBaseEntity)
+                .order_by(
+                    KnowledgeBaseEntity.updatedAt.desc(), 
+                    KnowledgeBaseEntity.createdAt.desc()
+                )
+        )
     )
-
 
 @router.post(
     "/knowledge_bases",
