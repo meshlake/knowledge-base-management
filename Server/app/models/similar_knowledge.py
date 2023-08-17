@@ -17,6 +17,13 @@ class KnowledgeBaseTag(BaseModel):
     class Config:
         orm_mode = True
 
+class KnowledgeBase(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        orm_mode = True
+
 class SimilarKnowledge(BaseModel):
     id: int
     new_knowledge: str
@@ -27,6 +34,7 @@ class SimilarKnowledge(BaseModel):
     old_knowledge_user: User
     new_knowledge_tag: Union[KnowledgeBaseTag, None] = None
     old_knowledge_tag: Union[KnowledgeBaseTag, None] = None
+    knowledge_base: KnowledgeBase
 
     class Config:
         orm_mode = True

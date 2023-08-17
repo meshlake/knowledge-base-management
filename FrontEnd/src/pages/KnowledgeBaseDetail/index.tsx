@@ -154,7 +154,7 @@ const App: React.FC = () => {
         >
           {fileStatus.status === 'EMBEDDING'
             ? `文件${fileStatus?.name}正在处理上传中`
-            : '非常抱歉，文件处理出现问题，请重新上传'}
+            : `非常抱歉，文件${fileStatus?.name}处理出现问题，请重新上传`}
           {fileStatus.status === 'FAILED' && (
             <CloseOutlined className={Styles.close} onClick={handleCloseBanner} />
           )}
