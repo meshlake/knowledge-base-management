@@ -111,6 +111,7 @@ const App: React.FC = () => {
                         metadata: {
                           tag: item.new_knowledge_tag,
                           user: item.new_knowledge_user,
+                          knowledgeBase: item.knowledge_base,
                         },
                       }}
                     ></KnowledgeItem>
@@ -123,6 +124,7 @@ const App: React.FC = () => {
                         metadata: {
                           tag: item.old_knowledge_tag,
                           user: item.old_knowledge_user,
+                          knowledgeBase: item.knowledge_base,
                         },
                       }}
                     ></KnowledgeItem>

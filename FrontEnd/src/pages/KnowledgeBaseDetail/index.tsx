@@ -13,6 +13,7 @@ import { getFiles } from '@/services/file';
 import { CloseOutlined } from '@ant-design/icons';
 
 type FilesStatus = {
+  id: number;
   name: string;
   status: string;
 };
@@ -67,10 +68,24 @@ const App: React.FC = () => {
         }
 
         const latestFile = res.data[res.data.length - 1];
-        if (latestFile.status === 'EMBEDDING' || latestFile.status === 'FAILED') {
+        const bannerDisplayStr = sessionStorage.getItem('bannerDisplay');
+        let bannerDisplay = [];
+        if (bannerDisplayStr) {
+          bannerDisplay = JSON.parse(bannerDisplayStr);
+        }
+        const isBannerDisplay = bannerDisplay.find((item: any) => item.fileId === latestFile.id);
+
+        if (latestFile.status === 'EMBEDDING') {
           setFileStatus({
             name: latestFile.name,
             status: latestFile.status,
+            id: latestFile.id,
+          });
+        } else if (latestFile.status === 'FAILED' && !isBannerDisplay) {
+          setFileStatus({
+            name: latestFile.name,
+            status: latestFile.status,
+            id: latestFile.id,
           });
         } else {
           setFileStatus({} as FilesStatus);
@@ -82,6 +97,38 @@ const App: React.FC = () => {
       .catch((err) => {
         console.log(err);
       });
+  };
+
+  const handleCloseBanner = () => {
+    setFileStatus({} as FilesStatus);
+    const bannerDisplayStr = sessionStorage.getItem('bannerDisplay');
+    if (bannerDisplayStr) {
+      const bannerDisplay = JSON.parse(bannerDisplayStr);
+      if (!bannerDisplay.find((item: any) => item.fileId === fileStatus.id)) {
+        bannerDisplay.push({
+          knowledgeBaseId: knowledgeBase.id,
+          fileId: fileStatus.id,
+          display: false,
+        });
+      } else {
+        bannerDisplay.forEach((item: any) => {
+          if (item.fileId === fileStatus.id) {
+            item.display = false;
+          }
+        });
+      }
+    } else {
+      sessionStorage.setItem(
+        'bannerDisplay',
+        JSON.stringify([
+          {
+            knowledgeBaseId: knowledgeBase.id,
+            fileId: fileStatus.id,
+            display: false,
+          },
+        ]),
+      );
+    }
   };
 
   useEffect(() => {
@@ -107,12 +154,9 @@ const App: React.FC = () => {
         >
           {fileStatus.status === 'EMBEDDING'
             ? `文件${fileStatus?.name}正在处理上传中`
-            : '非常抱歉，文件处理出现问题，请重新上传'}
+            : `非常抱歉，文件${fileStatus?.name}处理出现问题，请重新上传`}
           {fileStatus.status === 'FAILED' && (
-            <CloseOutlined
-              className={Styles.close}
-              onClick={() => setFileStatus({} as FilesStatus)}
-            />
+            <CloseOutlined className={Styles.close} onClick={handleCloseBanner} />
           )}
         </div>
       )}

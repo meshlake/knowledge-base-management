@@ -4,6 +4,16 @@ declare namespace REVIEW_API {
     nickname: string;
   };
 
+  type KnowledgeBase = {
+    id: number;
+    name: string;
+  };
+
+  type Tag = {
+    id: number;
+    name: string;
+  };
+
   type SimilarKnowledge = {
     id: number;
     old_knowledge_id: number;
@@ -12,9 +22,10 @@ declare namespace REVIEW_API {
     new_knowledge: string;
     old_knowledge_user: Uploader;
     new_knowledge_user: Uploader;
-    old_knowledge_tag: number;
-    new_knowledge_tag: number;
+    old_knowledge_tag: Tag;
+    new_knowledge_tag: Tag;
     status: 'PENDING' | 'PROCESSED';
+    knowledge_base: KnowledgeBase;
   };
 
   type Review = {
