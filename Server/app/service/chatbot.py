@@ -7,6 +7,7 @@ from app.entities.chatbots import Chatbot as ChatbotEntity
 from app.entities.knowledge_bases import KnowledgeBase as KnowledgeBaseEntity
 from app.entities.conversations import Conversation as ConversationEntity
 import app.crud.chatbot as chatbotCurd
+from app.service.user import query_user_by_org
 
 
 def generate_prompt(chatbot: ChatbotEntity):
@@ -59,7 +60,10 @@ def update_chatbot(db: Session, user: User, id: int, model: ChatbotUpdate):
 
 
 def get_all_chatbot(db: Session, user: User):
-    db_chatbots = db.query(ChatbotEntity).filter_by(deleted=False).order_by(
+    user_ids = query_user_by_org(db, user.organization_id)
+    query = db.query(ChatbotEntity).filter_by(deleted=False)
+    query.filter(ChatbotEntity.user_id.in_(user_ids))
+    db_chatbots = query.order_by(
         ChatbotEntity.createdAt.desc()).all()
     return db_chatbots
 

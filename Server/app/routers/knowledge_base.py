@@ -24,6 +24,7 @@ from app.service.knowledge_base import (
     partial_update_tag_by_id,
     delete_tag_by_id,
     get_knowledge_base_tags_all,
+    get_all_knowledge_base
 )
 
 from app.service.knowledge_item import (
@@ -50,19 +51,8 @@ router = APIRouter(
     dependencies=[Depends(oauth2_scheme)],
     response_model=Page[KnowledgeBaseModel],
 )
-def retrieve_knowledge_bases(
-    db: Session = Depends(get_db),
-):
-    return paginate(
-        db, 
-        (
-            select(KnowledgeBaseEntity)
-                .order_by(
-                    KnowledgeBaseEntity.updatedAt.desc(), 
-                    KnowledgeBaseEntity.createdAt.desc()
-                )
-        )
-    )
+def retrieve_knowledge_bases(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    return get_all_knowledge_base(db, user)
 
 @router.post(
     "/knowledge_bases",
