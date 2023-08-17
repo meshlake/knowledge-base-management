@@ -1,6 +1,8 @@
-import { Card, Tag } from 'antd';
+import { Card, Tag, Typography } from 'antd';
 import React from 'react';
 import Styles from './index.less';
+
+const { Paragraph } = Typography;
 
 type KnowledgeItemProps = {
   data: any;
@@ -18,7 +20,7 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
       bodyStyle={{ height: '100%', padding: '15px' }}
     >
       <div className={Styles.knowledgeItemContent}>
-        <p className={Styles.knowledgeItemContentInner}>{content}</p>
+        <Paragraph ellipsis={{ rows: 5 }}>{content}</Paragraph>
         <div className={Styles.footer}>
           <div>上传者：{metadata.user.nickname}</div>
           {metadata.tag ? (

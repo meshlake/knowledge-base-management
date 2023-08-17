@@ -18,7 +18,7 @@ const App: React.FC = () => {
     }
     setLoading(true);
     try {
-      const { items, total } = await get_review_items({ page: page, size: 10 });
+      const { items, total } = await get_review_items({ page: page, size: 20 });
       setData([...data, ...items]);
       setTotal(total);
       setPage(page + 1);
@@ -55,14 +55,20 @@ const App: React.FC = () => {
     <div className={Styles.review}>
       <div className={Styles.title}>相似知识审核</div>
       <div className={Styles.description}>发现{total}条新增知识与原有知识相似</div>
-      <div className={Styles.content}>
+      <div className={Styles.content} id="scrollableDiv">
         <InfiniteScroll
           dataLength={data.length}
           next={loadMoreData}
-          hasMore={data.length < 50}
-          loader={<Spin spinning={loading} />}
+          hasMore={data.length < total}
+          loader={
+            <div style={{ textAlign: 'center' }}>
+              {' '}
+              <Spin spinning={loading} />
+            </div>
+          }
           endMessage={<Divider plain>没有更多了</Divider>}
           scrollableTarget="scrollableDiv"
+          scrollThreshold={0.9}
         >
           <List
             itemLayout="horizontal"

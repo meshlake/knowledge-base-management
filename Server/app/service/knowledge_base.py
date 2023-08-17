@@ -229,6 +229,8 @@ def batch_create_knowledge_base_tag(
     tags: list,
     user_id: int,
 ):  
+    if(len(tags) == 0):
+        return []
     # 判断相同的标签是否存在不同的分类
     if not is_tags_unique(tags):
         raise HTTPException(

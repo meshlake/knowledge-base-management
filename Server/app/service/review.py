@@ -41,7 +41,7 @@ def query_similar_knowledge(vectors, docs):
         ).execute()
         if len(response.data) > 0:
             old_knowledge = response.data[0]
-            if (old_knowledge["similarity"]) > 0.8:
+            if (old_knowledge["similarity"]) > 0.9:
                 similar_knowledge = SimilarKnowledgeCreate(
                     new_knowledge=docs[idx].page_content,
                     new_knowledge_tag_id=docs[idx].metadata["tag"],
@@ -80,6 +80,7 @@ def create_review_item(similar_knowledge: SimilarKnowledgeCreate):
         new_knowledge_user_id=similar_knowledge.new_knowledge_user_id,
         old_knowledge_user_id=similar_knowledge.old_knowledge_user_id,
         source=similar_knowledge.source,
+        knowledge_base_id=similar_knowledge.knowledge_base_id,
         status=ReviewStatus.PENDING.name,
         createdAt=datetime.now(),
         updatedAt=datetime.now(),
@@ -94,6 +95,12 @@ def validate_knowledge_existed(similar_knowledge: SimilarKnowledge):
     supabase = create_supabase_client()
     res = supabase.table("knowledge").select("*",count="exact").eq("id", similar_knowledge.old_knowledge_id).execute()
     return res.count > 0
+
+def delete_old_knowledge(similar_knowledge: SimilarKnowledge):
+    supabase = create_supabase_client()
+    supabase.table("knowledge").delete().eq(
+        "id", similar_knowledge.old_knowledge_id
+    ).execute()
 
 def fusion_knowledge(silimar_knowledge: SimilarKnowledge):
     old_knowledge_existed = validate_knowledge_existed(silimar_knowledge)
@@ -125,6 +132,7 @@ def fusion_knowledge(silimar_knowledge: SimilarKnowledge):
     
     silimar_knowledge.new_knowledge = json.loads(res)["knowledge"]
     add_knowledge(silimar_knowledge)
+    delete_old_knowledge(silimar_knowledge)
 
 
 def replace_knowledge(silimar_knowledge: SimilarKnowledge):
@@ -133,10 +141,7 @@ def replace_knowledge(silimar_knowledge: SimilarKnowledge):
         return
     
     add_knowledge(silimar_knowledge)
-    supabase = create_supabase_client()
-    supabase.table("knowledge").delete().eq(
-        "id", silimar_knowledge.old_knowledge_id
-    ).execute()
+    delete_old_knowledge(silimar_knowledge)
 
 
 def add_knowledge(silimar_knowledge: SimilarKnowledge):
@@ -150,7 +155,7 @@ def add_knowledge(silimar_knowledge: SimilarKnowledge):
                 "tag": silimar_knowledge.new_knowledge_tag_id,
                 "user_id": silimar_knowledge.new_knowledge_user_id,
                 "type": KnowledgeItemType.FILE.name
-                if silimar_knowledge.source != None
+                if len(silimar_knowledge.source) > 0
                 else KnowledgeItemType.MANUALLY.name,
                 "source": silimar_knowledge.source,
                 "knowledge_base_id": silimar_knowledge.knowledge_base_id,

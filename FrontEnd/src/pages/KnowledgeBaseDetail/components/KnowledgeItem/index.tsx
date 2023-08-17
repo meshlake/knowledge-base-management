@@ -1,8 +1,10 @@
-import { Card, Tag } from 'antd';
+import { Card, Tag, Typography } from 'antd';
 import React, { MouseEvent } from 'react';
 import Styles from './index.less';
 import { DeleteOutlined } from '@ant-design/icons';
 import { KnowledgeBaseTagModel } from '@/pages/KnowledgeBase/types';
+
+const { Paragraph } = Typography;
 
 type KnowledgeItemProps = {
   data: KNOWLEDGE_ITEM_API.KnowledgeItem;
@@ -33,7 +35,7 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
       bodyStyle={{ height: '100%', padding: '15px' }}
     >
       <div className={Styles.knowledgeItemContent}>
-        <p className={Styles.knowledgeItemContentInner}>{content}</p>
+        <Paragraph ellipsis={{ rows: 5 }}>{content}</Paragraph>
         <div className={Styles.footer}>
           <div>来自：{fromDisplay}</div>
           {onDelete ? (
