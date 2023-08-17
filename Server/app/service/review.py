@@ -1,5 +1,6 @@
 from datetime import datetime
 from app.dependencies import get_db
+from app.entities.users import User
 from app.service.embedding_client import create_embedding_client
 from app.service.supabase_client import SupabaseClient
 from app.entities.similar_knowledge import SimilarKnowledge
@@ -20,6 +21,10 @@ from langchain.prompts.chat import (
 import os
 from dotenv import load_dotenv
 import json
+from fastapi_pagination.ext.sqlalchemy import paginate
+from sqlalchemy import select
+
+from app.service.user import query_user_by_org
 
 load_dotenv()
 
@@ -91,10 +96,17 @@ def create_review_item(similar_knowledge: SimilarKnowledgeCreate):
     db.close()
     return entity
 
+
 def validate_knowledge_existed(similar_knowledge: SimilarKnowledge):
     supabase = SupabaseClient()
-    res = supabase.table("knowledge").select("*",count="exact").eq("id", similar_knowledge.old_knowledge_id).execute()
+    res = (
+        supabase.table("knowledge")
+        .select("*", count="exact")
+        .eq("id", similar_knowledge.old_knowledge_id)
+        .execute()
+    )
     return res.count > 0
+
 
 def delete_old_knowledge(similar_knowledge: SimilarKnowledge):
     supabase = SupabaseClient()
@@ -102,11 +114,12 @@ def delete_old_knowledge(similar_knowledge: SimilarKnowledge):
         "id", similar_knowledge.old_knowledge_id
     ).execute()
 
+
 def fusion_knowledge(silimar_knowledge: SimilarKnowledge):
     old_knowledge_existed = validate_knowledge_existed(silimar_knowledge)
     if not old_knowledge_existed:
         return
-    
+
     os.environ["OPENAI_API_TYPE"] = "azure"
     os.environ["OPENAI_API_BASE"] = os.getenv("AZURE_OPENAI_API_BASE")
     os.environ["OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")
@@ -129,7 +142,7 @@ def fusion_knowledge(silimar_knowledge: SimilarKnowledge):
     )
     chain = LLMChain(llm=llm, prompt=chat_prompt)
     res = chain.run(prompt)
-    
+
     silimar_knowledge.new_knowledge = json.loads(res)["knowledge"]
     add_knowledge(silimar_knowledge)
     delete_old_knowledge(silimar_knowledge)
@@ -139,7 +152,7 @@ def replace_knowledge(silimar_knowledge: SimilarKnowledge):
     old_knowledge_existed = validate_knowledge_existed(silimar_knowledge)
     if not old_knowledge_existed:
         return
-    
+
     add_knowledge(silimar_knowledge)
     delete_old_knowledge(silimar_knowledge)
 
@@ -179,3 +192,16 @@ def update_review_item(id: int, db: Session, action: ReviewType):
     db.commit()
     db.refresh(entity)
     return entity
+
+
+def get_review_items(db: Session, user: User):
+    user_ids = query_user_by_org(db, user.organization_id)
+    return paginate(
+        db,
+        select(SimilarKnowledge)
+        .filter(
+            SimilarKnowledge.new_knowledge_user_id.in_(user_ids),
+            SimilarKnowledge.old_knowledge_user_id.in_(user_ids),
+        )
+        .order_by(SimilarKnowledge.createdAt.desc()),
+    )

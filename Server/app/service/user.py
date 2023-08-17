@@ -8,6 +8,7 @@ from jose import JWTError, jwt
 from fastapi.security import OAuth2PasswordBearer
 from app.dependencies import get_db
 from app.models import userDto, organizationDto, roleDto
+from app.entities.users import User
 from .organization import create_organization
 from .role import create_role
 
@@ -124,3 +125,8 @@ async def create_default_user(db: Session):
             role_id=db_role.id,
         )
         userCurd.create_user(db=db, usercreate=user)
+
+
+def query_user_by_org(db: Session, org_id: int):
+    users = db.query(User).filter(User.organization_id == org_id).all()
+    return [user.id for user in users]

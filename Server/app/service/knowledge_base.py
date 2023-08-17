@@ -1,7 +1,7 @@
 import logging
 from typing import Union
 
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 from app.dependencies import get_db
 from app.models.userDto import User
@@ -18,6 +18,20 @@ from fastapi import HTTPException
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
 from datetime import datetime
+from app.service.user import query_user_by_org
+
+
+def get_all_knowledge_base(
+    db: Session,
+    user: User,
+):
+    user_ids = query_user_by_org(db, user.organization.id)
+    return paginate(
+        db,
+        select(KnowledgeBaseEntity)
+        .filter(KnowledgeBaseEntity.user_id.in_(user_ids))
+        .order_by(KnowledgeBaseEntity.createdAt.desc()),
+    )
 
 
 def create_knowledge_base(
@@ -83,9 +97,7 @@ def get_knowledge_base_tags_all(
 ) -> Page[KnowledgeBaseTagModel]:
     logging.debug("Fetching all tags")
     query = db.query(KnowledgeBaseTagEntity)
-    query = query.filter(
-            KnowledgeBaseTagEntity.knowledge_base_id == knowledge_base_id
-        )
+    query = query.filter(KnowledgeBaseTagEntity.knowledge_base_id == knowledge_base_id)
     query = query.filter(KnowledgeBaseTagEntity.parent_id != None)
     query.order_by(KnowledgeBaseTagEntity.createdAt.desc())
     return query.all()
@@ -120,12 +132,14 @@ def is_tag_available(
 
     if name is not None:
         if parent_id is not None:
-            query = query.filter(KnowledgeBaseTagEntity.name == name).filter(KnowledgeBaseTagEntity.parent_id == parent_id)
+            query = query.filter(KnowledgeBaseTagEntity.name == name).filter(
+                KnowledgeBaseTagEntity.parent_id == parent_id
+            )
             return query.first() is not None
         else:
             query = query.filter(KnowledgeBaseTagEntity.name == name)
             return query.first() is not None
-        
+
     raise ValueError("Either id or name must be provided.")
 
 
@@ -140,7 +154,9 @@ def create_knowledge_base_tag(
             status_code=400,
             detail=f"Knowledge base {knowledge_base_id} is not available.",
         )
-    if is_tag_available(db, knowledge_base_id, name=model.name, parent_id=model.parentId):
+    if is_tag_available(
+        db, knowledge_base_id, name=model.name, parent_id=model.parentId
+    ):
         raise HTTPException(
             status_code=400, detail=f"Tag {model.name} is already available."
         )
@@ -213,7 +229,6 @@ def delete_tag_by_id(
     return count
 
 
-
 def is_tags_unique(tags: list):
     dict_tags = {}
     for tag in tags:
@@ -224,12 +239,13 @@ def is_tags_unique(tags: list):
                 return False
     return True
 
+
 def batch_create_knowledge_base_tag(
     knowledge_base_id: int,
     tags: list,
     user_id: int,
-):  
-    if(len(tags) == 0):
+):
+    if len(tags) == 0:
         return []
     # 判断相同的标签是否存在不同的分类
     if not is_tags_unique(tags):
@@ -237,7 +253,7 @@ def batch_create_knowledge_base_tag(
             status_code=400,
             detail="Tags has diffrent parent.",
         )
-    
+
     db = next(get_db())
 
     # 获取所有的父标签
@@ -252,12 +268,12 @@ def batch_create_knowledge_base_tag(
         .all()
     )
     existing_parent_tags_names = [tag.name for tag in existing_parent_tags]
-    
+
     # 创建不存在的父标签
     create_parent_tags = [
         tag for tag in parent_tags if tag not in existing_parent_tags_names
     ]
-    if(len(create_parent_tags) > 0):
+    if len(create_parent_tags) > 0:
         create_parent_tags = [
             KnowledgeBaseTagEntity(
                 name=tag,
@@ -281,7 +297,7 @@ def batch_create_knowledge_base_tag(
         .filter(KnowledgeBaseTagEntity.name.in_(parent_tags))
         .all()
     )
-    
+
     # 获取所有的子标签
     children_tags = [tag["tag"] for tag in tags]
     existing_children_tags = (
@@ -294,15 +310,21 @@ def batch_create_knowledge_base_tag(
 
     existing_children_tags_names = [tag.name for tag in existing_children_tags]
 
-    create_children_tags = [tag for tag in tags if tag['tag'] not in existing_children_tags_names]
+    create_children_tags = [
+        tag for tag in tags if tag["tag"] not in existing_children_tags_names
+    ]
 
     # 创建子标签
-    if(len(create_children_tags) > 0):
+    if len(create_children_tags) > 0:
         create_children_tags = [
             KnowledgeBaseTagEntity(
-                name=tag['tag'],
+                name=tag["tag"],
                 knowledge_base_id=knowledge_base_id,
-                parent_id=[parent_tag for parent_tag in new_existing_parent_tags if parent_tag.name == tag['parentTag']][0].id,
+                parent_id=[
+                    parent_tag
+                    for parent_tag in new_existing_parent_tags
+                    if parent_tag.name == tag["parentTag"]
+                ][0].id,
                 description=None,
                 user_id=user_id,
                 createdAt=datetime.now(),
