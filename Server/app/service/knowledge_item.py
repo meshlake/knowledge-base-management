@@ -4,7 +4,7 @@ from app.models.userDto import User
 from app.models.knowledge_item import KnowledgeItem as KnowledgeItemModel
 import os
 from app.service.s3_file import S3FileLoader
-from app.service.supabase_client import create_supabase_client
+from app.service.supabase_client import SupabaseClient
 from app.service.supabase_vector_store import CustomizeSupabaseVectorStore
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.docstore.document import Document
@@ -21,7 +21,7 @@ from unstructured.file_utils.filetype import (
 def create_knowledge_item(
     knowledge_base_id: int, user: User, model: KnowledgeItemModel
 ):
-    supabase = create_supabase_client()
+    supabase = SupabaseClient()
     embeddings = create_embedding_client()
     vector_store = CustomizeSupabaseVectorStore(supabase, embeddings, "knowledge")
     metadata = {
@@ -47,7 +47,7 @@ def get_knowledge_items(
     tag_id: int = None,
     user: User = None,
 ):
-    supabase = create_supabase_client()
+    supabase = SupabaseClient()
     offset = (page - 1) * size
   
     list_query =  supabase.table("knowledge").select("id, content, metadata").eq("metadata->knowledge_base_id", knowledge_base_id)
@@ -78,13 +78,13 @@ def get_knowledge_items(
 
 
 def delete_knowledge_item(item_id: int):
-    supabase = create_supabase_client()
+    supabase = SupabaseClient()
     supabase.table("knowledge").delete().eq("id", item_id).execute()
     return item_id
 
 
 def update_knowledge_item(item_id: int, model: KnowledgeItemModel):
-    supabase = create_supabase_client()
+    supabase = SupabaseClient()
     embeddings = create_embedding_client()
     vector = embeddings.embed_query(model.content)
     metadata = get_knowledge_item(item_id)["metadata"]
@@ -100,7 +100,7 @@ def update_knowledge_item(item_id: int, model: KnowledgeItemModel):
 
 
 def get_knowledge_item(item_id: int):
-    supabase = create_supabase_client()
+    supabase = SupabaseClient()
     response = (
         supabase.table("knowledge")
         .select("id, content, metadata")
@@ -117,7 +117,7 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
         update_file_status(db=db, filepath=filepath, status=FileStatus.EMBEDDING)
         db.close()
 
-        supabase = create_supabase_client()
+        supabase = SupabaseClient()
         embeddings = create_embedding_client()
 
         bucket_name, key = filepath.split("/", 1)

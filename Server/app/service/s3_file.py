@@ -57,7 +57,7 @@ class S3FileLoader(BaseLoader):
                 loader = UnstructuredFileLoader(file_path)
                 elements = loader.load()
                 metadata = loader._get_metadata()
-                text = "\n\n".join([str(el) for el in elements])
+                text = "\n\n".join([str(el.page_content) for el in elements])
                 docs = [Document(page_content=text, metadata=metadata)]
                 return docs
         except Exception as e:
