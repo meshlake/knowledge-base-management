@@ -33,14 +33,18 @@ from app.service.knowledge_item import (
     delete_knowledge_item as delete_knowledge_item_service,
     update_knowledge_item as update_knowledge_item_service,
 )
+from pydantic.fields import Field
 from typing import Union
+
+Page = Page.with_custom_options(
+    size=Field(50, gt=0, le=2 ** 32 - 1),
+)
 
 router = APIRouter(
     tags=["knowledge_bases"],
     responses={404: {"description": "Not found"}},
     dependencies=[Depends(oauth2_scheme)],
 )
-
 
 @router.get(
     "/knowledge_bases",
@@ -49,7 +53,6 @@ router = APIRouter(
 )
 def retrieve_knowledge_bases(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     return get_all_knowledge_base(db, user)
-
 
 @router.post(
     "/knowledge_bases",
