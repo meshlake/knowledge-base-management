@@ -14,11 +14,7 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
   } = props;
 
   return (
-    <Card
-      hoverable
-      className={Styles.knowledgeItem}
-      bodyStyle={{ height: '100%', padding: '15px' }}
-    >
+    <Card className={Styles.knowledgeItem} bodyStyle={{ height: '100%', padding: '15px' }}>
       <div className={Styles.knowledgeItemContent}>
         <Paragraph ellipsis={{ rows: 5 }}>{content}</Paragraph>
         <div className={Styles.footer}>
