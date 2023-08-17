@@ -1,7 +1,7 @@
 from datetime import datetime
 from app.dependencies import get_db
 from app.service.embedding_client import create_embedding_client
-from app.service.supabase_client import create_supabase_client
+from app.service.supabase_client import SupabaseClient
 from app.entities.similar_knowledge import SimilarKnowledge
 from app.models.similar_knowledge import (
     SimilarKnowledgeCreate,
@@ -25,7 +25,7 @@ load_dotenv()
 
 
 def query_similar_knowledge(vectors, docs):
-    supabase = create_supabase_client()
+    supabase = SupabaseClient()
     no_similar_knowledge_idx = []
 
     # 查找重复知识
@@ -92,12 +92,12 @@ def create_review_item(similar_knowledge: SimilarKnowledgeCreate):
     return entity
 
 def validate_knowledge_existed(similar_knowledge: SimilarKnowledge):
-    supabase = create_supabase_client()
+    supabase = SupabaseClient()
     res = supabase.table("knowledge").select("*",count="exact").eq("id", similar_knowledge.old_knowledge_id).execute()
     return res.count > 0
 
 def delete_old_knowledge(similar_knowledge: SimilarKnowledge):
-    supabase = create_supabase_client()
+    supabase = SupabaseClient()
     supabase.table("knowledge").delete().eq(
         "id", similar_knowledge.old_knowledge_id
     ).execute()
@@ -145,7 +145,7 @@ def replace_knowledge(silimar_knowledge: SimilarKnowledge):
 
 
 def add_knowledge(silimar_knowledge: SimilarKnowledge):
-    supabase = create_supabase_client()
+    supabase = SupabaseClient()
     embedding = create_embedding_client()
     vector = embedding.embed_query(silimar_knowledge.new_knowledge)
     supabase.table("knowledge").insert(
