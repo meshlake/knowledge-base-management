@@ -6,6 +6,7 @@ from pandas.core.frame import DataFrame
 from pandas import Series
 import lxml.html
 from pathlib import Path
+import logging
 
 
 class UnstructuredRow:
@@ -74,12 +75,26 @@ class UnstructuredTable(Table):
     def __str__(self) -> str:
         return self.__textify__()
 
+def is_first_row_header(
+    df: DataFrame,
+    headers:  List[str] = []
+) -> bool: 
+    headers = [h for h in headers if not pd.isna(h)]
+    if len(headers) == 0: 
+        return False
+    row: Series = df.iloc[0]
+    header_candidates = set(row.values)
+    for header in headers: 
+        if header not in header_candidates: 
+            return False
+    return True
 
 def xlsx_loader(
     file_path: str,
-    header_row_included: bool = True,
     tag_headers: List[str] = ["分类", "标签"],
-    revision: int = 0,
+    header_row_auto_detected: bool = True,
+    header_row_included: bool = False,
+    revision: int = 0, # 0: deprecated (reserved for existing logic), 1: new
 ) -> List[Element | UnstructuredTable]:
     if revision == 0:
         return deprecated_loader(file_path)
@@ -89,13 +104,17 @@ def xlsx_loader(
     data: dict[int | str, DataFrame] = pd.read_excel(
         file_path,
         sheet_name=None,
-        header=0 if header_row_included else None,
+        header=None,
+        keep_default_na=False
     )
 
     page_number = 1
     for sheet_name, df in data.items():
-        df.dropna(axis=0, how="all", inplace=True)
-        df.dropna(axis=1, how="all", inplace=True)
+        df = trim_and_drop_na(df)
+        if df.shape[0] == 0:
+            page_number += 1
+            continue
+        _setup_header(df, tag_headers, header_row_auto_detected, header_row_included)
         table = UnstructuredTable.from_pandas(
             df,
             tag_headers=tag_headers or [],
@@ -105,26 +124,53 @@ def xlsx_loader(
             page_number=page_number,
         )
         result.append(table)
+        page_number += 1
     return result
 
+def _setup_header(
+    data: DataFrame,
+    headers: List[str], 
+    header_row_auto_detected: bool, 
+    header_row_included: bool, 
+) -> None:
+    if (not header_row_included) and (not (header_row_auto_detected and is_first_row_header(data, headers))): 
+        return
+    data.columns = Series(
+        name=data.iloc[0].name, 
+        dtype=data.iloc[0].dtype, 
+        data=[col if not pd.isna(col) else f"Unamed: {i}" for i, col in enumerate(data.iloc[0])]
+    )
+    data.drop(data.index[0], inplace=True)
+    logging.info(f"Header row has been set: [{', '.join(data.columns.values)}]")
+
+def trim_and_drop_na(df: DataFrame):
+    df = (
+            df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+                .applymap(lambda x: x if (isinstance(x, str) and x != "") else pd.NA)
+        )
+    df.dropna(axis=0, how="all", inplace=True)
+    df.dropna(axis=1, how="all", inplace=True)
+    return df
 
 def csv_loader(
     file_path: str,
-    header_row_included: bool = True,
     tag_headers: List[str] = ["分类", "标签"],
+    header_row_auto_detected: bool = True,
+    header_row_included: bool = False,
     revision: int = 0,
 ) -> List[Element | UnstructuredTable]:
     if revision == 0:
         return deprecated_loader(file_path)
 
     path = Path(file_path)
-    data: dict[int | str, DataFrame] = pd.read_csv(
+    data: DataFrame = pd.read_csv(
         file_path,
-        header=0 if header_row_included else None,
+        header=None,
+        keep_default_na=False
     )
-
-    data.dropna(axis=0, how="all", inplace=True)
-    data.dropna(axis=1, how="all", inplace=True)
+    data = trim_and_drop_na(data)
+    if data.shape[0] > 0:
+        _setup_header(data, tag_headers, header_row_auto_detected, header_row_included)
     table = UnstructuredTable.from_pandas(
         data,
         tag_headers=tag_headers or [],
@@ -164,14 +210,23 @@ app = typer.Typer()
 def main(
     file_path: str = typer.Argument(..., help="File path to the xlsx file"),
 ):
-    elements: List[UnstructuredTable] = xlsx_loader(
-        file_path,
-        revision=1,
-        header_row_included=True,
-    )
-    for element in elements:
-        print(element.data[0])
+    elements: List[UnstructuredTable] = []
 
+    if file_path.endswith(".xlsx"): 
+        elements = xlsx_loader(
+            file_path,
+            revision=1, 
+            tag_headers=["项目"]
+        )
+    elif file_path.endswith(".csv"): 
+        elements = csv_loader(
+            file_path, 
+            revision=1,
+            tag_headers=["Access key ID"]
+        )
+    print(f"Total tables: {len(elements)}")
+    for table in elements:
+        print(f"Table: {table.id}, {len(table.data)} rows")
 
 if __name__ == "__main__":
     app()
