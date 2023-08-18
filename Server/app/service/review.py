@@ -114,6 +114,23 @@ def delete_old_knowledge(similar_knowledge: SimilarKnowledge):
         "id", similar_knowledge.old_knowledge_id
     ).execute()
 
+def is_valid_json_with_key(data):
+    # 判断字符串是否为空
+    if not data:
+        return False
+
+    try:
+        # 尝试解析字符串为 JSON
+        json_data = json.loads(data)
+        
+        # 判断是否为字典类型
+        if not isinstance(json_data, dict):
+            return False
+
+        # 判断是否包含 "knowledge" 键
+        return "knowledge" in json_data
+    except json.JSONDecodeError:
+        return False
 
 def fusion_knowledge(silimar_knowledge: SimilarKnowledge):
     old_knowledge_existed = validate_knowledge_existed(silimar_knowledge)
@@ -142,7 +159,7 @@ def fusion_knowledge(silimar_knowledge: SimilarKnowledge):
     )
     chain = LLMChain(llm=llm, prompt=chat_prompt)
     res = chain.run(prompt)
-    if res:
+    if is_valid_json_with_key(res):
         silimar_knowledge.new_knowledge = json.loads(res)["knowledge"]
     add_knowledge(silimar_knowledge)
     delete_old_knowledge(silimar_knowledge)
