@@ -123,7 +123,7 @@ def fusion_knowledge(silimar_knowledge: SimilarKnowledge):
     os.environ["OPENAI_API_TYPE"] = "azure"
     os.environ["OPENAI_API_BASE"] = os.getenv("AZURE_OPENAI_API_BASE")
     os.environ["OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")
-    os.environ["OPENAI_API_VERSION"] = "2023-05-15"
+    os.environ["OPENAI_API_VERSION"] = "2023-06-01-preview"
     llm = ChatOpenAI(engine="gpt-35-turbo")
     prompt_template = PromptTemplate.from_template(
         "融合以下两段文字，1、```{knowledge1}```, 2、```{knowledge2}```"
@@ -142,8 +142,8 @@ def fusion_knowledge(silimar_knowledge: SimilarKnowledge):
     )
     chain = LLMChain(llm=llm, prompt=chat_prompt)
     res = chain.run(prompt)
-
-    silimar_knowledge.new_knowledge = json.loads(res)["knowledge"]
+    if res:
+        silimar_knowledge.new_knowledge = json.loads(res)["knowledge"]
     add_knowledge(silimar_knowledge)
     delete_old_knowledge(silimar_knowledge)
 
