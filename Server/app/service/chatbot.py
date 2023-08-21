@@ -61,8 +61,7 @@ def update_chatbot(db: Session, user: User, id: int, model: ChatbotUpdate):
 
 def get_all_chatbot(db: Session, user: User):
     user_ids = query_user_by_org(db, user.organization_id)
-    query = db.query(ChatbotEntity).filter_by(deleted=False)
-    query.filter(ChatbotEntity.user_id.in_(user_ids))
+    query = db.query(ChatbotEntity).filter(ChatbotEntity.user_id.in_(user_ids)).filter_by(deleted=False)
     db_chatbots = query.order_by(
         ChatbotEntity.createdAt.desc()).all()
     return db_chatbots
