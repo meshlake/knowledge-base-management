@@ -137,8 +137,8 @@ const PromptConfig: React.FC<Props> = (props) => {
         {editable ? (
           <Input.TextArea
             autoSize={{ minRows: 3, maxRows: 20 }}
-            maxLength={500}
-            placeholder="输入预设提示词，最多500字"
+            maxLength={1000}
+            placeholder="输入预设提示词，最多1000字"
           />
         ) : (
           <div style={{ whiteSpace: 'pre-line', lineHeight: '24px' }}>
