@@ -21,7 +21,7 @@ engine = create_engine(
     poolclass= QueuePool,
     pool_size=5,
     pool_pre_ping=True,
-    pool_recycle=3600,
+    pool_recycle=300,
     pool_timeout=3000,
     max_overflow=20
 )

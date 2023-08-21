@@ -10,8 +10,7 @@ from app.service.user import query_user_by_org
 
 def get_all_applications(db: Session, user: User):
     user_ids = query_user_by_org(db, user.organization_id)
-    query = db.query(Application).filter_by(deleted=False)
-    query.filter(Application.user_id.in_(user_ids))
+    query = db.query(Application).filter(Application.user_id.in_(user_ids)).filter_by(deleted=False)
     return query.order_by(
         Application.createdAt.asc()).all()
 
