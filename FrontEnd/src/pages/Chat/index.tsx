@@ -190,7 +190,9 @@ const ChatComponent: React.FC = () => {
       if (Array.isArray(response.items) && response.items[1]) {
         return response.items[1];
       } else {
-        throw new Error('服务异常');
+        return {
+          content: '',
+        };
       }
     } catch (err) {
       throw new Error('服务异常');
@@ -217,14 +219,16 @@ const ChatComponent: React.FC = () => {
         const response = await sendMessage(val);
         setTyping(false);
         setMessageLoading(false);
-        appendMsg({
-          type: 'text',
-          content: { text: response?.content },
-          user: {
-            avatar: '/images/bot_avatar.png',
-          },
-        });
-        updateConversationList();
+        if (response && response.content) {
+          appendMsg({
+            type: 'text',
+            content: { text: response.content },
+            user: {
+              avatar: '/images/bot_avatar.png',
+            },
+          });
+          updateConversationList();
+        }
       } catch (error: any) {
         message.error(error.message);
         setTyping(false);

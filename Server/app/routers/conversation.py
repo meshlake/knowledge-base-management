@@ -100,7 +100,7 @@ async def send_message(
     conversation = fetch_conversation(db, id, user)
     user_message = persist_message(db, model, conversation)
     bot_reply = await ask_bot(model, conversation, user)
-    bot_message = persist_message(db, bot_reply, conversation) if bot_reply else None
+    bot_message = persist_message(db, bot_reply, conversation) if bot_reply and bot_reply.content.strip() != '' else None
     messages = [user_message, bot_message] if bot_message else [user_message]
     return Page(
         items=messages,
