@@ -27,6 +27,16 @@ export default [
     redirect: '/knowledgeBase',
   },
   {
+    path: '/account',
+    routes: [
+      {
+        name: 'center',
+        path: '/account/center',
+        component: './User/Center',
+      },
+    ],
+  },
+  {
     name: '知识库',
     path: '/knowledgeBase',
     icon: 'book',

@@ -56,9 +56,8 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = (props) => {
       width={480}
       okButtonProps={{ loading }}
     >
-      <div style={{ marginBottom: '24px' }}>修改密码</div>
       <Form form={form} name="dynamic_form_nest_item" autoComplete="off" colon={false}>
-        <Form.Item label="旧密码" name="oldPassword" validateFirst>
+        <Form.Item label="旧密码" name="oldPassword" validateFirst required>
           <Input.Password placeholder="请输入" />
         </Form.Item>
         <Form.Item

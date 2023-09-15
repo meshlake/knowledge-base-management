@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from app.entities.users import User
-from app.models.userDto import UserCreate, UserUpdate, User
+from app.models.userDto import UserCreate, UserUpdate
 
 
 # 创建用户
