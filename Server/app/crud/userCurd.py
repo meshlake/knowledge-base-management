@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from app.entities.users import User
-from app.models.userDto import UserCreate, UserUpdate
+from app.models.userDto import UserCreate, UserUpdate, User
 
 
 # 创建用户
@@ -47,6 +47,15 @@ def update_user(db: Session, user_id, data: UserUpdate):
         user.organization_id = data.organization_id
         user.role_id = data.role_id
         user.disabled = data.disabled
+        db.commit()
+    return user
+
+
+# 更新用户
+def update_user_password(db: Session, data):
+    user = db.query(User).get(data.id)
+    if user:
+        user.password = data.password
         db.commit()
     return user
 

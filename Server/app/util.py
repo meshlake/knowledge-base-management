@@ -34,3 +34,15 @@ def is_json(myjson):
     except ValueError as e:
         return False
     return True
+
+
+def is_valid_password(password):
+    # 校验密码长度
+    if len(password) < 8 or len(password) > 20:
+        return False
+    
+    # 校验密码是否包含数字和字母
+    if not (re.search(r'\d', password) and re.search(r'[a-zA-Z]', password)):
+        return False
+    
+    return True

@@ -18,6 +18,7 @@ from app.service.user import (
 from app.entities import organizations, roles, users
 from app.db import engine
 from sqlalchemy import select
+from app.util import is_valid_password
 
 organizations.Base.metadata.create_all(bind=engine)
 roles.Base.metadata.create_all(bind=engine)
@@ -37,7 +38,7 @@ async def login(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="用户名或密码错误",
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -54,6 +55,7 @@ async def read_users_me(current_user: userDto.User = Depends(get_current_user)):
     current_user.organization
     return current_user
 
+
 @router.get(
     "/users", dependencies=[Depends(oauth2_scheme)], response_model=Page[userDto.User]
 )
@@ -62,6 +64,7 @@ def get_users(db: Session = Depends(get_db)):
         db,
         select(users.User).order_by(users.User.createdAt.desc()),
     )
+
 
 @router.post("/users", dependencies=[Depends(oauth2_scheme)])
 def create_user(user: userDto.UserCreate, db: Session = Depends(get_db)):
@@ -76,8 +79,30 @@ def create_user(user: userDto.UserCreate, db: Session = Depends(get_db)):
     return user
 
 
-
 @router.put("/users/{user_id}", dependencies=[Depends(oauth2_scheme)])
 def update_users(user_id: int, user: userDto.UserUpdate, db: Session = Depends(get_db)):
     update_user = userCurd.update_user(db, user_id, user)
     return {"data": update_user}
+
+
+@router.put("/users/me", dependencies=[Depends(oauth2_scheme)])
+def update_users(
+    user_update: userDto.UserUpdatePassword,
+    db: Session = Depends(get_db),
+    current_user: userDto.User = Depends(get_current_user),
+):
+    user = authenticate_user(current_user.username, user_update.old_password, db)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="用户名或密码错误",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not is_valid_password(user_update.new_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="密码不符合要求",
+        )
+    user.password = get_password_hash(user_update.new_password)
+    userCurd.update_user_password(db, user)
+    return {"data": "success"}
