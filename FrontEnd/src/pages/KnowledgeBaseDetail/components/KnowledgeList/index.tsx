@@ -6,7 +6,7 @@ import ImportFile from '../ImportFile';
 import ManuallyEnter from '../ManuallyEnter';
 import { KnowledgeBaseModel, KnowledgeBaseTagModel } from '@/pages/KnowledgeBase/types';
 import { getKnowledgeItems, deleteKnowledgeItem } from '@/services/knowledgeItem';
-import { useParams } from '@umijs/max';
+import { useModel, useParams } from '@umijs/max';
 import { getKnowledgeBaseAllTags } from '@/services/knowledgeBaseTags';
 
 type TPagination = Omit<DEFAULT_API.Paginate<KNOWLEDGE_ITEM_API.KnowledgeItem>, 'items'>;
@@ -41,6 +41,14 @@ const App: React.FC<KnowledgeListProps> = (props) => {
   const [modal, contextHolder] = Modal.useModal();
 
   const [tags, setTags] = useState<KnowledgeBaseTagModel[]>([]);
+
+  //上传文件权限,没有标签管理的用户即为普通用户
+  const { initialState } = useModel('@@initialState');
+  const { permissions } = initialState ?? {};
+  const pagePermissions = permissions?.filter((p) => p[1] === 'page').map((p) => p[2]);
+  const [isCanUploadFile, setIsCanUploadFile] = useState<boolean>(
+    pagePermissions?.includes('/tag') || false,
+  );
 
   const getKnowledgeList = async (page: number) => {
     setLoading(true);
@@ -127,6 +135,15 @@ const App: React.FC<KnowledgeListProps> = (props) => {
     });
   }, []);
 
+  //标签管理权限
+  useEffect(() => {
+    if (initialState) {
+      const { permissions } = initialState ?? {};
+      const pagePermissions = permissions?.filter((p) => p[1] === 'page').map((p) => p[2]);
+      setIsCanUploadFile(pagePermissions?.includes('/tag') || false);
+    }
+  }, [initialState]);
+
   return (
     <div className={Styles.knowledgeList}>
       <Spin spinning={loading}>
@@ -136,9 +153,11 @@ const App: React.FC<KnowledgeListProps> = (props) => {
           </div>
           {/* <div>搜索</div> */}
           <div>
-            <Button onClick={handleOpenImportFileModal} style={{ marginRight: '20px' }}>
-              文件导入
-            </Button>
+            {isCanUploadFile && (
+              <Button onClick={handleOpenImportFileModal} style={{ marginRight: '20px' }}>
+                文件导入
+              </Button>
+            )}
             <Button type="primary" ghost onClick={handleOpenManuallyEnterModal}>
               手动添加
             </Button>
@@ -168,19 +187,32 @@ const App: React.FC<KnowledgeListProps> = (props) => {
               <div className={Styles.content}>
                 您还没有添加任何知识点，可以通过手动输入或者文件导入完成知识点录入～
               </div>
-              <div className={Styles.btns}>
-                <Button style={{ width: '140px' }} onClick={handleOpenImportFileModal}>
-                  文件导入
-                </Button>
-                <Button
-                  style={{ width: '140px' }}
-                  type="primary"
-                  ghost
-                  onClick={handleOpenManuallyEnterModal}
-                >
-                  手动添加
-                </Button>
-              </div>
+              {isCanUploadFile ? (
+                <div className={Styles.btns}>
+                  <Button style={{ width: '140px' }} onClick={handleOpenImportFileModal}>
+                    文件导入
+                  </Button>
+                  <Button
+                    style={{ width: '140px' }}
+                    type="primary"
+                    ghost
+                    onClick={handleOpenManuallyEnterModal}
+                  >
+                    手动添加
+                  </Button>
+                </div>
+              ) : (
+                <div className={Styles.btns} style={{ justifyContent: 'center' }}>
+                  <Button
+                    style={{ width: '140px' }}
+                    type="primary"
+                    ghost
+                    onClick={handleOpenManuallyEnterModal}
+                  >
+                    手动添加
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         )}
