@@ -1,4 +1,4 @@
-import { Form, Input, Modal } from 'antd';
+import { Form, Input, Modal, notification } from 'antd';
 import React, { useState } from 'react';
 //request
 import { updatePassword } from '@/services/users/api';
@@ -30,13 +30,19 @@ const ChangePasswordForm: React.FC<ChangePasswordFormProps> = (props) => {
     form.validateFields().then((values) => {
       setLoading(true);
       const params = {
-        oldPassword: values.oldPassword,
-        newPassword: values.newPassword,
+        old_password: values.oldPassword,
+        new_password: values.newPassword,
       };
       updatePassword(params)
         .then(() => {
           closeModal();
-          history.push('/user/login');
+          notification.success({
+            message: '修改密码成功,请重新登录',
+            onClose: () => {
+              history.push('/user/login');
+            },
+            duration: 2,
+          });
         })
         .catch((err) => {
           console.log(err);

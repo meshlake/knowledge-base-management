@@ -24,7 +24,7 @@ from app.service.knowledge_base import (
     partial_update_tag_by_id,
     delete_tag_by_id,
     get_knowledge_base_tags_all,
-    get_all_knowledge_base
+    get_all_knowledge_base,
 )
 
 from app.service.knowledge_item import (
@@ -37,7 +37,7 @@ from pydantic.fields import Field
 from typing import Union
 
 Page = Page.with_custom_options(
-    size=Field(50, gt=0, le=2 ** 32 - 1),
+    size=Field(50, gt=0, le=2**32 - 1),
 )
 
 router = APIRouter(
@@ -46,13 +46,17 @@ router = APIRouter(
     dependencies=[Depends(oauth2_scheme)],
 )
 
+
 @router.get(
     "/knowledge_bases",
     dependencies=[Depends(oauth2_scheme)],
     response_model=Page[KnowledgeBaseModel],
 )
-def retrieve_knowledge_bases(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def retrieve_knowledge_bases(
+    db: Session = Depends(get_db), user: User = Depends(get_current_user)
+):
     return get_all_knowledge_base(db, user)
+
 
 @router.post(
     "/knowledge_bases",
@@ -81,6 +85,7 @@ def post(
     Returns:
         _type_: KnowledgeBaseModel
     """
+    logging.info(f"{user.username} create knowledge base {model.name}")
     return create_knowledge_base(db, user, model)
 
 
@@ -91,6 +96,7 @@ def post(
 def delete(
     id: int,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
     """DELETE /knowledge_bases/{id}
 
@@ -98,6 +104,7 @@ def delete(
         id (int): knowledge base id
         db (Session, optional): sqlalchemy database session. Defaults to Depends(get_db).
     """
+    logging.info(f"{user.username} delete knowledge base {id}")
     count: int = (
         db.query(KnowledgeBaseEntity).filter(KnowledgeBaseEntity.id == id).delete()
     )
@@ -110,7 +117,13 @@ def delete(
 
 
 @router.put("/knowledge_bases/{id}", dependencies=[Depends(oauth2_scheme)])
-def update(id: int, knowledge_base: KnowledgeBaseUpdate, db: Session = Depends(get_db)):
+def update(
+    id: int,
+    knowledge_base: KnowledgeBaseUpdate,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    logging.info(f"{user.username} update knowledge base {id}")
     knowledge_base = update_knowledge_base(db, knowledge_base, id)
     return {"data": knowledge_base}
 
@@ -125,26 +138,36 @@ def get(id: int, db: Session = Depends(get_db)):
 def create_one_piece_of_knowledge(
     id: int, model: KnowledgeItem, user: User = Depends(get_current_user)
 ):
+    logging.info(f"{user.username} create knowledge {model.content}")
     knowledge_item, is_need_review = create_knowledge_item(id, user, model)
     return {"data": {**knowledge_item.__dict__, "isNeedReview": is_need_review}}
 
 
 @router.get("/knowledge_bases/{id}/item", dependencies=[Depends(oauth2_scheme)])
 def get_knowledge(
-    id: int, user: User = Depends(get_current_user), filepath: Union[str, None] = None, tag_id: Union[int, None] = None, page: int = 1, size: int = 15
+    id: int,
+    user: User = Depends(get_current_user),
+    filepath: Union[str, None] = None,
+    tag_id: Union[int, None] = None,
+    page: int = 1,
+    size: int = 15,
 ):
     knowledge_items = get_knowledge_items(id, page, size, filepath, tag_id, user)
     return knowledge_items
 
 
 @router.put("/knowledge_bases/item/{item_id}", dependencies=[Depends(oauth2_scheme)])
-def update_knowledge_item(item_id: int, model: KnowledgeItem):
+def update_knowledge_item(
+    item_id: int, model: KnowledgeItem, user: User = Depends(get_current_user)
+):
+    logging.info(f"{user.username} update knowledge {item_id} - {model.content}")
     knowledge_item = update_knowledge_item_service(item_id, model)
     return {"data": knowledge_item}
 
 
 @router.delete("/knowledge_bases/item/{item_id}", dependencies=[Depends(oauth2_scheme)])
-def delete_knowledge_item(item_id: int):
+def delete_knowledge_item(item_id: int, user: User = Depends(get_current_user)):
+    logging.info(f"{user.username} delete knowledge {item_id}")
     delete_knowledge_item_service(item_id)
     return {"data": "success"}
 
@@ -180,6 +203,9 @@ def post_kb_tags(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
+    logging.info(
+        f"{user.username} create tag {model.name} in knowledge base {knowledge_base_id}"
+    )
     return create_knowledge_base_tag(db, knowledge_base_id, model, user)
 
 
@@ -192,7 +218,11 @@ def partial_update_kb_tag(
     tag_id: int,
     model: KnowledgeBaseTagModel,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
+    logging.info(
+        f"{user.username} update tag {model.id} {model.name} in knowledge base {knowledge_base_id}"
+    )
     result = partial_update_tag_by_id(db, knowledge_base_id, tag_id, model)
     if result:
         logging.info(f"tag {tag_id} updated")
@@ -203,13 +233,26 @@ def partial_update_kb_tag(
     "/knowledge_bases/{knowledge_base_id}/tags/{tag_id}",
     dependencies=[Depends(oauth2_scheme)],
 )
-def delete_kb_tag(knowledge_base_id: int, tag_id: int, db: Session = Depends(get_db)):
+def delete_kb_tag(
+    knowledge_base_id: int,
+    tag_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    logging.info(
+        f"{user.username} delete tag {tag_id} in knowledge base {knowledge_base_id}"
+    )
     count = delete_tag_by_id(db, tag_id, knowledge_base_id)
     if count > 0:
         logging.info(f"tag {tag_id} or all tags associated with {tag_id} deleted")
     return {"message": "tag deleted"}
 
 
-@router.get("/knowledge_bases/{knowledge_base_id}/all/tags", dependencies=[Depends(oauth2_scheme)])
-def retrieve_knowledge_base_tags_all(knowledge_base_id: int, db: Session = Depends(get_db)):
+@router.get(
+    "/knowledge_bases/{knowledge_base_id}/all/tags",
+    dependencies=[Depends(oauth2_scheme)],
+)
+def retrieve_knowledge_base_tags_all(
+    knowledge_base_id: int, db: Session = Depends(get_db)
+):
     return get_knowledge_base_tags_all(db, knowledge_base_id)

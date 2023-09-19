@@ -39,7 +39,7 @@ declare namespace USER_API {
   };
 
   type UpdatePasswordParams = {
-    oldPassword: string;
-    newPassword: string;
+    old_password: string;
+    new_password: string;
   };
 }

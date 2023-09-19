@@ -78,15 +78,8 @@ def create_user(user: userDto.UserCreate, db: Session = Depends(get_db)):
     del user.password
     return user
 
-
-@router.put("/users/{user_id}", dependencies=[Depends(oauth2_scheme)])
-def update_users(user_id: int, user: userDto.UserUpdate, db: Session = Depends(get_db)):
-    update_user = userCurd.update_user(db, user_id, user)
-    return {"data": update_user}
-
-
 @router.put("/users/me", dependencies=[Depends(oauth2_scheme)])
-def update_users(
+def change_password(
     user_update: userDto.UserUpdatePassword,
     db: Session = Depends(get_db),
     current_user: userDto.User = Depends(get_current_user),
@@ -106,3 +99,11 @@ def update_users(
     user.password = get_password_hash(user_update.new_password)
     userCurd.update_user_password(db, user)
     return {"data": "success"}
+
+@router.put("/users/{user_id}", dependencies=[Depends(oauth2_scheme)])
+def update_users(user_id: int, user: userDto.UserUpdate, db: Session = Depends(get_db)):
+    update_user = userCurd.update_user(db, user_id, user)
+    return {"data": update_user}
+
+
+

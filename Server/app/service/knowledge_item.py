@@ -119,7 +119,7 @@ def get_knowledge_item(item_id: int):
 
 
 def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath: str):
-    logging.info(f"后台执行Embedding:{filepath}")
+    logging.info(f"{user.username}后台执行Embedding:{filepath}")
     try:
         db = next(get_db())
         update_file_status(db=db, filepath=filepath, status=FileStatus.EMBEDDING)
