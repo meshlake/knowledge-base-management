@@ -34,6 +34,10 @@ def get_all_knowledge_base(
     )
 
 
+def get_all_knowledge_base_no_paginate(db: Session):
+    return db.query(KnowledgeBaseEntity).all()
+
+
 def create_knowledge_base(
     db: Session,
     user: User,
