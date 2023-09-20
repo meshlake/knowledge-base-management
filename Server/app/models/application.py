@@ -7,7 +7,6 @@ from app.entities.applications import Category
 class ApplicationProperties(BaseModel):
     webhook_url: str = Field(None)
     puppet_token: str = Field(None)
-    puppet_type: str = Field('wxwork')
     private_enable: bool = Field(True)
     room_enable: bool = Field(True)
 

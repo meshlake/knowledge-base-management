@@ -7,8 +7,9 @@ from enum import Enum
 
 class Category(Enum):
     WX_PUBLIC = "WX_PUBLIC"
-    WX_CHATBOT = "WX_CHATBOT"
-    MANAGEMENT_PLATFORM = "MANAGEMENT_PLATFORM"
+    WECHAT = "WECHAT"
+    WXWORK = "WXWORK"
+    WHATSAPP = "WHATSAPP"
 
 
 class Application(Base, BaseModel):

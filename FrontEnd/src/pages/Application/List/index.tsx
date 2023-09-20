@@ -98,7 +98,7 @@ const ApplicationList = () => {
           bordered={false}
           ghost
           dataSource={list
-            .filter((item) => item.category === 'WX_CHATBOT')
+            .filter((item) => item.category !== 'WX_PUBLIC')
             .map((item) => {
               return {
                 id: item.id,

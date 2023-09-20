@@ -8,6 +8,13 @@ import LoginInfo from './components/LoginInfo';
 import ExtraConfig from './components/ExtraConfig';
 import styles from './index.less';
 
+const categoryMap = {
+  WX_PUBLIC: '公众号',
+  WECHAT: '微信账号',
+  WXWORK: '企业微信账号',
+  WHATSAPP: 'WhatsApp',
+};
+
 const ApplicationDetail: React.FC = () => {
   const params = useParams();
 
@@ -59,13 +66,13 @@ const ApplicationDetail: React.FC = () => {
         <div>返回</div>
       </div>
       <div className={styles.pageTitle}>
-        {application ? (application?.category === 'WX_PUBLIC' ? '公众号配置' : '企业微信配置') : ''}
+        {application ? `${categoryMap[application?.category]}配置` : ''}
       </div>
       <div className={styles.pageContent}>
         <Spin spinning={loading}>
           <BaseInfo data={application} updateRequest={handleUpdate} />
           <ChatbotConfig data={application} updateRequest={handleUpdate} />
-          {application && application.category === 'WX_CHATBOT' ? (
+          {application && application.category !== 'WX_PUBLIC' ? (
             <>
               <LoginInfo data={application} />
               <ExtraConfig data={application} updateRequest={handleUpdate} />

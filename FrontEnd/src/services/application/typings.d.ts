@@ -21,7 +21,7 @@ declare namespace Application_API {
 
   type Application = {
     id: string;
-    category: 'WX_PUBLIC' | 'WX_CHATBOT';
+    category: 'WX_PUBLIC' | 'WECHAT' | 'WXWORK' | 'WHATSAPP';
     name: string;
     description: string;
     chatbot: BaseModel;
