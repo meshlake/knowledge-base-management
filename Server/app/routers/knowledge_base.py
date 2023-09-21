@@ -85,7 +85,6 @@ def post(
     Returns:
         _type_: KnowledgeBaseModel
     """
-    logging.info(f"{user.username} create knowledge base {model.name}")
     return create_knowledge_base(db, user, model)
 
 
@@ -104,7 +103,6 @@ def delete(
         id (int): knowledge base id
         db (Session, optional): sqlalchemy database session. Defaults to Depends(get_db).
     """
-    logging.info(f"{user.username} delete knowledge base {id}")
     count: int = (
         db.query(KnowledgeBaseEntity).filter(KnowledgeBaseEntity.id == id).delete()
     )
@@ -117,13 +115,7 @@ def delete(
 
 
 @router.put("/knowledge_bases/{id}", dependencies=[Depends(oauth2_scheme)])
-def update(
-    id: int,
-    knowledge_base: KnowledgeBaseUpdate,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-):
-    logging.info(f"{user.username} update knowledge base {id}")
+def update(id: int, knowledge_base: KnowledgeBaseUpdate, db: Session = Depends(get_db)):
     knowledge_base = update_knowledge_base(db, knowledge_base, id)
     return {"data": knowledge_base}
 
@@ -138,7 +130,6 @@ def get(id: int, db: Session = Depends(get_db)):
 def create_one_piece_of_knowledge(
     id: int, model: KnowledgeItem, user: User = Depends(get_current_user)
 ):
-    logging.info(f"{user.username} create knowledge {model.content}")
     knowledge_item, is_need_review = create_knowledge_item(id, user, model)
     return {"data": {**knowledge_item.__dict__, "isNeedReview": is_need_review}}
 
@@ -157,17 +148,13 @@ def get_knowledge(
 
 
 @router.put("/knowledge_bases/item/{item_id}", dependencies=[Depends(oauth2_scheme)])
-def update_knowledge_item(
-    item_id: int, model: KnowledgeItem, user: User = Depends(get_current_user)
-):
-    logging.info(f"{user.username} update knowledge {item_id} - {model.content}")
+def update_knowledge_item(item_id: int, model: KnowledgeItem):
     knowledge_item = update_knowledge_item_service(item_id, model)
     return {"data": knowledge_item}
 
 
 @router.delete("/knowledge_bases/item/{item_id}", dependencies=[Depends(oauth2_scheme)])
-def delete_knowledge_item(item_id: int, user: User = Depends(get_current_user)):
-    logging.info(f"{user.username} delete knowledge {item_id}")
+def delete_knowledge_item(item_id: int):
     delete_knowledge_item_service(item_id)
     return {"data": "success"}
 
@@ -203,9 +190,6 @@ def post_kb_tags(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    logging.info(
-        f"{user.username} create tag {model.name} in knowledge base {knowledge_base_id}"
-    )
     return create_knowledge_base_tag(db, knowledge_base_id, model, user)
 
 
@@ -218,11 +202,7 @@ def partial_update_kb_tag(
     tag_id: int,
     model: KnowledgeBaseTagModel,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
 ):
-    logging.info(
-        f"{user.username} update tag {model.id} {model.name} in knowledge base {knowledge_base_id}"
-    )
     result = partial_update_tag_by_id(db, knowledge_base_id, tag_id, model)
     if result:
         logging.info(f"tag {tag_id} updated")
@@ -237,11 +217,7 @@ def delete_kb_tag(
     knowledge_base_id: int,
     tag_id: int,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
 ):
-    logging.info(
-        f"{user.username} delete tag {tag_id} in knowledge base {knowledge_base_id}"
-    )
     count = delete_tag_by_id(db, tag_id, knowledge_base_id)
     if count > 0:
         logging.info(f"tag {tag_id} or all tags associated with {tag_id} deleted")

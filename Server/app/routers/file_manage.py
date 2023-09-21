@@ -40,7 +40,6 @@ def create_file(
 @router.post("/files/upload")
 async def upload_file(file: UploadFile, current_user: User = Depends(get_current_user)):
     new_file_name = uniqueFileName(file.filename)
-    logging.info(f"{current_user.username} upload file {new_file_name}")
     upload_result = upload_file_service(
         file.file, "knowledge-base", f"{current_user.organization.code}/{new_file_name}"
     )

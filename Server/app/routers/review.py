@@ -28,8 +28,6 @@ def review_knowledge(
     id: int,
     action: str,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
 ):
-    logging.info(f"{user.username} review item {id} with action {action}")
     update_review_item(id=id, action=action, db=db)
     return {"data": True}
