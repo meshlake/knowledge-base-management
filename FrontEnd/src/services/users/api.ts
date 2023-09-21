@@ -3,7 +3,7 @@
 import request from '@/utils/request';
 
 /** 登录接口 POST /users/login */
-export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
+export async function login(body: USER_API.LoginParams, options?: { [key: string]: any }) {
   let formBody = [];
   formBody.push(encodeURIComponent('username') + '=' + encodeURIComponent(body.username as string));
   formBody.push(encodeURIComponent('password') + '=' + encodeURIComponent(body.password as string));
@@ -25,5 +25,15 @@ export async function getCurrentUser() {
     headers: {
       authorization: 'Bearer ' + localStorage.getItem('access_token'),
     },
+  });
+}
+
+export async function updatePassword(data: USER_API.UpdatePasswordParams) {
+  return request<USER_API.CurrentUser>('/users/me', {
+    method: 'PUT',
+    headers: {
+      authorization: 'Bearer ' + localStorage.getItem('access_token'),
+    },
+    data,
   });
 }

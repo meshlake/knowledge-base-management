@@ -1,0 +1,70 @@
+.title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  margin: 8px 0 32px 8px;
+}
+
+.content {
+  border-radius: 4px;
+  padding: 24px 136px;
+  margin-left: 8px;
+  box-shadow: 0 0 4px 0 #ccc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  //   100vh - 下margin - 头部高度 - 标题高度
+  height: calc(100vh - 24px - 48px - 92px);
+  .item {
+    width: 100%;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    padding: 40px 120px;
+  }
+  .avatarSection {
+    align-items: center;
+    .avatar {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      margin-right: 40px;
+    }
+    .nameBox {
+      display: flex;
+      align-items: center;
+      .name {
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+        margin-right: 8px;
+      }
+    }
+    .role {
+      font-size: 12px;
+      color: #999;
+    }
+  }
+  .defaultSection {
+    .sectionTitle {
+      font-size: 16px;
+      color: #333;
+      font-weight: bold;
+      margin-right: 56px;
+    }
+    .sectionContent {
+      font-size: 14px;
+      color: #333;
+      .contentTitle {
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+      .contentDes {
+        color: #999;
+        margin-bottom: 16px;
+      }
+      .contentBtn {
+        padding-left: 0;
+      }
+    }
+  }
+}

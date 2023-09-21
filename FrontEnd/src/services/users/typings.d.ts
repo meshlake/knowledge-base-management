@@ -32,4 +32,14 @@ declare namespace USER_API {
     organization?: ORGANIZATION_API.Organization;
     role?: ROLE_API.Role;
   };
+
+  type LoginParams = {
+    username: string;
+    password: string;
+  };
+
+  type UpdatePasswordParams = {
+    old_password: string;
+    new_password: string;
+  };
 }

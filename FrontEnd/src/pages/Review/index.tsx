@@ -78,7 +78,7 @@ const App: React.FC = () => {
             header={
               <List.Item>
                 <Row style={{ width: '100%' }} gutter={32}>
-                  <Col span={4} className={Styles.listTitle}>
+                  <Col span={3} className={Styles.listTitle}>
                     任务序号
                   </Col>
                   <Col span={9} className={Styles.listTitle}>
@@ -87,7 +87,7 @@ const App: React.FC = () => {
                   <Col span={9} className={Styles.listTitle}>
                     原有知识
                   </Col>
-                  <Col span={2} className={Styles.listTitle}>
+                  <Col span={3} className={Styles.listTitle}>
                     操作
                   </Col>
                 </Row>
@@ -97,7 +97,7 @@ const App: React.FC = () => {
               <List.Item>
                 <Row style={{ width: '100%' }} gutter={32}>
                   <Col
-                    span={4}
+                    span={3}
                     className={Styles.listContent}
                     style={{ fontSize: '30px', fontWeight: 'bold' }}
                   >
@@ -129,7 +129,7 @@ const App: React.FC = () => {
                       }}
                     ></KnowledgeItem>
                   </Col>
-                  <Col span={2} className={Styles.listContent}>
+                  <Col span={3} className={Styles.listContent}>
                     {item.status === 'PENDING' && (
                       <>
                         <Button type="link" onClick={() => handleReview(item.id, 'ADD')}>

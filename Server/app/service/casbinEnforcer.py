@@ -1,4 +1,5 @@
 import json
+import logging
 from fastapi import Request, Depends
 from casbin_sqlalchemy_adapter import Adapter
 from casbin import Enforcer
@@ -44,6 +45,7 @@ async def authorize(request: Request, call_next, whitelist: list):
         return await call_next(request)
 
     current_user = await get_current_user_without_depends(request)
+    logging.info(f"{current_user.username} {method} {path}")
     # 获取当前用户的角色
     role = current_user.role.code
 

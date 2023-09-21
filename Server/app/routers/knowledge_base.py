@@ -24,7 +24,7 @@ from app.service.knowledge_base import (
     partial_update_tag_by_id,
     delete_tag_by_id,
     get_knowledge_base_tags_all,
-    get_all_knowledge_base
+    get_all_knowledge_base,
 )
 
 from app.service.knowledge_item import (
@@ -37,7 +37,7 @@ from pydantic.fields import Field
 from typing import Union
 
 Page = Page.with_custom_options(
-    size=Field(50, gt=0, le=2 ** 32 - 1),
+    size=Field(50, gt=0, le=2**32 - 1),
 )
 
 router = APIRouter(
@@ -46,13 +46,17 @@ router = APIRouter(
     dependencies=[Depends(oauth2_scheme)],
 )
 
+
 @router.get(
     "/knowledge_bases",
     dependencies=[Depends(oauth2_scheme)],
     response_model=Page[KnowledgeBaseModel],
 )
-def retrieve_knowledge_bases(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+def retrieve_knowledge_bases(
+    db: Session = Depends(get_db), user: User = Depends(get_current_user)
+):
     return get_all_knowledge_base(db, user)
+
 
 @router.post(
     "/knowledge_bases",
@@ -91,6 +95,7 @@ def post(
 def delete(
     id: int,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
     """DELETE /knowledge_bases/{id}
 
@@ -131,7 +136,12 @@ def create_one_piece_of_knowledge(
 
 @router.get("/knowledge_bases/{id}/item", dependencies=[Depends(oauth2_scheme)])
 def get_knowledge(
-    id: int, user: User = Depends(get_current_user), filepath: Union[str, None] = None, tag_id: Union[int, None] = None, page: int = 1, size: int = 15
+    id: int,
+    user: User = Depends(get_current_user),
+    filepath: Union[str, None] = None,
+    tag_id: Union[int, None] = None,
+    page: int = 1,
+    size: int = 15,
 ):
     knowledge_items = get_knowledge_items(id, page, size, filepath, tag_id, user)
     return knowledge_items
@@ -203,13 +213,22 @@ def partial_update_kb_tag(
     "/knowledge_bases/{knowledge_base_id}/tags/{tag_id}",
     dependencies=[Depends(oauth2_scheme)],
 )
-def delete_kb_tag(knowledge_base_id: int, tag_id: int, db: Session = Depends(get_db)):
+def delete_kb_tag(
+    knowledge_base_id: int,
+    tag_id: int,
+    db: Session = Depends(get_db),
+):
     count = delete_tag_by_id(db, tag_id, knowledge_base_id)
     if count > 0:
         logging.info(f"tag {tag_id} or all tags associated with {tag_id} deleted")
     return {"message": "tag deleted"}
 
 
-@router.get("/knowledge_bases/{knowledge_base_id}/all/tags", dependencies=[Depends(oauth2_scheme)])
-def retrieve_knowledge_base_tags_all(knowledge_base_id: int, db: Session = Depends(get_db)):
+@router.get(
+    "/knowledge_bases/{knowledge_base_id}/all/tags",
+    dependencies=[Depends(oauth2_scheme)],
+)
+def retrieve_knowledge_base_tags_all(
+    knowledge_base_id: int, db: Session = Depends(get_db)
+):
     return get_knowledge_base_tags_all(db, knowledge_base_id)

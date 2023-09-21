@@ -49,3 +49,7 @@ class UserUpdate(BaseModel):
     organization_id: int
     role_id: int
     disabled: bool
+
+class UserUpdatePassword(BaseModel):
+    old_password: str
+    new_password: str

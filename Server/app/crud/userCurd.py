@@ -51,6 +51,15 @@ def update_user(db: Session, user_id, data: UserUpdate):
     return user
 
 
+# 更新用户
+def update_user_password(db: Session, data):
+    user = db.query(User).get(data.id)
+    if user:
+        user.password = data.password
+        db.commit()
+    return user
+
+
 # 删除用户
 def delete_user(db: Session, user_id):
     user = db.query(User).get(user_id)

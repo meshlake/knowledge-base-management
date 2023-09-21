@@ -25,6 +25,7 @@ from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import select
 
 from app.service.user import query_user_by_org
+from app.service.knowledge_base import get_all_knowledge_base_no_paginate
 
 load_dotenv()
 
@@ -114,6 +115,7 @@ def delete_old_knowledge(similar_knowledge: SimilarKnowledge):
         "id", similar_knowledge.old_knowledge_id
     ).execute()
 
+
 def is_valid_json_with_key(data):
     # 判断字符串是否为空
     if not data:
@@ -122,7 +124,7 @@ def is_valid_json_with_key(data):
     try:
         # 尝试解析字符串为 JSON
         json_data = json.loads(data)
-        
+
         # 判断是否为字典类型
         if not isinstance(json_data, dict):
             return False
@@ -131,6 +133,7 @@ def is_valid_json_with_key(data):
         return "knowledge" in json_data
     except json.JSONDecodeError:
         return False
+
 
 def fusion_knowledge(silimar_knowledge: SimilarKnowledge):
     old_knowledge_existed = validate_knowledge_existed(silimar_knowledge)
@@ -213,12 +216,15 @@ def update_review_item(id: int, db: Session, action: ReviewType):
 
 def get_review_items(db: Session, user: User):
     user_ids = query_user_by_org(db, user.organization_id)
+    knowledge_base = get_all_knowledge_base_no_paginate(db)
+    knowledge_base_ids = [item.id for item in knowledge_base]
     return paginate(
         db,
         select(SimilarKnowledge)
         .filter(
             SimilarKnowledge.new_knowledge_user_id.in_(user_ids),
             SimilarKnowledge.old_knowledge_user_id.in_(user_ids),
+            SimilarKnowledge.knowledge_base_id.in_(knowledge_base_ids),
         )
         .order_by(SimilarKnowledge.createdAt.desc()),
     )
