@@ -167,7 +167,7 @@ const App: React.FC<KnowledgeListProps> = (props) => {
           <div>
             {knowledgeBase.name}：{pagination.total}条知识
           </div>
-          <Search style={{ width: '300px' }} placeholder="搜索" onSearch={onSearch} />
+          <Search style={{ width: '300px' }} placeholder="搜索" onSearch={onSearch} allowClear />
           <div>
             {isCanUploadFile && (
               <Button onClick={handleOpenImportFileModal} style={{ marginRight: '20px' }}>
