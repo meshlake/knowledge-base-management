@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 from app.dependencies import get_db
 from app.entities.users import User
 from app.service.embedding_client import create_embedding_client
@@ -30,6 +31,44 @@ from app.service.knowledge_base import get_all_knowledge_base_no_paginate
 load_dotenv()
 
 
+def is_similar_knowledge(new_knowledge_content: str, old_knowledge_content: str):
+    os.environ["OPENAI_API_TYPE"] = "azure"
+    os.environ["OPENAI_API_BASE"] = os.getenv("AZURE_OPENAI_API_BASE")
+    os.environ["OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")
+    os.environ["OPENAI_API_VERSION"] = "2023-06-01-preview"
+    llm = ChatOpenAI(engine="gpt-35-turbo")
+    prompt_template = PromptTemplate.from_template(
+        "判断两段文字是否表达为相同的含义并给出理由，1、```{new_knowledge_content}```, 2、```{old_knowledge_content}```"
+    )
+    prompt = prompt_template.format(
+        new_knowledge_content=new_knowledge_content,
+        old_knowledge_content=old_knowledge_content,
+    )
+    template = """
+    你负责判断给你的两段文字是否表达为相同的含义并给出理由。
+    你的返回应该是一段json, 
+    例如：{{is_similar: 是否表达相似的含义,布尔值, reason: 你的理由}}
+    """
+    system_message_prompt = SystemMessagePromptTemplate.from_template(template)
+    human_template = "{text}"
+    human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
+
+    chat_prompt = ChatPromptTemplate.from_messages(
+        [system_message_prompt, human_message_prompt]
+    )
+    chain = LLMChain(llm=llm, prompt=chat_prompt)
+    res = chain.run(prompt)
+    try:
+        res = json.loads(res)
+        logging.info(prompt)
+        logging.info(res["is_similar"])
+        logging.info(res["reason"])
+        return res["is_similar"]
+    except Exception:
+        logging.info(res)
+        return True
+
+
 def query_similar_knowledge(vectors, docs):
     supabase = SupabaseClient()
     no_similar_knowledge_idx = []
@@ -48,6 +87,11 @@ def query_similar_knowledge(vectors, docs):
         if len(response.data) > 0:
             old_knowledge = response.data[0]
             if (old_knowledge["similarity"]) > 0.93:
+                is_similar = is_similar_knowledge(
+                    docs[idx].page_content, old_knowledge["content"]
+                )
+                if not is_similar:
+                    continue
                 similar_knowledge = SimilarKnowledgeCreate(
                     new_knowledge=docs[idx].page_content,
                     new_knowledge_tag_id=docs[idx].metadata["tag"],
