@@ -1,4 +1,4 @@
-import { Button, Col, Modal, Pagination, Row, Spin, notification } from 'antd';
+import { Button, Col, Input, Modal, Pagination, Row, Spin, notification } from 'antd';
 import React, { useEffect, useState } from 'react';
 import Styles from './index.less';
 import KnowledgeItem from '../KnowledgeItem';
@@ -15,6 +15,8 @@ type KnowledgeListProps = {
   isFileEmbedding: boolean;
   refresh: () => void;
 };
+
+const { Search } = Input;
 
 const App: React.FC<KnowledgeListProps> = (props) => {
   const { knowledgeBase, isFileEmbedding, refresh } = props;
@@ -50,10 +52,17 @@ const App: React.FC<KnowledgeListProps> = (props) => {
     pagePermissions?.includes('/tag') || false,
   );
 
-  const getKnowledgeList = async (page: number) => {
+  const [searchValue, setSearchValue] = useState<string>('');
+
+  const getKnowledgeList = async (page: number, search?: string) => {
     setLoading(true);
     try {
-      const data = await getKnowledgeItems(Number(params.id), page);
+      let searchParams = {};
+      if (search && search.length > 0) {
+        searchParams = { content: search };
+      }
+
+      const data = await getKnowledgeItems(Number(params.id), page, searchParams);
       setKnowledgeList(data.items);
       setPagination({
         page: data.page,
@@ -88,7 +97,7 @@ const App: React.FC<KnowledgeListProps> = (props) => {
         setLoading(true);
         try {
           await deleteKnowledgeItem(id);
-          getKnowledgeList(pagination.page);
+          getKnowledgeList(pagination.page, searchValue);
           notification.success({ message: '删除成功' });
           setLoading(false);
         } catch (error) {
@@ -128,8 +137,11 @@ const App: React.FC<KnowledgeListProps> = (props) => {
     }
   };
 
+  const onSearch = (value: string) => {
+    setSearchValue(value);
+  };
+
   useEffect(() => {
-    getKnowledgeList(1);
     getKnowledgeBaseAllTags(Number(params.id)).then((res) => {
       setTags(res);
     });
@@ -144,6 +156,10 @@ const App: React.FC<KnowledgeListProps> = (props) => {
     }
   }, [initialState]);
 
+  useEffect(() => {
+    getKnowledgeList(1, searchValue);
+  }, [searchValue]);
+
   return (
     <div className={Styles.knowledgeList}>
       <Spin spinning={loading}>
@@ -151,7 +167,7 @@ const App: React.FC<KnowledgeListProps> = (props) => {
           <div>
             {knowledgeBase.name}：{pagination.total}条知识
           </div>
-          {/* <div>搜索</div> */}
+          <Search style={{ width: '300px' }} placeholder="搜索" onSearch={onSearch} allowClear />
           <div>
             {isCanUploadFile && (
               <Button onClick={handleOpenImportFileModal} style={{ marginRight: '20px' }}>
@@ -232,7 +248,7 @@ const App: React.FC<KnowledgeListProps> = (props) => {
             defaultCurrent={1}
             showSizeChanger={false}
             size="small"
-            onChange={(page) => getKnowledgeList(page)}
+            onChange={(page) => getKnowledgeList(page, searchValue)}
           />
         </div>
       )}

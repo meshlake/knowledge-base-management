@@ -5,12 +5,46 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import KnowledgeItem from './components/KnowledgeItem';
 import { get_review_items, review } from '@/services/review/api';
 import { CheckOutlined } from '@ant-design/icons';
+import KnowledgeItemDetail from './components/KnowledgeItemDetail';
+
+type ReviewKnowledgeItem = {
+  id: number;
+  content: string;
+  metadata: {
+    tag: {
+      id: number;
+      name: string;
+    };
+    user: {
+      id: number;
+      nickname: string;
+    };
+    knowledgeBase: {
+      id: number;
+      name: string;
+    };
+  };
+};
 
 const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<REVIEW_API.SimilarKnowledge[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
+
+  const handleCloseModal = () => {
+    setIsDetailModalOpen(false);
+  };
+
+  const [currentData, setCurrentData] = useState<ReviewKnowledgeItem>({} as ReviewKnowledgeItem);
+
+  const handleOpenDetailModal = (data: ReviewKnowledgeItem) => {
+    if (data) {
+      setCurrentData(data);
+      setIsDetailModalOpen(true);
+    }
+  };
 
   const loadMoreData = async () => {
     if (loading) {
@@ -103,7 +137,20 @@ const App: React.FC = () => {
                   >
                     {index + 1}
                   </Col>
-                  <Col span={9}>
+                  <Col
+                    span={9}
+                    onClick={() =>
+                      handleOpenDetailModal({
+                        id: item.new_knowledge_id,
+                        content: item.new_knowledge,
+                        metadata: {
+                          tag: item.new_knowledge_tag,
+                          user: item.new_knowledge_user,
+                          knowledgeBase: item.knowledge_base,
+                        },
+                      })
+                    }
+                  >
                     <KnowledgeItem
                       data={{
                         id: item.new_knowledge_id,
@@ -116,7 +163,20 @@ const App: React.FC = () => {
                       }}
                     ></KnowledgeItem>
                   </Col>
-                  <Col span={9}>
+                  <Col
+                    span={9}
+                    onClick={() =>
+                      handleOpenDetailModal({
+                        id: item.old_knowledge_id,
+                        content: item.old_knowledge,
+                        metadata: {
+                          tag: item.old_knowledge_tag,
+                          user: item.old_knowledge_user,
+                          knowledgeBase: item.knowledge_base,
+                        },
+                      })
+                    }
+                  >
                     <KnowledgeItem
                       data={{
                         id: item.old_knowledge_id,
@@ -159,6 +219,11 @@ const App: React.FC = () => {
           />
         </InfiniteScroll>
       </div>
+      <KnowledgeItemDetail
+        isModalOpen={isDetailModalOpen}
+        onClose={handleCloseModal}
+        data={currentData}
+      ></KnowledgeItemDetail>
     </div>
   );
 };
