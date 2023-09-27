@@ -47,7 +47,7 @@ def query_similar_knowledge(vectors, docs):
         ).execute()
         if len(response.data) > 0:
             old_knowledge = response.data[0]
-            if (old_knowledge["similarity"]) > 0.96:
+            if (old_knowledge["similarity"]) > 0.93:
                 similar_knowledge = SimilarKnowledgeCreate(
                     new_knowledge=docs[idx].page_content,
                     new_knowledge_tag_id=docs[idx].metadata["tag"],

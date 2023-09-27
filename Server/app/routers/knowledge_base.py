@@ -142,8 +142,9 @@ def get_knowledge(
     tag_id: Union[int, None] = None,
     page: int = 1,
     size: int = 15,
+    search: Union[str, None] = None,
 ):
-    knowledge_items = get_knowledge_items(id, page, size, filepath, tag_id, user)
+    knowledge_items = get_knowledge_items(id, page, size, filepath, tag_id, user, search)
     return knowledge_items
 
 

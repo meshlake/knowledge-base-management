@@ -6,6 +6,7 @@ export function getKnowledgeItems(
   search?: {
     filepath?: string;
     tag_id?: number;
+    content?: string;
   },
 ) {
   return request<DEFAULT_API.Paginate<KNOWLEDGE_ITEM_API.KnowledgeItem>>(
@@ -18,6 +19,7 @@ export function getKnowledgeItems(
         page,
         filepath: search?.filepath,
         tag_id: search?.tag_id,
+        search: search?.content,
       },
     },
   );

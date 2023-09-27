@@ -39,7 +39,70 @@ def create_knowledge_item(
     return model, len(ids) == 0
 
 
-def get_knowledge_items(
+def search_knowledge_item(
+    knowledge_base_id: int,
+    page: int,
+    size: int,
+    search: str,
+):
+    supabase = SupabaseClient()
+    offset = (page - 1) * size
+    embeddings = create_embedding_client()
+    vector = embeddings.embed_query(search)
+    response = supabase.rpc(
+        "search_knowledge_with_pagination",
+        {
+            "query_embedding": vector,
+            "size": size,
+            "off": offset,
+            "knowledge_base_id": f"{knowledge_base_id}",
+        },
+    ).execute()
+    count_res = supabase.rpc(
+        "count_knowledge_with_search",
+        {
+            "query_embedding": vector,
+            "knowledge_base_id": f"{knowledge_base_id}",
+        },
+    ).execute()
+    total_res = count_res.data[0]
+    return response, total_res
+
+
+def search_knowledge_item_by_user_id(
+    knowledge_base_id: int,
+    page: int,
+    size: int,
+    user_id: int,
+    search: str,
+):
+    supabase = SupabaseClient()
+    offset = (page - 1) * size
+    embeddings = create_embedding_client()
+    vector = embeddings.embed_query(search)
+    response = supabase.rpc(
+        "user_search_knowledge_with_pagination",
+        {
+            "query_embedding": vector,
+            "size": size,
+            "off": offset,
+            "knowledge_base_id": f"{knowledge_base_id}",
+            "user_id": f"{user_id}",
+        },
+    ).execute()
+    count_res = supabase.rpc(
+        "user_count_knowledge_with_search",
+        {
+            "query_embedding": vector,
+            "knowledge_base_id": f"{knowledge_base_id}",
+            "user_id": f"{user_id}",
+        },
+    ).execute()
+    total_res = count_res.data[0]
+    return response, total_res
+
+
+def default_get_knowledge_items(
     knowledge_base_id: int,
     page: int,
     size: int,
@@ -49,7 +112,6 @@ def get_knowledge_items(
 ):
     supabase = SupabaseClient()
     offset = (page - 1) * size
-
     list_query = (
         supabase.table("knowledge")
         .select("id, content, metadata")
@@ -74,15 +136,55 @@ def get_knowledge_items(
 
     response = list_query.order("id", desc=True).range(offset, offset + size).execute()
     total_res = count_query.execute()
+    return response, total_res
 
-    logging.debug(f"knowledge items: {response}")
-    return {
-        "items": response.data,
-        "total": total_res.count,
-        "page": page,
-        "size": size,
-        "pages": total_res.count // size + 1,
-    }
+
+def get_knowledge_items(
+    knowledge_base_id: int,
+    page: int,
+    size: int,
+    filepath: str = None,
+    tag_id: int = None,
+    user: User = None,
+    search: str = None,
+):
+    # 相似搜索
+    if search:
+        # 普通用户只能看到自己创建的知识
+        if user and user.role.code == "user":
+            response, total_res = search_knowledge_item_by_user_id(
+                knowledge_base_id, page, size, user.id, search
+            )
+            return {
+                "items": response.data,
+                "total": total_res["count"],
+                "page": page,
+                "size": size,
+                "pages": total_res["count"] // size + 1,
+            }
+        else:
+            response, total_res = search_knowledge_item(
+                knowledge_base_id, page, size, search
+            )
+            return {
+                "items": response.data,
+                "total": total_res["count"],
+                "page": page,
+                "size": size,
+                "pages": total_res["count"] // size + 1,
+            }
+    else:
+        response, total_res = default_get_knowledge_items(
+            knowledge_base_id, page, size, filepath, tag_id, user
+        )
+        logging.debug(f"knowledge items: {response}")
+        return {
+            "items": response.data,
+            "total": total_res.count,
+            "page": page,
+            "size": size,
+            "pages": total_res.count // size + 1,
+        }
 
 
 def delete_knowledge_item(item_id: int):
