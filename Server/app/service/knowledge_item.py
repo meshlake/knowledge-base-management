@@ -53,19 +53,19 @@ def search_knowledge_item(
         "search_knowledge_with_pagination",
         {
             "query_embedding": vector,
-            "size": size,
+            "size": 10,
             "off": offset,
             "knowledge_base_id": f"{knowledge_base_id}",
         },
     ).execute()
-    count_res = supabase.rpc(
-        "count_knowledge_with_search",
-        {
-            "query_embedding": vector,
-            "knowledge_base_id": f"{knowledge_base_id}",
-        },
-    ).execute()
-    total_res = count_res.data[0]
+    # count_res = supabase.rpc(
+    #     "count_knowledge_with_search",
+    #     {
+    #         "query_embedding": vector,
+    #         "knowledge_base_id": f"{knowledge_base_id}",
+    #     },
+    # ).execute()
+    total_res = response.data.__len__()
     return response, total_res
 
 
@@ -84,21 +84,22 @@ def search_knowledge_item_by_user_id(
         "user_search_knowledge_with_pagination",
         {
             "query_embedding": vector,
-            "size": size,
+            "size": 10,
             "off": offset,
             "knowledge_base_id": f"{knowledge_base_id}",
             "user_id": f"{user_id}",
         },
     ).execute()
-    count_res = supabase.rpc(
-        "user_count_knowledge_with_search",
-        {
-            "query_embedding": vector,
-            "knowledge_base_id": f"{knowledge_base_id}",
-            "user_id": f"{user_id}",
-        },
-    ).execute()
-    total_res = count_res.data[0]
+    # count_res = supabase.rpc(
+    #     "user_count_knowledge_with_search",
+    #     {
+    #         "query_embedding": vector,
+    #         "knowledge_base_id": f"{knowledge_base_id}",
+    #         "user_id": f"{user_id}",
+    #     },
+    # ).execute()
+    # total_res = count_res.data[0]
+    total_res = response.data.__len__()
     return response, total_res
 
 
@@ -157,10 +158,10 @@ def get_knowledge_items(
             )
             return {
                 "items": response.data,
-                "total": total_res["count"],
+                "total": total_res,
                 "page": page,
                 "size": size,
-                "pages": total_res["count"] // size + 1,
+                "pages": total_res // size + 1,
             }
         else:
             response, total_res = search_knowledge_item(
@@ -168,10 +169,10 @@ def get_knowledge_items(
             )
             return {
                 "items": response.data,
-                "total": total_res["count"],
+                "total": total_res,
                 "page": page,
                 "size": size,
-                "pages": total_res["count"] // size + 1,
+                "pages": total_res // size + 1,
             }
     else:
         response, total_res = default_get_knowledge_items(
