@@ -177,14 +177,13 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
             }
             # 因为S3Loader加载文件是下载后从临时文件夹中获取的，所以metadata中的source是临时文件夹中的文件路径，需要修改为S3中的文件路径
             for doc in docs:
-                print(doc)
                 doc.metadata = metadata
 
             embedding_docs = docs
         else:
             documents = loader.load()
             text_splitter = RecursiveCharacterTextSplitter(
-                separators=["\n\n", "\n"], chunk_size=300, chunk_overlap=0
+                separators=["\n\n", "\n"], chunk_size=500, chunk_overlap=30
             )
             docs = text_splitter.split_documents(documents)
 
