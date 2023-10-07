@@ -10,6 +10,7 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.docstore.document import Document
 from app.models.enums import FileStatus, KnowledgeItemType
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import MarkdownHeaderTextSplitter
 from app.service.file_manage import update_file_status
 from app.service.embedding_client import create_embedding_client
 from unstructured.file_utils.filetype import (
@@ -252,10 +253,41 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
                     "tag": doc.metadata["tag"] if "tag" in doc.metadata else None,
                 }
             embedding_docs = documents
+        elif (filetype == FileType.MD):
+            documents = loader.load()
+
+            headers_to_split_on = [
+                ("#", "Header 1"),
+                ("##", "Header 2"),
+            ]
+            markdown_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=headers_to_split_on)
+            text_splitter = RecursiveCharacterTextSplitter(
+                separators=["\n\n", "\n"], chunk_size=500, chunk_overlap=30
+            )
+
+            docs = []
+            for document in documents:
+                md_header_splits = markdown_splitter.split_text(document.page_content)
+                splits = text_splitter.split_documents(md_header_splits)
+                docs.extend(splits)
+
+            metadata = {
+                "type": KnowledgeItemType.FILE.name,
+                "source": filepath,
+                "knowledge_base_id": knowledge_base_id,
+                "user_id": user.id,
+                "tag": None,
+            }
+            # 因为S3Loader加载文件是下载后从临时文件夹中获取的，所以metadata中的source是临时文件夹中的文件路径，需要修改为S3中的文件路径
+            for doc in docs:
+                print(doc)
+                doc.metadata = metadata
+
+            embedding_docs = docs
         else:
             documents = loader.load()
             text_splitter = RecursiveCharacterTextSplitter(
-                chunk_size=300, chunk_overlap=0
+                separators=["\n\n", "\n"], chunk_size=300, chunk_overlap=0
             )
             docs = text_splitter.split_documents(documents)
 

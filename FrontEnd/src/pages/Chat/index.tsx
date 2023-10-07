@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Markdown from 'react-markdown';
 import classNames from 'classnames';
 import { useLocation, history } from '@umijs/max';
 import {
@@ -343,7 +344,11 @@ const ChatComponent: React.FC = () => {
         <div className={styles.messageContainer}>
           <Chat
             messages={messages}
-            renderMessageContent={(msg: any) => <Bubble content={msg.content.text} />}
+            renderMessageContent={(msg: any) => (
+              <Bubble>
+                <Markdown>{msg.content.text}</Markdown>
+              </Bubble>
+            )}
             onSend={handleSendMessage}
           />
         </div>

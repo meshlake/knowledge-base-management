@@ -27,7 +27,7 @@ const App: React.FC<ImportFileProps> = (props) => {
 
   const draggerProps: UploadProps = {
     name: 'file',
-    accept: '.doc,.docx,.txt,.xlsx,.csv,.pdf,.pptx',
+    accept: '.doc,.docx,.txt,.xlsx,.csv,.pdf,.pptx,.md',
     action: `/api/files/upload`,
     headers: {
       Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -113,7 +113,7 @@ const App: React.FC<ImportFileProps> = (props) => {
             </p>
             <p className={Styles.title}>文件上传</p>
             <p className={Styles.hint}>
-              将文件拖拽到此区域,支持.doc,.docx,.txt,.xlsx,.csv,.pdf,.pptx
+              将文件拖拽到此区域,支持.doc,.docx,.txt,.xlsx,.csv,.pdf,.pptx,.md
             </p>
           </Dragger>
         </Form.Item>
