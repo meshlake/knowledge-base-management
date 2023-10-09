@@ -36,24 +36,27 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
     >
       <div className={Styles.knowledgeItemContent}>
         <Paragraph ellipsis={{ rows: 5 }}>{content}</Paragraph>
-        <div className={Styles.footer}>
-          <div>来自：{fromDisplay}</div>
-          {onDelete ? (
-            <div>
-              {metadata.tag && (
-                <Tag color="#D9F0FD" className={Styles.tags}>
+        <div>
+          <div className={Styles.uploader}>上传人：{metadata.user.nickname}</div>
+          <div className={Styles.footer}>
+            <div>来自：{fromDisplay}</div>
+            {onDelete ? (
+              <div>
+                {metadata.tag && (
+                  <Tag color="#D9F0FD" className={Styles.tags}>
+                    {tags.find((item) => item.id === metadata.tag)?.name}
+                  </Tag>
+                )}
+                <DeleteOutlined className={Styles.deleteBtn} onClick={handleDelete} />
+              </div>
+            ) : metadata?.tag ? (
+              <div>
+                <Tag color="#D9F0FD" className={Styles.normalTags}>
                   {tags.find((item) => item.id === metadata.tag)?.name}
                 </Tag>
-              )}
-              <DeleteOutlined className={Styles.deleteBtn} onClick={handleDelete} />
-            </div>
-          ) : metadata?.tag ? (
-            <div>
-              <Tag color="#D9F0FD" className={Styles.normalTags}>
-                {tags.find((item) => item.id === metadata.tag)?.name}
-              </Tag>
-            </div>
-          ) : null}
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </Card>

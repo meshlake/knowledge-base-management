@@ -17,6 +17,7 @@ from unstructured.file_utils.filetype import (
     FileType,
     detect_filetype,
 )
+from app.service.user import query_users_by_ids
 
 
 def create_knowledge_item(
@@ -157,6 +158,10 @@ def get_knowledge_items(
             response, total_res = search_knowledge_item_by_user_id(
                 knowledge_base_id, page, size, user.id, search
             )
+            user_ids = [user.id]
+            users = query_users_by_ids(next(get_db()), user_ids)
+            for item in response.data:
+                item["metadata"]["user"] = users[0]
             return {
                 "items": response.data,
                 "total": total_res,
@@ -168,6 +173,11 @@ def get_knowledge_items(
             response, total_res = search_knowledge_item(
                 knowledge_base_id, page, size, search
             )
+            user_ids = list(set([item["metadata"]["user_id"] for item in response.data])) 
+            users = query_users_by_ids(next(get_db()), user_ids)
+            for item in response.data:
+                found_user = [user for user in users if user.id == item["metadata"]["user_id"]]
+                item["metadata"]["user"] = found_user[0]
             return {
                 "items": response.data,
                 "total": total_res,
@@ -180,6 +190,11 @@ def get_knowledge_items(
             knowledge_base_id, page, size, filepath, tag_id, user
         )
         logging.debug(f"knowledge items: {response}")
+        user_ids = list(set([item["metadata"]["user_id"] for item in response.data])) 
+        users = query_users_by_ids(next(get_db()), user_ids)
+        for item in response.data:
+            found_user = [user for user in users if user.id == item["metadata"]["user_id"]]
+            item["metadata"]["user"] = found_user[0]
         return {
             "items": response.data,
             "total": total_res.count,

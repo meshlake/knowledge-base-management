@@ -5,6 +5,10 @@ declare namespace KNOWLEDGE_ITEM_API {
     tag: number;
     source: string;
     type: 'FILE' | 'MANUALLY';
+    user: {
+      id: number;
+      nickname: string;
+    };
   };
 
   type KnowledgeItem = {
