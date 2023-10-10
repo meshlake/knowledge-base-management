@@ -6,9 +6,9 @@ declare namespace KNOWLEDGE_ITEM_API {
     source: string;
     type: 'FILE' | 'MANUALLY';
     user: {
-      id: number;
       nickname: string;
     };
+    structure: 'QA' | 'NORMAL' | null;
   };
 
   type KnowledgeItem = {

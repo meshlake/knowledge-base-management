@@ -89,7 +89,11 @@ const App: React.FC<ManuallyEnterProps> = (props) => {
       setTags(res);
     });
     if (data.id) {
-      form.setFieldsValue({ content: data.content });
+      if (data.metadata?.structure && data.metadata.structure === 'QA') {
+        form.setFieldsValue(JSON.parse(data.content));
+      } else {
+        form.setFieldsValue({ content: data.content });
+      }
       setTag(data.metadata.tag ? data.metadata.tag : null);
     } else {
       form.resetFields();
@@ -121,11 +125,23 @@ const App: React.FC<ManuallyEnterProps> = (props) => {
       ]}
       onCancel={() => onClose(false)}
     >
-      <Form form={form} name="control-hooks" colon={false} layout="vertical">
-        <Form.Item name="content" label="知识点" rules={[{ required: true }]}>
-          <Textarea rows={10} placeholder="录入知识点"></Textarea>
-        </Form.Item>
-      </Form>
+      {data.metadata?.structure && data.metadata.structure === 'QA' ? (
+        <Form form={form} name="control-hooks" colon={false} layout="vertical">
+          <Form.Item name="question" label="问题" rules={[{ required: true }]}>
+            <Textarea rows={2} placeholder="问题"></Textarea>
+          </Form.Item>
+          <Form.Item name="answer" label="答案" rules={[{ required: true }]}>
+            <Textarea rows={5} placeholder="答案"></Textarea>
+          </Form.Item>
+        </Form>
+      ) : (
+        <Form form={form} name="control-hooks" colon={false} layout="vertical">
+          <Form.Item name="content" label="知识点" rules={[{ required: true }]}>
+            <Textarea rows={10} placeholder="录入知识点"></Textarea>
+          </Form.Item>
+        </Form>
+      )}
+
       {/* 有标签 */}
       {tag && (
         <Tag

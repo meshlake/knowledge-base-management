@@ -17,6 +17,7 @@ from unstructured.documents.elements import Element, ElementMetadata, Table
 from .xlsx_loader import xlsx_loader, csv_loader
 from .knowledge_base import batch_create_knowledge_base_tag
 import pandas as pd
+import json
 
 NLTK_DATA_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "nltk_data")
 import nltk
@@ -86,7 +87,7 @@ class S3FileLoader(BaseLoader):
                 s3.download_file(self.bucket, self.key, file_path)
                 filetype = detect_filetype(file_path)
                 tag_headers = ["分类", "标签"]
-
+            
                 elements = []
                 if (filetype == FileType.XLSX) or (filetype == FileType.XLS):
                     elements = xlsx_loader(
@@ -137,7 +138,14 @@ class S3FileLoader(BaseLoader):
                             }
                         else:
                             metadata = {}
-                        text = "\n\n".join([str(el[1]) for el in data.data])
+                        content = {}
+                        for el in data.data:
+                            if el[0] == "问题":
+                                content["question"] = el[1]
+                            elif el[0] == "答案":
+                                content["answer"] = el[1]
+                        # text = "\n\n".join([str(el[1]) for el in data.data])
+                        text = json.dumps(content, ensure_ascii=False)
                         documents.append(Document(page_content=text, metadata=metadata))
                 return documents
         except Exception as e:

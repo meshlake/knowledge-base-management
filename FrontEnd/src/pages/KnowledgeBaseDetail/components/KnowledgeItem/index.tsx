@@ -35,7 +35,14 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
       bodyStyle={{ height: '100%', padding: '15px' }}
     >
       <div className={Styles.knowledgeItemContent}>
-        <Paragraph ellipsis={{ rows: 5 }}>{content}</Paragraph>
+        {metadata.structure && metadata.structure === 'QA' ? (
+          <div>
+            <Paragraph ellipsis={{ rows: 2 }}>{`问题：${JSON.parse(content).question}`}</Paragraph>
+            <Paragraph ellipsis={{ rows: 3 }}>{`答案：${JSON.parse(content).answer}`}</Paragraph>
+          </div>
+        ) : (
+          <Paragraph ellipsis={{ rows: 5 }}>{content}</Paragraph>
+        )}
         <div>
           <div className={Styles.uploader}>上传人：{metadata.user.nickname}</div>
           <div className={Styles.footer}>

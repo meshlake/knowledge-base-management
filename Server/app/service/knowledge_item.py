@@ -8,7 +8,7 @@ from app.service.supabase_client import SupabaseClient
 from app.service.supabase_vector_store import CustomizeSupabaseVectorStore
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.docstore.document import Document
-from app.models.enums import FileStatus, KnowledgeItemType
+from app.models.enums import FileStatus, KnowledgeItemType, KnowledgeStructure
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.text_splitter import MarkdownHeaderTextSplitter
 from app.service.file_manage import update_file_status
@@ -32,6 +32,7 @@ def create_knowledge_item(
         "knowledge_base_id": knowledge_base_id,
         "user_id": user.id,
         "tag": model.tag,
+        "structure": model.structure.name
     }
     docs = [Document(page_content=model.content, metadata=metadata)]
     ids = CustomizeSupabaseVectorStore.limit_size_add_documents(
@@ -161,7 +162,7 @@ def get_knowledge_items(
             user_ids = [user.id]
             users = query_users_by_ids(next(get_db()), user_ids)
             for item in response.data:
-                item["metadata"]["user"] = users[0]
+                item["metadata"]["user"] = {'nickname': users[0].nickname} 
             return {
                 "items": response.data,
                 "total": total_res,
@@ -177,7 +178,7 @@ def get_knowledge_items(
             users = query_users_by_ids(next(get_db()), user_ids)
             for item in response.data:
                 found_user = [user for user in users if user.id == item["metadata"]["user_id"]]
-                item["metadata"]["user"] = found_user[0]
+                item["metadata"]["user"] = {'nickname': found_user[0].nickname} 
             return {
                 "items": response.data,
                 "total": total_res,
@@ -194,7 +195,7 @@ def get_knowledge_items(
         users = query_users_by_ids(next(get_db()), user_ids)
         for item in response.data:
             found_user = [user for user in users if user.id == item["metadata"]["user_id"]]
-            item["metadata"]["user"] = found_user[0]
+            item["metadata"]["user"] = {'nickname': found_user[0].nickname}
         return {
             "items": response.data,
             "total": total_res.count,
@@ -266,6 +267,7 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
                     "knowledge_base_id": knowledge_base_id,
                     "user_id": user.id,
                     "tag": doc.metadata["tag"] if "tag" in doc.metadata else None,
+                    "structure": KnowledgeStructure.QA.name,
                 }
             embedding_docs = documents
         elif (filetype == FileType.MD):
@@ -292,6 +294,7 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
                 "knowledge_base_id": knowledge_base_id,
                 "user_id": user.id,
                 "tag": None,
+                "structure": KnowledgeStructure.NORMAL.name,
             }
             # 因为S3Loader加载文件是下载后从临时文件夹中获取的，所以metadata中的source是临时文件夹中的文件路径，需要修改为S3中的文件路径
             for doc in docs:
@@ -311,6 +314,7 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
                 "knowledge_base_id": knowledge_base_id,
                 "user_id": user.id,
                 "tag": None,
+                "structure": KnowledgeStructure.NORMAL.name,
             }
             # 因为S3Loader加载文件是下载后从临时文件夹中获取的，所以metadata中的source是临时文件夹中的文件路径，需要修改为S3中的文件路径
             for doc in docs:

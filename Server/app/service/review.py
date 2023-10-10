@@ -92,19 +92,20 @@ def query_similar_knowledge(vectors, docs):
                 )
                 if not is_similar:
                     continue
-                similar_knowledge = SimilarKnowledgeCreate(
-                    new_knowledge=docs[idx].page_content,
-                    new_knowledge_tag_id=docs[idx].metadata["tag"],
-                    new_knowledge_user_id=docs[idx].metadata["user_id"],
-                    old_knowledge_id=old_knowledge["id"],
-                    old_knowledge=old_knowledge["content"],
-                    old_knowledge_tag_id=old_knowledge["metadata"]["tag"],
-                    old_knowledge_user_id=old_knowledge["metadata"]["user_id"],
-                    status=ReviewStatus.PENDING.name,
-                    source=docs[idx].metadata["source"],
-                    knowledge_base_id=knowledge_base_id,
-                )
-                create_review_item(similar_knowledge)
+                else:
+                    similar_knowledge = SimilarKnowledgeCreate(
+                        new_knowledge=docs[idx].page_content,
+                        new_knowledge_tag_id=docs[idx].metadata["tag"],
+                        new_knowledge_user_id=docs[idx].metadata["user_id"],
+                        old_knowledge_id=old_knowledge["id"],
+                        old_knowledge=old_knowledge["content"],
+                        old_knowledge_tag_id=old_knowledge["metadata"]["tag"],
+                        old_knowledge_user_id=old_knowledge["metadata"]["user_id"],
+                        status=ReviewStatus.PENDING.name,
+                        source=docs[idx].metadata["source"],
+                        knowledge_base_id=knowledge_base_id,
+                    )
+                    create_review_item(similar_knowledge)
             else:
                 no_similar_knowledge_idx.append(idx)
         else:

@@ -40,7 +40,7 @@ const App: React.FC<ImportFileProps> = (props) => {
       if (status === 'done') {
         message.success(`${info.file.name}上传成功`);
       } else if (status === 'error') {
-        message.error(`${info.file.name}上传失败`);
+        message.error(`${info.file.response.detail}`);
       }
     },
     onDrop(e) {
