@@ -20,6 +20,7 @@ declare namespace KNOWLEDGE_ITEM_API {
   type KnowledgeItemCreate = {
     content: string;
     tag?: number;
+    structure: 'QA' | 'NORMAL';
   };
 
   type KnowledgeItemUpdate = KnowledgeItemCreate & {

@@ -37,8 +37,8 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
       <div className={Styles.knowledgeItemContent}>
         {metadata.structure && metadata.structure === 'QA' ? (
           <div>
-            <Paragraph ellipsis={{ rows: 2 }}>{`问题：${JSON.parse(content).question}`}</Paragraph>
-            <Paragraph ellipsis={{ rows: 3 }}>{`答案：${JSON.parse(content).answer}`}</Paragraph>
+            <Paragraph ellipsis={{ rows: 2 }}>{`${JSON.parse(content).question}`}</Paragraph>
+            <Paragraph ellipsis={{ rows: 3 }}>{`${JSON.parse(content).answer}`}</Paragraph>
           </div>
         ) : (
           <Paragraph ellipsis={{ rows: 5 }}>{content}</Paragraph>
