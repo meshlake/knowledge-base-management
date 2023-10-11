@@ -1,4 +1,6 @@
+import json
 import logging
+import tempfile
 from typing import Union
 
 from sqlalchemy import or_, select
@@ -17,9 +19,13 @@ from app.entities.knowledge_bases import (
 from fastapi import HTTPException
 from fastapi_pagination import Page
 from fastapi_pagination.ext.sqlalchemy import paginate
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.service.user import query_user_by_org
-
+from app.service.supabase_client import SupabaseClient
+import openpyxl
+import boto3
+import os
+from app.models.enums import KnowledgeStructure
 
 def get_all_knowledge_base(
     db: Session,
@@ -120,6 +126,18 @@ def get_knowledge_base_tag(
         .first()
     )
 
+def get_knowledge_base_tags_by_ids(
+    db: Session,
+    ids: list,
+    knowledge_base: int,
+) -> KnowledgeBaseTagEntity:
+    logging.info(f"Fetching tag {ids} on knowledge base {knowledge_base}...")
+    return (
+        db.query(KnowledgeBaseTagEntity)
+        .filter(KnowledgeBaseTagEntity.id.in_(ids))
+        .filter(KnowledgeBaseTagEntity.knowledge_base_id == knowledge_base)
+        .all()
+    )
 
 def is_tag_available(
     db: Session,
@@ -349,3 +367,94 @@ def batch_create_knowledge_base_tag(
 
     db.close()
     return new_existing_children_tags
+
+
+def export_knowledge_base_to_excel(
+    db: Session, knowledge_base_id: int, current_user: User
+):
+    supabase = SupabaseClient()
+    query = (
+        supabase.table("knowledge")
+        .select("id, content, metadata")
+        .eq("metadata->knowledge_base_id", knowledge_base_id)
+    )
+    response = query.order("id", desc=True).execute()
+    tags = [item['metadata']['tag']  for item in response.data] 
+    unique_tags = list(set(tags))
+
+    tag_entities = get_knowledge_base_tags_by_ids(db, unique_tags, knowledge_base_id)
+    parent_tags = [tag.parent_id for tag in tag_entities if tag.parent_id != None]
+    unique_parent_tags = list(set(parent_tags))
+    parent_tag_entities = get_knowledge_base_tags_by_ids(db, unique_parent_tags, knowledge_base_id)
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # 创建一个新的Excel工作簿
+        workbook = openpyxl.Workbook()
+
+        # 创建一个工作表
+        worksheet = workbook.active
+
+        # 在工作表中写入数据
+        worksheet["A1"] = "分类"
+        worksheet["B1"] = "标签"
+        worksheet["C1"] = "问题"
+        worksheet["D1"] = "回答/知识点"
+
+        data = []
+        for item in response.data:
+            tag_id = item["metadata"]["tag"]
+            content = item["content"]
+            structure = item["metadata"]["structure"] if "structure" in item["metadata"] else None
+            found_tags = [tag for tag in tag_entities if tag.id == tag_id]
+            if found_tags.__len__() > 0:
+                tag_name = found_tags[0].name
+                parent_tag_id = found_tags[0].parent_id
+                parent_tag = [tag for tag in parent_tag_entities if tag.id == parent_tag_id][0]
+                parent_tag_name = parent_tag.name
+            else:
+                tag_name = ""
+                parent_tag_name = ""
+            if structure != None and structure == KnowledgeStructure.QA.name:
+                content = json.loads(content)
+                question = content["question"]
+                answer = content["answer"]
+                data.append((parent_tag_name, tag_name, question, answer))
+            else:
+                data.append((parent_tag_name, tag_name, "", content))
+
+        for row_num, (category, label, question, answer) in enumerate(data, start=2):
+            worksheet[f"A{row_num}"] = category
+            worksheet[f"B{row_num}"] = label
+            worksheet[f"C{row_num}"] = question
+            worksheet[f"D{row_num}"] = answer
+
+        # 保存工作簿到文件
+        workbook.save(f"{temp_dir}/result.xlsx")
+
+        # 关闭工作簿
+        workbook.close()
+        s3_client = boto3.client(
+            "s3",
+            aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+            aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+            region_name="cn-northwest-1",
+        )
+        s3_client.upload_file(
+            f"{temp_dir}/result.xlsx",
+            "knowledge-base",
+            f"{current_user.organization.code}/result.xlsx",
+        )
+
+        # 生成预签名 URL 的过期时间
+        expiration = int(timedelta(minutes=5).total_seconds())
+
+        # 生成预签名 URL
+        presigned_url = s3_client.generate_presigned_url(
+            "get_object",
+            Params={
+                "Bucket": "knowledge-base",
+                "Key": f"{current_user.organization.code}/result.xlsx",
+            },
+            ExpiresIn=expiration,
+        )
+    return presigned_url

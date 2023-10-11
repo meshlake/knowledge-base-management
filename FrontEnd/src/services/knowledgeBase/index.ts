@@ -50,3 +50,12 @@ export function updateKnowledgeBase(data: Omit<KnowledgeBaseModel, 'userId'>) {
     },
   });
 }
+
+export function exportKnowledgeBase(id: number) {
+  return request<DEFAULT_API.Response<string>>(`/knowledge_bases/export/${id}`, {
+    method: 'GET',
+    headers: {
+      authorization: 'Bearer ' + localStorage.getItem('access_token'),
+    },
+  });
+}

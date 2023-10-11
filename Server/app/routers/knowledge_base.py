@@ -25,6 +25,7 @@ from app.service.knowledge_base import (
     delete_tag_by_id,
     get_knowledge_base_tags_all,
     get_all_knowledge_base,
+    export_knowledge_base_to_excel,
 )
 
 from app.service.knowledge_item import (
@@ -144,7 +145,9 @@ def get_knowledge(
     size: int = 15,
     search: Union[str, None] = None,
 ):
-    knowledge_items = get_knowledge_items(id, page, size, filepath, tag_id, user, search)
+    knowledge_items = get_knowledge_items(
+        id, page, size, filepath, tag_id, user, search
+    )
     return knowledge_items
 
 
@@ -233,3 +236,16 @@ def retrieve_knowledge_base_tags_all(
     knowledge_base_id: int, db: Session = Depends(get_db)
 ):
     return get_knowledge_base_tags_all(db, knowledge_base_id)
+
+
+@router.get(
+    "/knowledge_bases/export/{knowledge_base_id}",
+    dependencies=[Depends(oauth2_scheme)],
+)
+def export_knowledge_base(
+    knowledge_base_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    download_url = export_knowledge_base_to_excel(db, knowledge_base_id, current_user)
+    return {"data": download_url}

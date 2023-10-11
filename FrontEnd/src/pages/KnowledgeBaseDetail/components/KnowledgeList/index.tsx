@@ -8,6 +8,7 @@ import { KnowledgeBaseModel, KnowledgeBaseTagModel } from '@/pages/KnowledgeBase
 import { getKnowledgeItems, deleteKnowledgeItem } from '@/services/knowledgeItem';
 import { useModel, useParams } from '@umijs/max';
 import { getKnowledgeBaseAllTags } from '@/services/knowledgeBaseTags';
+import { exportKnowledgeBase } from '@/services/knowledgeBase';
 
 type TPagination = Omit<DEFAULT_API.Paginate<KNOWLEDGE_ITEM_API.KnowledgeItem>, 'items'>;
 type KnowledgeListProps = {
@@ -141,6 +142,18 @@ const App: React.FC<KnowledgeListProps> = (props) => {
     setSearchValue(value);
   };
 
+  const handleExportKnowledgeBase = async () => {
+    setLoading(true);
+    try {
+      const { data: url } = await exportKnowledgeBase(Number(params.id));
+      window.open(url, '_blank');
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     getKnowledgeBaseAllTags(Number(params.id)).then((res) => {
       setTags(res);
@@ -169,11 +182,22 @@ const App: React.FC<KnowledgeListProps> = (props) => {
           </div>
           <Search style={{ width: '300px' }} placeholder="搜索" onSearch={onSearch} allowClear />
           <div>
-            {isCanUploadFile && (
-              <Button onClick={handleOpenImportFileModal} style={{ marginRight: '20px' }}>
+            {isCanUploadFile && [
+              <Button
+                onClick={handleOpenImportFileModal}
+                style={{ marginRight: '20px' }}
+                key="import"
+              >
                 文件导入
-              </Button>
-            )}
+              </Button>,
+              <Button
+                onClick={handleExportKnowledgeBase}
+                style={{ marginRight: '20px' }}
+                key="export"
+              >
+                知识库导出
+              </Button>,
+            ]}
             <Button type="primary" ghost onClick={handleOpenManuallyEnterModal}>
               手动添加
             </Button>
