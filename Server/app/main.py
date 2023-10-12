@@ -112,3 +112,8 @@ async def add_auth_middleware(request: Request, call_next):
 @app.get("/")
 def root():
     return {"message": "Hello Doc"}
+
+
+@app.get("/health")
+def health():
+    return {"data": True}
