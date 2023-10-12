@@ -8,7 +8,7 @@ from app.service.supabase_client import SupabaseClient
 from app.service.supabase_vector_store import CustomizeSupabaseVectorStore
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.docstore.document import Document
-from app.models.enums import FileStatus, KnowledgeItemType
+from app.models.enums import FileStatus, KnowledgeItemType, KnowledgeStructure
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.text_splitter import MarkdownHeaderTextSplitter
 from app.service.file_manage import update_file_status
@@ -17,6 +17,8 @@ from unstructured.file_utils.filetype import (
     FileType,
     detect_filetype,
 )
+from app.service.user import query_users_by_ids
+from app.util import get_pages
 
 
 def create_knowledge_item(
@@ -31,6 +33,7 @@ def create_knowledge_item(
         "knowledge_base_id": knowledge_base_id,
         "user_id": user.id,
         "tag": model.tag,
+        "structure": model.structure.name
     }
     docs = [Document(page_content=model.content, metadata=metadata)]
     ids = CustomizeSupabaseVectorStore.limit_size_add_documents(
@@ -157,35 +160,49 @@ def get_knowledge_items(
             response, total_res = search_knowledge_item_by_user_id(
                 knowledge_base_id, page, size, user.id, search
             )
+            user_ids = [user.id]
+            users = query_users_by_ids(next(get_db()), user_ids)
+            for item in response.data:
+                item["metadata"]["user"] = {'nickname': users[0].nickname} 
             return {
                 "items": response.data,
                 "total": total_res,
                 "page": page,
                 "size": size,
-                "pages": total_res // size + 1,
+                "pages": get_pages(int(total_res), size),
             }
         else:
             response, total_res = search_knowledge_item(
                 knowledge_base_id, page, size, search
             )
+            user_ids = list(set([item["metadata"]["user_id"] for item in response.data])) 
+            users = query_users_by_ids(next(get_db()), user_ids)
+            for item in response.data:
+                found_user = [user for user in users if user.id == item["metadata"]["user_id"]]
+                item["metadata"]["user"] = {'nickname': found_user[0].nickname} 
             return {
                 "items": response.data,
                 "total": total_res,
                 "page": page,
                 "size": size,
-                "pages": total_res // size + 1,
+                "pages": get_pages(int(total_res), size),
             }
     else:
         response, total_res = default_get_knowledge_items(
             knowledge_base_id, page, size, filepath, tag_id, user
         )
         logging.debug(f"knowledge items: {response}")
+        user_ids = list(set([item["metadata"]["user_id"] for item in response.data])) 
+        users = query_users_by_ids(next(get_db()), user_ids)
+        for item in response.data:
+            found_user = [user for user in users if user.id == item["metadata"]["user_id"]]
+            item["metadata"]["user"] = {'nickname': found_user[0].nickname}
         return {
             "items": response.data,
             "total": total_res.count,
             "page": page,
             "size": size,
-            "pages": total_res.count // size + 1,
+            "pages": get_pages(int(total_res.count), size),
         }
 
 
@@ -251,6 +268,7 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
                     "knowledge_base_id": knowledge_base_id,
                     "user_id": user.id,
                     "tag": doc.metadata["tag"] if "tag" in doc.metadata else None,
+                    "structure": KnowledgeStructure.QA.name,
                 }
             embedding_docs = documents
         elif (filetype == FileType.MD):
@@ -277,6 +295,7 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
                 "knowledge_base_id": knowledge_base_id,
                 "user_id": user.id,
                 "tag": None,
+                "structure": KnowledgeStructure.NORMAL.name,
             }
             # 因为S3Loader加载文件是下载后从临时文件夹中获取的，所以metadata中的source是临时文件夹中的文件路径，需要修改为S3中的文件路径
             for doc in docs:
@@ -296,6 +315,7 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
                 "knowledge_base_id": knowledge_base_id,
                 "user_id": user.id,
                 "tag": None,
+                "structure": KnowledgeStructure.NORMAL.name,
             }
             # 因为S3Loader加载文件是下载后从临时文件夹中获取的，所以metadata中的source是临时文件夹中的文件路径，需要修改为S3中的文件路径
             for doc in docs:

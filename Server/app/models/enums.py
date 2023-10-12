@@ -5,6 +5,10 @@ class KnowledgeItemType(Enum):
     FILE = "FILE"
     MANUALLY = "MANUALLY"
 
+class KnowledgeStructure(Enum):
+    QA = "QA"
+    NORMAL = "NORMAL"
+
 class FileStatus(Enum):
     UPLOADED = "UPLOADED"
     SUCCESS = "SUCCESS"

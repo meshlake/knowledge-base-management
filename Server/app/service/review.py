@@ -90,21 +90,24 @@ def query_similar_knowledge(vectors, docs):
                 is_similar = is_similar_knowledge(
                     docs[idx].page_content, old_knowledge["content"]
                 )
-                if not is_similar:
-                    continue
-                similar_knowledge = SimilarKnowledgeCreate(
-                    new_knowledge=docs[idx].page_content,
-                    new_knowledge_tag_id=docs[idx].metadata["tag"],
-                    new_knowledge_user_id=docs[idx].metadata["user_id"],
-                    old_knowledge_id=old_knowledge["id"],
-                    old_knowledge=old_knowledge["content"],
-                    old_knowledge_tag_id=old_knowledge["metadata"]["tag"],
-                    old_knowledge_user_id=old_knowledge["metadata"]["user_id"],
-                    status=ReviewStatus.PENDING.name,
-                    source=docs[idx].metadata["source"],
-                    knowledge_base_id=knowledge_base_id,
-                )
-                create_review_item(similar_knowledge)
+                if is_similar:
+                    similar_knowledge = SimilarKnowledgeCreate(
+                        new_knowledge=docs[idx].page_content,
+                        new_knowledge_tag_id=docs[idx].metadata["tag"],
+                        new_knowledge_user_id=docs[idx].metadata["user_id"],
+                        new_knowledge_structure=docs[idx].metadata["structure"],
+                        old_knowledge_id=old_knowledge["id"],
+                        old_knowledge=old_knowledge["content"],
+                        old_knowledge_tag_id=old_knowledge["metadata"]["tag"],
+                        old_knowledge_user_id=old_knowledge["metadata"]["user_id"],
+                        old_knowledge_structure=old_knowledge["metadata"]["structure"],
+                        status=ReviewStatus.PENDING.name,
+                        source=docs[idx].metadata["source"],
+                        knowledge_base_id=knowledge_base_id,
+                    )
+                    create_review_item(similar_knowledge)
+                else:
+                    no_similar_knowledge_idx.append(idx)
             else:
                 no_similar_knowledge_idx.append(idx)
         else:
@@ -129,6 +132,8 @@ def create_review_item(similar_knowledge: SimilarKnowledgeCreate):
         old_knowledge_tag_id=similar_knowledge.old_knowledge_tag_id,
         new_knowledge_user_id=similar_knowledge.new_knowledge_user_id,
         old_knowledge_user_id=similar_knowledge.old_knowledge_user_id,
+        new_knowledge_structure=similar_knowledge.new_knowledge_structure,
+        old_knowledge_structure=similar_knowledge.old_knowledge_structure,
         source=similar_knowledge.source,
         knowledge_base_id=similar_knowledge.knowledge_base_id,
         status=ReviewStatus.PENDING.name,
@@ -196,7 +201,12 @@ def fusion_knowledge(silimar_knowledge: SimilarKnowledge):
         knowledge1=silimar_knowledge.new_knowledge,
         knowledge2=silimar_knowledge.old_knowledge,
     )
-    template = """你负责融合两段不同的知识，融合后的知识应该是一段新的知识，不需要关注融合后的知识是否有意义。你的返回应该是一段json, 包括这些字段: `knowledge: 融合后的知识`"""
+    template = """你负责融合两段不同的知识，融合后的知识应该是一段新的知识，不需要关注融合后的知识是否有意义。
+    融合后的知识应该和给你的两段知识结构保持一致,
+    例如：给到的知识 "天空是蓝色的" 和 "天空是蓝色的" 融合后的知识应该是 "天空是蓝色的
+    给到的知识 "{{"question":"天空是什么颜色的", "answer":"天空是蓝色的"}}" 和 "{{"question":"天空是什么颜色的", "answer":"天空是蓝色的"}}" 
+    融合后的知识应该是 "{{"question":"天空是什么颜色的", "answer":"天空是蓝色的"}}
+    你的返回应该是一段json, 包括这些字段: `knowledge: 融合后的知识`"""
     system_message_prompt = SystemMessagePromptTemplate.from_template(template)
     human_template = "{text}"
     human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
@@ -206,6 +216,7 @@ def fusion_knowledge(silimar_knowledge: SimilarKnowledge):
     )
     chain = LLMChain(llm=llm, prompt=chat_prompt)
     res = chain.run(prompt)
+    logging.info(res)
     if is_valid_json_with_key(res):
         silimar_knowledge.new_knowledge = json.loads(res)["knowledge"]
     add_knowledge(silimar_knowledge)
@@ -236,6 +247,7 @@ def add_knowledge(silimar_knowledge: SimilarKnowledge):
                 else KnowledgeItemType.MANUALLY.name,
                 "source": silimar_knowledge.source,
                 "knowledge_base_id": silimar_knowledge.knowledge_base_id,
+                'structure': silimar_knowledge.new_knowledge_structure,
             },
             "embedding": vector,
         }

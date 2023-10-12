@@ -7,5 +7,5 @@ declare namespace FILE_API {
     status: 'UPLOADED' | 'SUCCESS' | 'FAILED' | 'EMBEDDING';
   };
 
-  type FileCreate = Omit<File, 'id'>;
+  type FileCreate = Omit<File, 'id' | 'status'>;
 }

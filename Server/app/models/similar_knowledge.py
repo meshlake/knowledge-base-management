@@ -35,6 +35,8 @@ class SimilarKnowledge(BaseModel):
     new_knowledge_tag: Union[KnowledgeBaseTag, None] = None
     old_knowledge_tag: Union[KnowledgeBaseTag, None] = None
     knowledge_base: KnowledgeBase
+    old_knowledge_structure: str
+    new_knowledge_structure: str
 
     class Config:
         orm_mode = True
@@ -49,6 +51,8 @@ class SimilarKnowledgeCreate(BaseModel):
     old_knowledge_user_id: int
     new_knowledge_tag_id: Union[int, None] = None
     old_knowledge_tag_id: Union[int, None] = None
+    new_knowledge_structure: Union[str, None] = None
+    old_knowledge_structure: Union[str, None] = None
     source: str
     knowledge_base_id: int
 

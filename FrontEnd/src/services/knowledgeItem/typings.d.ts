@@ -5,6 +5,10 @@ declare namespace KNOWLEDGE_ITEM_API {
     tag: number;
     source: string;
     type: 'FILE' | 'MANUALLY';
+    user: {
+      nickname: string;
+    };
+    structure: 'QA' | 'NORMAL' | null;
   };
 
   type KnowledgeItem = {
@@ -16,6 +20,7 @@ declare namespace KNOWLEDGE_ITEM_API {
   type KnowledgeItemCreate = {
     content: string;
     tag?: number;
+    structure: 'QA' | 'NORMAL';
   };
 
   type KnowledgeItemUpdate = KnowledgeItemCreate & {

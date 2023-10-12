@@ -40,8 +40,8 @@ def create_file(
 @router.post("/files/upload")
 async def upload_file(file: UploadFile, current_user: User = Depends(get_current_user)):
     new_file_name = uniqueFileName(file.filename)
-    upload_result = upload_file_service(
-        file.file, "knowledge-base", f"{current_user.organization.code}/{new_file_name}"
+    upload_result = await upload_file_service(
+        file, "knowledge-base", f"{current_user.organization.code}/{new_file_name}"
     )
     if not upload_result:
         raise HTTPException(

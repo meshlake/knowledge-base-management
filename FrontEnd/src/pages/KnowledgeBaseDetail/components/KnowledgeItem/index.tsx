@@ -35,25 +35,35 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
       bodyStyle={{ height: '100%', padding: '15px' }}
     >
       <div className={Styles.knowledgeItemContent}>
-        <Paragraph ellipsis={{ rows: 5 }}>{content}</Paragraph>
-        <div className={Styles.footer}>
-          <div>来自：{fromDisplay}</div>
-          {onDelete ? (
-            <div>
-              {metadata.tag && (
-                <Tag color="#D9F0FD" className={Styles.tags}>
+        {metadata.structure && metadata.structure === 'QA' ? (
+          <div>
+            <Paragraph ellipsis={{ rows: 2 }}>{`${JSON.parse(content).question}`}</Paragraph>
+            <Paragraph ellipsis={{ rows: 3 }}>{`${JSON.parse(content).answer}`}</Paragraph>
+          </div>
+        ) : (
+          <Paragraph ellipsis={{ rows: 5 }}>{content}</Paragraph>
+        )}
+        <div>
+          <div className={Styles.uploader}>上传者：{metadata.user.nickname}</div>
+          <div className={Styles.footer}>
+            <div>来自：{fromDisplay}</div>
+            {onDelete ? (
+              <div>
+                {metadata.tag && (
+                  <Tag color="#D9F0FD" className={Styles.tags}>
+                    {tags.find((item) => item.id === metadata.tag)?.name}
+                  </Tag>
+                )}
+                <DeleteOutlined className={Styles.deleteBtn} onClick={handleDelete} />
+              </div>
+            ) : metadata?.tag ? (
+              <div>
+                <Tag color="#D9F0FD" className={Styles.normalTags}>
                   {tags.find((item) => item.id === metadata.tag)?.name}
                 </Tag>
-              )}
-              <DeleteOutlined className={Styles.deleteBtn} onClick={handleDelete} />
-            </div>
-          ) : metadata?.tag ? (
-            <div>
-              <Tag color="#D9F0FD" className={Styles.normalTags}>
-                {tags.find((item) => item.id === metadata.tag)?.name}
-              </Tag>
-            </div>
-          ) : null}
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </Card>

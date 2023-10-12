@@ -130,3 +130,9 @@ async def create_default_user(db: Session):
 def query_user_by_org(db: Session, org_id: int):
     users = db.query(User).filter(User.organization_id == org_id).all()
     return [user.id for user in users]
+
+
+def query_users_by_ids(db: Session, user_ids: list):
+    users = db.query(User).filter(User.id.in_(user_ids)).all()
+    db.close()
+    return users

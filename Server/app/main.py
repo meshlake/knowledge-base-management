@@ -61,7 +61,7 @@ async def startup():
 app.add_event_handler("startup", startup)
 
 # 路由白名单
-whitelist = ["/users/login"]
+whitelist = ["/users/login", "/health"]
 
 # 获取所有路由
 all_routes = app.routes
@@ -112,3 +112,8 @@ async def add_auth_middleware(request: Request, call_next):
 @app.get("/")
 def root():
     return {"message": "Hello Doc"}
+
+
+@app.get("/health")
+def health():
+    return {"data": True}
