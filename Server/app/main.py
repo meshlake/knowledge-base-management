@@ -61,7 +61,7 @@ async def startup():
 app.add_event_handler("startup", startup)
 
 # 路由白名单
-whitelist = ["/users/login"]
+whitelist = ["/users/login", "/health"]
 
 # 获取所有路由
 all_routes = app.routes
