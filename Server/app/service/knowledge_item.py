@@ -18,6 +18,7 @@ from unstructured.file_utils.filetype import (
     detect_filetype,
 )
 from app.service.user import query_users_by_ids
+from app.util import get_pages
 
 
 def create_knowledge_item(
@@ -168,7 +169,7 @@ def get_knowledge_items(
                 "total": total_res,
                 "page": page,
                 "size": size,
-                "pages": total_res // size + 1,
+                "pages": get_pages(int(total_res), size),
             }
         else:
             response, total_res = search_knowledge_item(
@@ -184,7 +185,7 @@ def get_knowledge_items(
                 "total": total_res,
                 "page": page,
                 "size": size,
-                "pages": total_res // size + 1,
+                "pages": get_pages(int(total_res), size),
             }
     else:
         response, total_res = default_get_knowledge_items(
@@ -201,7 +202,7 @@ def get_knowledge_items(
             "total": total_res.count,
             "page": page,
             "size": size,
-            "pages": total_res.count // size + 1,
+            "pages": get_pages(int(total_res.count), size),
         }
 
 
