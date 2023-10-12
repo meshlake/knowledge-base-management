@@ -24,6 +24,8 @@ declare namespace REVIEW_API {
     new_knowledge_user: Uploader;
     old_knowledge_tag: Tag;
     new_knowledge_tag: Tag;
+    old_knowledge_structure: 'QA' | 'NORMAL';
+    new_knowledge_structure: 'QA' | 'NORMAL';
     status: 'PENDING' | 'PROCESSED';
     knowledge_base: KnowledgeBase;
   };

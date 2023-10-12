@@ -23,6 +23,7 @@ type ReviewKnowledgeItemProps = {
         id: number;
         name: string;
       };
+      structure: 'NORMAL' | 'QA';
     };
   };
 };
@@ -45,7 +46,14 @@ const App: React.FC<ReviewKnowledgeItemProps> = (props) => {
       onCancel={() => onClose(false)}
     >
       <Paragraph ellipsis>知识库：{data?.metadata?.knowledgeBase.name}</Paragraph>
-      <Paragraph>{data?.content}</Paragraph>
+      {data?.metadata?.structure && data?.metadata?.structure === 'QA' ? (
+        <div>
+          <Paragraph ellipsis={{ rows: 2 }}>{`${JSON.parse(data?.content).question}`}</Paragraph>
+          <Paragraph ellipsis={{ rows: 3 }}>{`${JSON.parse(data?.content).answer}`}</Paragraph>
+        </div>
+      ) : (
+        <Paragraph ellipsis={{ rows: 5 }}>{data?.content}</Paragraph>
+      )}
       <div className={Styles.footer}>
         <div>上传者：{data?.metadata?.user.nickname}</div>
         {data?.metadata?.tag ? (

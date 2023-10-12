@@ -23,6 +23,7 @@ type ReviewKnowledgeItem = {
       id: number;
       name: string;
     };
+    structure: 'NORMAL' | 'QA';
   };
 };
 
@@ -147,6 +148,7 @@ const App: React.FC = () => {
                           tag: item.new_knowledge_tag,
                           user: item.new_knowledge_user,
                           knowledgeBase: item.knowledge_base,
+                          structure: item.new_knowledge_structure,
                         },
                       })
                     }
@@ -159,6 +161,7 @@ const App: React.FC = () => {
                           tag: item.new_knowledge_tag,
                           user: item.new_knowledge_user,
                           knowledgeBase: item.knowledge_base,
+                          structure: item.new_knowledge_structure,
                         },
                       }}
                     ></KnowledgeItem>
@@ -173,6 +176,7 @@ const App: React.FC = () => {
                           tag: item.old_knowledge_tag,
                           user: item.old_knowledge_user,
                           knowledgeBase: item.knowledge_base,
+                          structure: item.old_knowledge_structure,
                         },
                       })
                     }
@@ -185,6 +189,7 @@ const App: React.FC = () => {
                           tag: item.old_knowledge_tag,
                           user: item.old_knowledge_user,
                           knowledgeBase: item.knowledge_base,
+                          structure: item.old_knowledge_structure,
                         },
                       }}
                     ></KnowledgeItem>

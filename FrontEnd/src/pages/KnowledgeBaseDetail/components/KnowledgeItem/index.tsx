@@ -44,7 +44,7 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
           <Paragraph ellipsis={{ rows: 5 }}>{content}</Paragraph>
         )}
         <div>
-          <div className={Styles.uploader}>上传人：{metadata.user.nickname}</div>
+          <div className={Styles.uploader}>上传者：{metadata.user.nickname}</div>
           <div className={Styles.footer}>
             <div>来自：{fromDisplay}</div>
             {onDelete ? (

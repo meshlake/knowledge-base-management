@@ -21,6 +21,7 @@ type KnowledgeItemProps = {
         id: number;
         name: string;
       };
+      structure: 'NORMAL' | 'QA';
     };
   };
 };
@@ -34,7 +35,14 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
     <Card className={Styles.knowledgeItem} bodyStyle={{ height: '100%', padding: '15px' }}>
       <div className={Styles.knowledgeItemContent}>
         <Paragraph ellipsis>知识库：{metadata.knowledgeBase.name}</Paragraph>
-        <Paragraph ellipsis={{ rows: 5 }}>{content}</Paragraph>
+        {metadata.structure && metadata.structure === 'QA' ? (
+          <div>
+            <Paragraph ellipsis={{ rows: 2 }}>{`${JSON.parse(content).question}`}</Paragraph>
+            <Paragraph ellipsis={{ rows: 3 }}>{`${JSON.parse(content).answer}`}</Paragraph>
+          </div>
+        ) : (
+          <Paragraph ellipsis={{ rows: 5 }}>{content}</Paragraph>
+        )}
         <div className={Styles.footer}>
           <div>上传者：{metadata.user.nickname}</div>
           {metadata.tag ? (
