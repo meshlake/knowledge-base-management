@@ -275,10 +275,8 @@ def batch_create_knowledge_base_tag(
         return []
     # 判断相同的标签是否存在不同的分类
     if not is_tags_unique(tags):
-        raise HTTPException(
-            status_code=400,
-            detail="Tags has diffrent parent.",
-        )
+        logging.error("Tags has diffrent parent.")
+        raise Exception("Tags has diffrent parent.")
 
     db = next(get_db())
 
@@ -408,7 +406,9 @@ def export_knowledge_base_to_excel(
                 .select("id, content, metadata")
                 .eq("metadata->knowledge_base_id", knowledge_base_id)
             )
-            response = query.order("id", desc=True).range(offset, offset + size).execute()
+            response = (
+                query.order("id", desc=True).range(offset, offset + size).execute()
+            )
             tags = [item["metadata"]["tag"] for item in response.data]
             unique_tags = list(set(tags))
 
@@ -489,4 +489,5 @@ def export_knowledge_base_to_excel(
             },
             ExpiresIn=expiration,
         )
+        logging.info(f"presigned_url: {presigned_url}")
     return presigned_url

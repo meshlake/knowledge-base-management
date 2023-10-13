@@ -9,6 +9,7 @@ import { getKnowledgeItems, deleteKnowledgeItem } from '@/services/knowledgeItem
 import { useModel, useParams } from '@umijs/max';
 import { getKnowledgeBaseAllTags } from '@/services/knowledgeBaseTags';
 import { exportKnowledgeBase } from '@/services/knowledgeBase';
+import { CheckCircleOutlined } from '@ant-design/icons';
 
 type TPagination = Omit<DEFAULT_API.Paginate<KNOWLEDGE_ITEM_API.KnowledgeItem>, 'items'>;
 type KnowledgeListProps = {
@@ -18,6 +19,7 @@ type KnowledgeListProps = {
 };
 
 const { Search } = Input;
+const { confirm } = Modal;
 
 const App: React.FC<KnowledgeListProps> = (props) => {
   const { knowledgeBase, isFileEmbedding, refresh } = props;
@@ -146,9 +148,21 @@ const App: React.FC<KnowledgeListProps> = (props) => {
     setLoading(true);
     try {
       const { data: url } = await exportKnowledgeBase(Number(params.id));
-      window.open(url, '_blank');
+      confirm({
+        title: '导出成功，请点击下载文件',
+        icon: <CheckCircleOutlined style={{ color: 'green' }} />,
+        okText: '下载',
+        cancelText: '取消',
+        onOk() {
+          window.open(url, '_blank');
+        },
+        onCancel() {
+          console.log('Cancel');
+        },
+      });
     } catch (error) {
       console.log(error);
+      notification.error({ message: '导出失败' });
     } finally {
       setLoading(false);
     }
