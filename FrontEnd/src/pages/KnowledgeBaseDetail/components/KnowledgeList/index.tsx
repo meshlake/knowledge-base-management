@@ -162,6 +162,7 @@ const App: React.FC<KnowledgeListProps> = (props) => {
       });
     } catch (error) {
       console.log(error);
+      notification.error({ message: '导出失败' });
     } finally {
       setLoading(false);
     }
