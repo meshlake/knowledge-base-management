@@ -1,4 +1,5 @@
 from __future__ import annotations
+import logging
 
 from langchain.vectorstores.supabase import SupabaseVectorStore
 from typing import TYPE_CHECKING, Any, Iterable, List, Optional
@@ -39,13 +40,17 @@ class CustomizeSupabaseVectorStore(SupabaseVectorStore):
         **kwargs: Any,
     ) -> List[str]:
         docs = self._texts_to_documents(texts, metadatas)
+        logging.info(f"Start {len(docs)} embedding")
 
         vectors = self._embedding.embed_documents(list(texts))
+        logging.info(f"Embedding {len(vectors)} successful")
 
+        logging.info("Start query similar knowledge")
         new_vectors, new_docs = query_similar_knowledge(
             vectors, docs
         )
-
+        logging.info("Query similar knowledge successful")
+        
         return self.limit_size_add_vectors(new_vectors, new_docs)
 
     def limit_size_add_vectors(
@@ -78,6 +83,7 @@ class CustomizeSupabaseVectorStore(SupabaseVectorStore):
         chunk_size = 30
         id_list: List[str] = []
         for i in range(0, len(rows), chunk_size):
+            logging.info(f"Adding chunk {i} to {i + chunk_size}")
             chunk = rows[i : i + chunk_size]
 
             result = client.from_(table_name).insert(chunk).execute()  # type: ignore
