@@ -22,6 +22,7 @@ class ChatbotBase(BaseModel):
     knowledgeBases: List[KnowledgeBaseSimple] = Field([], alias="knowledge_bases", description="list of knowledge base")
     promptConfig: PromptConfig = Field(None, alias="prompt_config", description="chatbot prompt config")
     prompt: str = Field(None, description="prompt")
+    upgraded: bool = Field(False, description="upgraded")
 
     class Config:
         orm_mode = True

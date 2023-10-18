@@ -20,6 +20,7 @@ class Chatbot(Base, BaseModel):
     description = Column(String(255), nullable=True)
     user_id = Column(Integer, name="user_id")
     prompt_config = Column(JSON)
+    upgraded = Column(Boolean, default=False)
     deleted = Column(Boolean, default=False)
 
     knowledge_bases = relationship(
