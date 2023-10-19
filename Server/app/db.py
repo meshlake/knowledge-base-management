@@ -19,7 +19,7 @@ engine = create_engine(
     f"mysql+pymysql://{MYSQL_USERNAME}:%s@{MYSQL_ADDRESS}/{MYSQL_DATABASE}"
     % urlquote(MYSQL_PASSWORD),
     poolclass= QueuePool,
-    pool_size=5,
+    pool_size=20,
     pool_pre_ping=True,
     pool_recycle=300,
     pool_timeout=3000,

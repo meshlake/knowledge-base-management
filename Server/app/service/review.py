@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+import time
 from app.dependencies import get_db
 from app.entities.users import User
 from app.service.embedding_client import create_embedding_client
@@ -27,6 +28,7 @@ from sqlalchemy import select
 
 from app.service.user import query_user_by_org
 from app.service.knowledge_base import get_all_knowledge_base_no_paginate
+from app.util import retry
 
 load_dotenv()
 
@@ -69,64 +71,84 @@ def is_similar_knowledge(new_knowledge_content: str, old_knowledge_content: str)
         return True
 
 
-def query_similar_knowledge(vectors, docs):
+def query_similar_by_supabase(embedding, knowledge_base_id):
     supabase = SupabaseClient()
+    return supabase.rpc(
+        "match_knowledge_with_meta",
+        {
+            "query_embedding": embedding,
+            "match_count": 1,
+            "knowledge_base_id": f"{knowledge_base_id}",
+        },
+    ).execute()
+
+
+def query_similar_knowledge(vectors, docs):
+    # supabase = SupabaseClient()
     no_similar_knowledge_idx = []
 
     # 查找重复知识
     for idx, embedding in enumerate(vectors):
+        logging.info(f"Start query similar knowledge {idx}")
         knowledge_base_id = docs[idx].metadata["knowledge_base_id"]
-        response = supabase.rpc(
-            "match_knowledge_with_meta",
-            {
-                "query_embedding": embedding,
-                "match_count": 1,
-                "knowledge_base_id": f"{knowledge_base_id}",
-            },
-        ).execute()
+        # response = supabase.rpc(
+        #     "match_knowledge_with_meta",
+        #     {
+        #         "query_embedding": embedding,
+        #         "match_count": 1,
+        #         "knowledge_base_id": f"{knowledge_base_id}",
+        #     },
+        # ).execute()
+        response = retry(
+            query_similar_by_supabase,
+            embedding,
+            knowledge_base_id,
+        )
         if len(response.data) > 0:
             old_knowledge = response.data[0]
             if (old_knowledge["similarity"]) > 0.93:
-                similar_knowledge = SimilarKnowledgeCreate(
-                    new_knowledge=docs[idx].page_content,
-                    new_knowledge_tag_id=docs[idx].metadata["tag"],
-                    new_knowledge_user_id=docs[idx].metadata["user_id"],
-                    new_knowledge_structure=docs[idx].metadata["structure"],
-                    old_knowledge_id=old_knowledge["id"],
-                    old_knowledge=old_knowledge["content"],
-                    old_knowledge_tag_id=old_knowledge["metadata"]["tag"],
-                    old_knowledge_user_id=old_knowledge["metadata"]["user_id"],
-                    old_knowledge_structure=old_knowledge["metadata"]["structure"],
-                    status=ReviewStatus.PENDING.name,
-                    source=docs[idx].metadata["source"],
-                    knowledge_base_id=knowledge_base_id,
-                )
-                create_review_item(similar_knowledge)
-                # is_similar = is_similar_knowledge(
-                #     docs[idx].page_content, old_knowledge["content"]
+                # similar_knowledge = SimilarKnowledgeCreate(
+                #     new_knowledge=docs[idx].page_content,
+                #     new_knowledge_tag_id=docs[idx].metadata["tag"],
+                #     new_knowledge_user_id=docs[idx].metadata["user_id"],
+                #     new_knowledge_structure=docs[idx].metadata["structure"],
+                #     old_knowledge_id=old_knowledge["id"],
+                #     old_knowledge=old_knowledge["content"],
+                #     old_knowledge_tag_id=old_knowledge["metadata"]["tag"],
+                #     old_knowledge_user_id=old_knowledge["metadata"]["user_id"],
+                #     old_knowledge_structure=old_knowledge["metadata"]["structure"],
+                #     status=ReviewStatus.PENDING.name,
+                #     source=docs[idx].metadata["source"],
+                #     knowledge_base_id=knowledge_base_id,
                 # )
-                # if is_similar:
-                #     similar_knowledge = SimilarKnowledgeCreate(
-                #         new_knowledge=docs[idx].page_content,
-                #         new_knowledge_tag_id=docs[idx].metadata["tag"],
-                #         new_knowledge_user_id=docs[idx].metadata["user_id"],
-                #         new_knowledge_structure=docs[idx].metadata["structure"],
-                #         old_knowledge_id=old_knowledge["id"],
-                #         old_knowledge=old_knowledge["content"],
-                #         old_knowledge_tag_id=old_knowledge["metadata"]["tag"],
-                #         old_knowledge_user_id=old_knowledge["metadata"]["user_id"],
-                #         old_knowledge_structure=old_knowledge["metadata"]["structure"],
-                #         status=ReviewStatus.PENDING.name,
-                #         source=docs[idx].metadata["source"],
-                #         knowledge_base_id=knowledge_base_id,
-                #     )
-                #     create_review_item(similar_knowledge)
-                # else:
-                #     no_similar_knowledge_idx.append(idx)
+                # create_review_item(similar_knowledge)
+                time.sleep(1)
+                is_similar = is_similar_knowledge(
+                    docs[idx].page_content, old_knowledge["content"]
+                )
+                if is_similar:
+                    similar_knowledge = SimilarKnowledgeCreate(
+                        new_knowledge=docs[idx].page_content,
+                        new_knowledge_tag_id=docs[idx].metadata["tag"],
+                        new_knowledge_user_id=docs[idx].metadata["user_id"],
+                        new_knowledge_structure=docs[idx].metadata["structure"],
+                        old_knowledge_id=old_knowledge["id"],
+                        old_knowledge=old_knowledge["content"],
+                        old_knowledge_tag_id=old_knowledge["metadata"]["tag"],
+                        old_knowledge_user_id=old_knowledge["metadata"]["user_id"],
+                        old_knowledge_structure=old_knowledge["metadata"]["structure"],
+                        status=ReviewStatus.PENDING.name,
+                        source=docs[idx].metadata["source"],
+                        knowledge_base_id=knowledge_base_id,
+                    )
+                    create_review_item(similar_knowledge)
+                else:
+                    no_similar_knowledge_idx.append(idx)
             else:
                 no_similar_knowledge_idx.append(idx)
         else:
             no_similar_knowledge_idx.append(idx)
+        logging.info(f"End query similar knowledge {idx}")
 
     new_vectors = []
     new_docs = []
@@ -262,7 +284,7 @@ def add_knowledge(silimar_knowledge: SimilarKnowledge):
                 else KnowledgeItemType.MANUALLY.name,
                 "source": silimar_knowledge.source,
                 "knowledge_base_id": silimar_knowledge.knowledge_base_id,
-                'structure': silimar_knowledge.new_knowledge_structure,
+                "structure": silimar_knowledge.new_knowledge_structure,
             },
             "embedding": vector,
         }
