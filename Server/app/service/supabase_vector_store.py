@@ -1,4 +1,5 @@
 from __future__ import annotations
+import json
 import logging
 
 from langchain.vectorstores.supabase import SupabaseVectorStore
@@ -7,6 +8,7 @@ from typing import TYPE_CHECKING, Any, Iterable, List, Optional
 from langchain.docstore.document import Document
 from langchain.embeddings.base import Embeddings
 from app.service.review import query_similar_knowledge
+from app.models.enums import KnowledgeStructure
 
 if TYPE_CHECKING:
     import supabase
@@ -42,15 +44,26 @@ class CustomizeSupabaseVectorStore(SupabaseVectorStore):
         docs = self._texts_to_documents(texts, metadatas)
         logging.info(f"Start {len(docs)} embedding")
 
-        vectors = self._embedding.embed_documents(list(texts))
+        embedding_texts = []
+
+        for doc in docs:
+            if doc.metadata.get("structure") == KnowledgeStructure.QA.name:
+                content = json.loads(doc.page_content)
+                if content.get("question"):
+                    text = content.get("question")
+                    embedding_texts.append(text)
+                else:
+                    embedding_texts.append(doc.page_content)
+            else:
+                embedding_texts.append(doc.page_content)
+        
+        vectors = self._embedding.embed_documents(list(embedding_texts))
         logging.info(f"Embedding {len(vectors)} successful")
 
         logging.info("Start query similar knowledge")
-        new_vectors, new_docs = query_similar_knowledge(
-            vectors, docs
-        )
+        new_vectors, new_docs = query_similar_knowledge(vectors, docs)
         logging.info("Query similar knowledge successful")
-        
+
         return self.limit_size_add_vectors(new_vectors, new_docs)
 
     def limit_size_add_vectors(
