@@ -18,6 +18,10 @@ class KnowledgeBase(Base, BaseModel):
 
     def __repr__(self):
         return f"<KnowledgeBase(id={self.id}, name={self.name}, description={self.description}, user_id={self.user_id}), createdAt={self.createdAt}, updatedAt={self.updatedAt}>"
+    
+    __table_args__ = {
+        'mysql_charset': 'utf8mb4',
+    }
 
 class KnowledgeBaseTag(Base, BaseModel):
 
@@ -29,5 +33,9 @@ class KnowledgeBaseTag(Base, BaseModel):
     parent_id = Column(Integer, name="parent_id")
     description = Column(String(255))
     user_id = Column(Integer, name="user_id")
+
+    __table_args__ = {
+        'mysql_charset': 'utf8mb4',
+    }
 
 Base.metadata.create_all(bind=engine)
