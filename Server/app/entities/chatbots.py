@@ -28,4 +28,8 @@ class Chatbot(Base, BaseModel):
 
     def __repr__(self):
         return f"<Chatbot(id={self.id}, name={self.name}, description={self.description}>"
+    
+    __table_args__ = {
+        'mysql_charset': 'utf8mb4',
+    }
 

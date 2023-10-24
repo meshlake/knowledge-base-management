@@ -19,6 +19,10 @@ class Conversation(Base, BaseModel):
     def __repr__(self):
         return f"<Conversation(id={self.id}, bot_id={self.bot_id}, topic={self.topic}, description={self.description})>"
     
+    __table_args__ = {
+        'mysql_charset': 'utf8mb4',
+    }
+    
 class Message(Base, BaseModel):
     
     __tablename__ = "conversation_messages"
@@ -30,5 +34,9 @@ class Message(Base, BaseModel):
 
     def __repr__(self):
         return f"<Message(id={self.id}, content={self.content}, role={self.role}, conversation_id={self.conversation_id}), createdAt={self.createdAt}, updatedAt={self.updatedAt}>"
+    
+    __table_args__ = {
+        'mysql_charset': 'utf8mb4',
+    }
     
 Base.metadata.create_all(bind=engine)
