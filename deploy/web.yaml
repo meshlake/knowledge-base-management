@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: knowledge-base
+  name: deployment-knowledge-base-web
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: app-knowledge-base-web
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: app-knowledge-base-web
+    spec:
+      containers:
+        - image: harbor.dev.meshlake.com:8443/meshlake/knowledge-base-web:0.0.1
+          imagePullPolicy: Always
+          name: app-knowledge-base-web
+          ports:
+            - containerPort: 80
+              protocol: TCP
+      imagePullSecrets:
+        - name: meshlake-harbor-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: knowledge-base
+  name: service-knowledge-base-web
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: app-knowledge-base-web
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: knowledge-base
+  name: ingress-knowledge-base-web-public
+  labels:
+    app.kubernetes.io/ingress.class: nginx-public
+  annotations:
+    kubernetes.io/ingress.class: nginx-public
+    nginx.ingress.kubernetes.io/cors-allow-methods: '*'
+    nginx.ingress.kubernetes.io/cors-allow-origin: '*'
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 300m
+spec:
+  rules:
+    - host: smartbot.meshlake.com
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: service-knowledge-base-web
+              port:
+                number: 80

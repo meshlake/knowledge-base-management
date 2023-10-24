@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: knowledge-base-test
+  namespace: knowledge-base
   name: deployment-knowledge-base-server
 spec:
   selector:
@@ -14,7 +14,7 @@ spec:
         app.kubernetes.io/name: app-knowledge-base-server
     spec:
       containers:
-      - image: harbor.dev.meshlake.com:8443/meshlake/knowledge-base-server:test
+      - image: harbor.dev.meshlake.com:8443/meshlake/knowledge-base-server:0.0.1
         imagePullPolicy: Always
         name: app-knowledge-base-server
         ports:
@@ -30,17 +30,17 @@ spec:
         - name: MYSQL_ADDRESS
           value: "mysql.infra.svc.cluster.local:3306"
         - name: MYSQL_DATABASE
-          value: "knowledge_base_test"
+          value: "knowledge_base"
         - name: MYSQL_USERNAME
           value: "root"
         - name: MYSQL_PASSWORD
           value: "3vzN@qHktG!LbzV3"
         - name: SUPABASE_SERVICE_ROLE_KEY
-          value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oZWlvd2R6cnpsbnBkc2RwcXl4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY4NzkzOTg4NiwiZXhwIjoyMDAzNTE1ODg2fQ.1irXrGwamJ001EDMfqaiWrqC4zxZoz6UXKuzTJXb0T4"
+          value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlicHhja2hjd21jY3d4YWd2Zm9iIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY4NDIyNjk1MywiZXhwIjoxOTk5ODAyOTUzfQ.TafzsCMDmN1AFESpRmJeyCPWpeBCB91P8yecC1KjCu8"
         - name: NEXT_PUBLIC_SUPABASE_ANON_KEY
-          value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oZWlvd2R6cnpsbnBkc2RwcXl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODc5Mzk4ODYsImV4cCI6MjAwMzUxNTg4Nn0.7NWl2AqIIeI8JVudKGhagWsY8u1niRXp4RumhTezprE"
+          value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlicHhja2hjd21jY3d4YWd2Zm9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODQyMjY5NTMsImV4cCI6MTk5OTgwMjk1M30.ALYAnwISKrQ3W1gUgrbWtOsmjDAHn20sn7T_mdG8b70"
         - name: NEXT_PUBLIC_SUPABASE_URL
-          value: "https://mheiowdzrzlnpdsdpqyx.supabase.co"
+          value: "https://ybpxckhcwmccwxagvfob.supabase.co"
         - name: AWS_ACCESS_KEY_ID
           value: "AKIA5ZFNLPIQAAZBXN4J"
         - name: AWS_SECRET_ACCESS_KEY
@@ -48,16 +48,16 @@ spec:
         - name:  AWS_DEFAULT_REGION
           value: cn-northwest-1
         - name: CHAT_SERVICE_BASE_URL
-          value: https://chat-test.meshlake.com
+          value: https://chat.meshlake.com
         - name: WECHAT_BOT_SERVER
-          value: http://service-meshlake-wechat-bot.meshlake-wechat-bot-test.svc.cluster.local
+          value: http://service-meshlake-wechat-bot.meshlake-wechat-bot.svc.cluster.local
       imagePullSecrets:
           - name: meshlake-harbor-auth
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: knowledge-base-test
+  namespace: knowledge-base
   name: service-knowledge-base-server
 spec:
   ports:
