@@ -50,7 +50,7 @@ spec:
         - name: CHAT_SERVICE_BASE_URL
           value: https://chat-test.meshlake.com
         - name: WECHAT_BOT_SERVER
-          value: http://service-meshlake-wechat-bot.meshlake-wechat-bot-test.svc.cluster.local
+          value: http://service-wechat-bot.knowledge-base-test.svc.cluster.local
       imagePullSecrets:
           - name: meshlake-harbor-auth
 ---
