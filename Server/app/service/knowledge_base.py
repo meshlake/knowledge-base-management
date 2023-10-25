@@ -1,6 +1,7 @@
 import json
 import logging
 import tempfile
+import time
 from typing import Union
 
 from sqlalchemy import or_, select
@@ -273,10 +274,10 @@ def batch_create_knowledge_base_tag(
 ):
     if len(tags) == 0:
         return []
-    # 判断相同的标签是否存在不同的分类
-    if not is_tags_unique(tags):
-        logging.error("Tags has diffrent parent.")
-        raise Exception("Tags has diffrent parent.")
+    # # 判断相同的标签是否存在不同的分类
+    # if not is_tags_unique(tags):
+    #     logging.error("Tags has diffrent parent.")
+    #     raise Exception("Tags has diffrent parent.")
 
     db = next(get_db())
 
@@ -332,11 +333,36 @@ def batch_create_knowledge_base_tag(
         .all()
     )
 
-    existing_children_tags_names = [tag.name for tag in existing_children_tags]
+    # existing_children_tags_names = [tag.name for tag in existing_children_tags]
 
-    create_children_tags = [
-        tag for tag in tags if tag["tag"] not in existing_children_tags_names
-    ]
+    # create_children_tags = [
+    #     tag for tag in tags if tag["tag"] not in existing_children_tags_names
+    # ]
+    create_children_tags = []
+
+    for tag in tags:
+        existing_children_tags_parent_id = [
+            existing_tag.parent_id
+            for existing_tag in existing_children_tags
+            if existing_tag.name == tag["tag"]
+        ]
+
+        if len(existing_children_tags_parent_id) == 0:
+            create_children_tags.append(tag)
+            continue
+
+        time.sleep(1)
+        finded_existing_parent_tag = (
+            db.query(KnowledgeBaseTagEntity)
+            .filter(KnowledgeBaseTagEntity.knowledge_base_id == knowledge_base_id)
+            .filter(KnowledgeBaseTagEntity.id.in_(existing_children_tags_parent_id))
+            .all()
+        )
+        existing_children_tags_parent_name = [
+            existing_tag.name for existing_tag in finded_existing_parent_tag
+        ]
+        if tag["parentTag"] not in existing_children_tags_parent_name:
+            create_children_tags.append(tag)
 
     # 创建子标签
     if len(create_children_tags) > 0:
@@ -366,6 +392,13 @@ def batch_create_knowledge_base_tag(
         .filter(KnowledgeBaseTagEntity.name.in_(children_tags))
         .all()
     )
+
+    for tag in new_existing_children_tags:
+        tag.parent = [
+            parent_tag
+            for parent_tag in new_existing_parent_tags
+            if parent_tag.id == tag.parent_id
+        ][0]
 
     db.close()
     return new_existing_children_tags

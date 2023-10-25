@@ -133,7 +133,7 @@ class S3FileLoader(BaseLoader):
                                 "tag": [
                                     tag
                                     for tag in tag_entities
-                                    if tag.name == data.tags[tag_headers[1]][0]
+                                    if tag.name == data.tags[tag_headers[1]][0] and tag.parent.name == data.tags[tag_headers[0]][0]
                                 ][0].id
                             }
                         else:
