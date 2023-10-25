@@ -8,7 +8,7 @@ import { KnowledgeBaseModel, KnowledgeBaseTagModel } from '@/pages/KnowledgeBase
 import { getFiles } from '@/services/file';
 import { useModel, useParams } from '@umijs/max';
 import { getKnowledgeItems } from '@/services/knowledgeItem';
-import { getKnowledgeBaseAllTags, getKnowledgeBaseTags } from '@/services/knowledgeBaseTags';
+import { getKnowledgeBaseAllTags } from '@/services/knowledgeBaseTags';
 import { HierarchyTagModel } from '../../types';
 
 type TPagination = Omit<DEFAULT_API.Paginate<any>, 'items'>;
@@ -50,7 +50,7 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
   const getAllKnowledgeItems = async () => {
     setLoading(true);
     try {
-      const data = await getKnowledgeItems(Number(params.id), 1);
+      const data = await getKnowledgeItems(Number(params.id), 1, {}, 1);
       setTotal(data.total);
       setLoading(false);
     } catch (error) {
@@ -65,7 +65,7 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
     if (filepath) {
       setLoading(true);
       try {
-        const data = await getKnowledgeItems(Number(params.id), page, { filepath });
+        const data = await getKnowledgeItems(Number(params.id), page, { filepath }, 10);
         setKnowledgeList(data.items);
         setPagination({
           page: data.page,
@@ -85,7 +85,12 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
     if (tag_id) {
       setLoading(true);
       try {
-        const data = await getKnowledgeItems(Number(params.id), page, { tag_id: Number(tag_id) });
+        const data = await getKnowledgeItems(
+          Number(params.id),
+          page,
+          { tag_id: Number(tag_id) },
+          10,
+        );
         setKnowledgeList(data.items);
         setPagination({
           page: data.page,
@@ -155,6 +160,7 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
       if (tag.parent_id === null || tag.parent_id <= 0) {
         const hierarchyTag: HierarchyTagModel = {
           ...tag,
+          selectable: false,
           children: [],
         };
         result.push(hierarchyTag);
@@ -164,6 +170,7 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
         if (parentTag) {
           parentTag.children.push({
             ...tag,
+            selectable: true,
             children: [],
           } as HierarchyTagModel);
         }
@@ -186,19 +193,24 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
     return tags.map((tag) => {
       return {
         ...transformToDataNode(tag),
+        selectable: tag.selectable,
         children: transformToDataNodes(tag.children),
       };
     });
   };
 
   const fetchKnowledgeTags = async () => {
-    return getKnowledgeBaseTags(knowledgeBase.id)
-      .then((res) => res.items)
+    return getKnowledgeBaseAllTags(knowledgeBase.id)
+      .then((res) => {
+        setTags(res);
+        return res;
+      })
       .then((tags) => transformToTagHierarchy(tags))
       .then((tags) => {
         return {
           title: '标签分类',
           key: '0-0',
+          selectable: false,
           children: transformToDataNodes(tags),
         };
       });
@@ -227,9 +239,6 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
   useEffect(() => {
     setTreeData();
     getAllKnowledgeItems();
-    getKnowledgeBaseAllTags(Number(params.id)).then((res) => {
-      setTags(res);
-    });
   }, []);
 
   //标签管理权限
@@ -257,7 +266,13 @@ const App: React.FC<KnowledgeManageProps> = (props) => {
           </div>
         </div>
         <div className={Styles.content}>
-          <div className={Styles.tree}>
+          <div
+            className={Styles.tree}
+            style={{
+              maxHeight: 'calc(100vh - 56px - 24px - 34px - 32px - 50px - 100px)',
+              overflow: 'scroll',
+            }}
+          >
             <div>目录</div>
             <Tree
               showLine={true}
