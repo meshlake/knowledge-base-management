@@ -111,7 +111,6 @@ def get_knowledge_base_tags_all(
     logging.debug("Fetching all tags")
     query = db.query(KnowledgeBaseTagEntity)
     query = query.filter(KnowledgeBaseTagEntity.knowledge_base_id == knowledge_base_id)
-    query = query.filter(KnowledgeBaseTagEntity.parent_id != None)
     query.order_by(KnowledgeBaseTagEntity.createdAt.desc())
     return query.all()
 

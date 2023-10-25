@@ -19,7 +19,7 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
     tags,
   } = props;
 
-  const fromDisplay = metadata.type === 'MANUALLY' ? '手动录入' : metadata.source;
+  const fromDisplay = metadata.type === 'MANUALLY' ? '手动录入' : metadata.source.split('/')[2];
 
   const handleDelete = (e: MouseEvent<HTMLSpanElement>) => {
     e.stopPropagation();
@@ -27,6 +27,8 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
       onDelete();
     }
   };
+
+  const tag = tags.find((item) => item.id === metadata.tag);
 
   return (
     <Card
@@ -46,12 +48,14 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
         <div>
           <div className={Styles.uploader}>上传者：{metadata.user.nickname}</div>
           <div className={Styles.footer}>
-            <div>来自：{fromDisplay}</div>
+            <div>
+              来自：{fromDisplay.length > 20 ? fromDisplay.substring(0, 20) + '...' : fromDisplay}
+            </div>
             {onDelete ? (
               <div>
                 {metadata.tag && (
                   <Tag color="#D9F0FD" className={Styles.tags}>
-                    {tags.find((item) => item.id === metadata.tag)?.name}
+                    {tag && tag?.name.length > 5 ? tag?.name.substring(0, 5) + '...' : tag?.name}
                   </Tag>
                 )}
                 <DeleteOutlined className={Styles.deleteBtn} onClick={handleDelete} />
@@ -59,7 +63,7 @@ const App: React.FC<KnowledgeItemProps> = (props) => {
             ) : metadata?.tag ? (
               <div>
                 <Tag color="#D9F0FD" className={Styles.normalTags}>
-                  {tags.find((item) => item.id === metadata.tag)?.name}
+                  {tag && tag?.name.length > 5 ? tag?.name.substring(0, 5) + '...' : tag?.name}
                 </Tag>
               </div>
             ) : null}

@@ -25,7 +25,7 @@ from app.service.knowledge_base import (
     delete_tag_by_id,
     get_knowledge_base_tags_all,
     get_all_knowledge_base,
-    export_knowledge_base_to_excel,
+    export_knowledge_base_to_excel
 )
 
 from app.service.knowledge_item import (

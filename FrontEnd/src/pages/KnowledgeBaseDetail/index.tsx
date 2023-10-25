@@ -33,21 +33,6 @@ const App: React.FC = () => {
   const toggleLabelManage = () => {
     setActiveTab(3);
   };
-  const handleTabChange = (index: number) => {
-    setActiveTab(index);
-  };
-
-  const getKnowledgeBaseData = async () => {
-    // setLoading(true);
-    try {
-      const { data: knowledgeBaseData } = await getKnowledgeBase(Number(params.id));
-      setKnowledgeBase(knowledgeBaseData);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleRefreshStatus = () => {
     const knowledgeBaseId = Number(params.id);
@@ -63,7 +48,7 @@ const App: React.FC = () => {
           setFileStatus({} as FilesStatus);
           refreshTimer = setTimeout(() => {
             handleRefreshStatus();
-          }, 10000);
+          }, 30000);
           return;
         }
 
@@ -92,11 +77,32 @@ const App: React.FC = () => {
         }
         refreshTimer = setTimeout(() => {
           handleRefreshStatus();
-        }, 10000);
+        }, 30000);
       })
       .catch((err) => {
         console.log(err);
       });
+  };
+
+  const handleTabChange = (index: number) => {
+    setActiveTab(index);
+    if (index !== 0) {
+      clearTimeout(refreshTimer);
+    } else {
+      handleRefreshStatus();
+    }
+  };
+
+  const getKnowledgeBaseData = async () => {
+    // setLoading(true);
+    try {
+      const { data: knowledgeBaseData } = await getKnowledgeBase(Number(params.id));
+      setKnowledgeBase(knowledgeBaseData);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCloseBanner = () => {

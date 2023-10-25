@@ -8,6 +8,7 @@ export function getKnowledgeItems(
     tag_id?: number;
     content?: string;
   },
+  size: number = 15,
 ) {
   return request<DEFAULT_API.Paginate<KNOWLEDGE_ITEM_API.KnowledgeItem>>(
     `/knowledge_bases/${knowledge_base_id}/item`,
@@ -17,6 +18,7 @@ export function getKnowledgeItems(
       },
       params: {
         page,
+        size,
         filepath: search?.filepath,
         tag_id: search?.tag_id,
         search: search?.content,
