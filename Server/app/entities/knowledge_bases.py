@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.orm import relationship
 from app.db import Base, engine
 from app.entities.base import BaseModel
@@ -12,6 +12,7 @@ class KnowledgeBase(Base, BaseModel):
     name = Column(String(255))
     description = Column(String(255))
     user_id = Column(Integer, name="user_id")
+    is_find_similar = Column(Boolean, default=True)
 
     chatbots = relationship(
         "Chatbot", secondary=chatbot_knowledge_association, back_populates="knowledge_bases")

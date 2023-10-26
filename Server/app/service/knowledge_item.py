@@ -6,6 +6,7 @@ import os
 from app.service.s3_file import S3FileLoader
 from app.service.supabase_client import SupabaseClient
 from app.service.supabase_vector_store import CustomizeSupabaseVectorStore
+from app.service.knowledge_base import get_knowledge_base
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.docstore.document import Document
 from app.models.enums import FileStatus, KnowledgeItemType, KnowledgeStructure
@@ -33,11 +34,11 @@ def create_knowledge_item(
         "knowledge_base_id": knowledge_base_id,
         "user_id": user.id,
         "tag": model.tag,
-        "structure": model.structure.name
+        "structure": model.structure.name,
     }
     docs = [Document(page_content=model.content, metadata=metadata)]
     ids = CustomizeSupabaseVectorStore.limit_size_add_documents(
-        vector_store, documents=docs
+        vector_store, documents=docs, is_find_similar=True
     )
     logging.debug(f"knowledge item created: {model}")
     return model, len(ids) == 0
@@ -163,7 +164,7 @@ def get_knowledge_items(
             user_ids = [user.id]
             users = query_users_by_ids(next(get_db()), user_ids)
             for item in response.data:
-                item["metadata"]["user"] = {'nickname': users[0].nickname} 
+                item["metadata"]["user"] = {"nickname": users[0].nickname}
             return {
                 "items": response.data,
                 "total": total_res,
@@ -175,11 +176,15 @@ def get_knowledge_items(
             response, total_res = search_knowledge_item(
                 knowledge_base_id, page, size, search
             )
-            user_ids = list(set([item["metadata"]["user_id"] for item in response.data])) 
+            user_ids = list(
+                set([item["metadata"]["user_id"] for item in response.data])
+            )
             users = query_users_by_ids(next(get_db()), user_ids)
             for item in response.data:
-                found_user = [user for user in users if user.id == item["metadata"]["user_id"]]
-                item["metadata"]["user"] = {'nickname': found_user[0].nickname} 
+                found_user = [
+                    user for user in users if user.id == item["metadata"]["user_id"]
+                ]
+                item["metadata"]["user"] = {"nickname": found_user[0].nickname}
             return {
                 "items": response.data,
                 "total": total_res,
@@ -192,11 +197,13 @@ def get_knowledge_items(
             knowledge_base_id, page, size, filepath, tag_id, user
         )
         logging.debug(f"knowledge items: {response}")
-        user_ids = list(set([item["metadata"]["user_id"] for item in response.data])) 
+        user_ids = list(set([item["metadata"]["user_id"] for item in response.data]))
         users = query_users_by_ids(next(get_db()), user_ids)
         for item in response.data:
-            found_user = [user for user in users if user.id == item["metadata"]["user_id"]]
-            item["metadata"]["user"] = {'nickname': found_user[0].nickname}
+            found_user = [
+                user for user in users if user.id == item["metadata"]["user_id"]
+            ]
+            item["metadata"]["user"] = {"nickname": found_user[0].nickname}
         return {
             "items": response.data,
             "total": total_res.count,
@@ -244,6 +251,7 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
     try:
         db = next(get_db())
         update_file_status(db=db, filepath=filepath, status=FileStatus.EMBEDDING)
+        knowledge_base = get_knowledge_base(db=db, knowledge_base_id=knowledge_base_id)
         db.close()
 
         supabase = SupabaseClient()
@@ -271,14 +279,16 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
                     "structure": KnowledgeStructure.QA.name,
                 }
             embedding_docs = documents
-        elif (filetype == FileType.MD):
+        elif filetype == FileType.MD:
             documents = loader.load()
 
             headers_to_split_on = [
                 ("#", "Header 1"),
                 ("##", "Header 2"),
             ]
-            markdown_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=headers_to_split_on)
+            markdown_splitter = MarkdownHeaderTextSplitter(
+                headers_to_split_on=headers_to_split_on
+            )
             text_splitter = RecursiveCharacterTextSplitter(
                 separators=["\n\n", "\n"], chunk_size=500, chunk_overlap=30
             )
@@ -325,7 +335,9 @@ def create_knowledge_items_for_file(knowledge_base_id: int, user: User, filepath
         vector_store = CustomizeSupabaseVectorStore(supabase, embeddings, "knowledge")
 
         CustomizeSupabaseVectorStore.limit_size_add_documents(
-            vector_store, documents=embedding_docs
+            vector_store,
+            documents=embedding_docs,
+            is_find_similar=knowledge_base.is_find_similar,
         )
 
         db = next(get_db())
