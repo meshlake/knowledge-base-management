@@ -9,8 +9,12 @@ from app.util import generate_api_key
 from app.service.user import query_user_by_org
 
 def get_all_applications(db: Session, user: User):
-    user_ids = query_user_by_org(db, user.organization_id)
-    query = db.query(Application).filter(Application.user_id.in_(user_ids)).filter_by(deleted=False)
+    query = None
+    if user.id == 1:
+        query = db.query(Application).filter_by(deleted=False)
+    else:
+        user_ids = query_user_by_org(db, user.organization_id)
+        query = db.query(Application).filter(Application.user_id.in_(user_ids)).filter_by(deleted=False)
     return query.order_by(
         Application.createdAt.asc()).all()
 
