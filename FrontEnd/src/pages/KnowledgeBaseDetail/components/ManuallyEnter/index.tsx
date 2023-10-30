@@ -184,13 +184,11 @@ const App: React.FC<ManuallyEnterProps> = (props) => {
           notFoundContent={`对不起，未找到相关标签。
         创建/编辑标签请在"知识库管理->标签管理页面"操作。`}
           onSelect={handleSelect}
-        >
-          {tags.map((item) => (
-            <Select.Option value={item.id} key={item.id}>
-              {item.name}
-            </Select.Option>
-          ))}
-        </Select>
+          fieldNames={{ label: 'name', value: 'id' }}
+          options={tags}
+          optionFilterProp="children"
+          filterOption={(input, option) => (option?.name ?? '').includes(input)}
+        ></Select>
       )}
       {/* 无标签显示添加 */}
       {!tag && !showTagsSelect && <div onClick={() => setShowTagsSelect(true)}>添加标签</div>}
