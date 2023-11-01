@@ -150,7 +150,7 @@ export default function TagManager(props: TagManagerProps) {
               />
             )}
           </div>
-          <div style={{ width: '100%' }}>
+          <div id="scrollableDiv" style={{ width: '100%', overflow: 'scroll' }}>
             {selectedTag ? <SecondaryTagManager model={selectedTag} /> : null}
           </div>
         </div>

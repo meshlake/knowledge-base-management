@@ -1,4 +1,8 @@
 .TagManager {
+  display: flex;
+  flex-flow: column nowrap;
+  height: calc(100vh - 132px);
+  overflow: hidden;
   .header {
     display: flex;
     justify-content: space-between;
@@ -9,8 +13,10 @@
     font-weight: 600;
   }
   .content {
+    flex: 1;
     display: flex;
     width: 100%;
+    overflow: hidden;
     .tree {
       width: 15rem;
       display: flex;

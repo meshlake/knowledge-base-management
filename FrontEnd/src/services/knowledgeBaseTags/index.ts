@@ -1,11 +1,13 @@
 import { KnowledgeBaseTagModel } from '@/pages/KnowledgeBase/types';
 import request from '@/utils/request';
 
-export function getKnowledgeBaseTags(id: number, parentId?: number) {
+export function getKnowledgeBaseTags(id: number, parentId?: number, page?: number, size?: number) {
   return request<DEFAULT_API.Paginate<KnowledgeBaseTagModel>>(`/knowledge_bases/${id}/tags`, {
     method: 'GET',
     params: {
       parent_id: parentId,
+      page,
+      size,
     },
     headers: {
       authorization: 'Bearer ' + localStorage.getItem('access_token'),
