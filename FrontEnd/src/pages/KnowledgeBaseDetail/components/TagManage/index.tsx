@@ -145,6 +145,7 @@ export default function TagManager(props: TagManagerProps) {
                 showIcon={false}
                 expandAction={false}
                 onSelect={onSelect}
+                style={{ overflow: 'scroll', maxHeight: 'calc(100vh - 132px)' }}
                 selectable={true}
                 treeData={tagHierarchyNodes}
               />
