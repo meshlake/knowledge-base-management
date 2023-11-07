@@ -25,7 +25,8 @@ from app.service.knowledge_base import (
     delete_tag_by_id,
     get_knowledge_base_tags_all,
     get_all_knowledge_base,
-    export_knowledge_base_to_excel
+    export_knowledge_base_to_excel,
+    get_knowledge_base_tags_without_parent
 )
 
 from app.service.knowledge_item import (
@@ -172,6 +173,16 @@ def retrieve_knowledge_base_tags(
     id: int, parent_id: Union[int, None] = None, db: Session = Depends(get_db)
 ):
     return get_knowledge_base_tags(db, id, parent_id)
+
+@router.get(
+    "/knowledge_bases/{id}/no_parent/tags",
+    response_model=Page[KnowledgeBaseTagModel],
+    dependencies=[Depends(oauth2_scheme)],
+)
+def retrieve_knowledge_base_tags_without_parent(
+    id: int, db: Session = Depends(get_db)
+):
+    return get_knowledge_base_tags_without_parent(db, id)
 
 
 @router.get(
