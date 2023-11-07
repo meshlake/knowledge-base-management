@@ -103,6 +103,16 @@ def get_knowledge_base_tags(
     query.order_by(KnowledgeBaseTagEntity.createdAt.desc())
     return paginate(db, query)
 
+def get_knowledge_base_tags_without_parent(
+    db: Session, knowledge_base_id: int
+) -> Page[KnowledgeBaseTagModel]:
+    logging.debug(f"Fetching tags on knowledge base {knowledge_base_id}...")
+    query = db.query(KnowledgeBaseTagEntity)
+    query = query.filter(KnowledgeBaseTagEntity.knowledge_base_id == knowledge_base_id)
+    query = query.filter(KnowledgeBaseTagEntity.parent_id == None)
+    query.order_by(KnowledgeBaseTagEntity.createdAt.desc())
+    return paginate(db, query)
+
 
 def get_knowledge_base_tags_all(
     db: Session,

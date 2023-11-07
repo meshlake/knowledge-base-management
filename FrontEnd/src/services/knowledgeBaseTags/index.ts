@@ -62,3 +62,19 @@ export function getKnowledgeBaseAllTags(knowledgeBaseId: number) {
     },
   });
 }
+
+export function getKnowledgeBaseNoParentTags(id: number, page?: number, size?: number) {
+  return request<DEFAULT_API.Paginate<KnowledgeBaseTagModel>>(
+    `/knowledge_bases/${id}/no_parent/tags`,
+    {
+      method: 'GET',
+      params: {
+        page,
+        size,
+      },
+      headers: {
+        authorization: 'Bearer ' + localStorage.getItem('access_token'),
+      },
+    },
+  );
+}
