@@ -62,13 +62,13 @@ def get_pages(total: int, size: int):
         return total // size + 1
 
 def retry(func, *args, **kwargs):
-    for retry in range(3):
+    for retry in range(4):
         try:
             result = func(*args, **kwargs)
             return result  # 如果成功执行函数，立即返回结果
         except Exception as e:
             print(f"Attempt {retry + 1} failed with error: {str(e)}")
-            if retry < 2:
+            if retry < 3:
                 print(f"Retrying in 2 seconds...")
                 time.sleep(2)
-    raise Exception(f"Function failed after 3 retries")
+    raise Exception(f"Function failed after 4 retries")

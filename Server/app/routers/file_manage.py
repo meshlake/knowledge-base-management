@@ -33,6 +33,7 @@ def create_file(
         model.knowledge_base_id,
         current_user,
         model.path,
+        file_entity.id,
     )
     return {"data": file_entity}
 

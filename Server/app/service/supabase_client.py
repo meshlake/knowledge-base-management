@@ -8,11 +8,11 @@ load_dotenv()
 class SupabaseClient:
     _instance = None
     
-    def __new__(cls):
+    def __new__(cls, schema="public"):
         if cls._instance is None:
             supabase_url = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
             supabase_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-            option = ClientOptions(postgrest_client_timeout=60, storage_client_timeout=60)
+            option = ClientOptions(postgrest_client_timeout=60, storage_client_timeout=60, schema=schema)
             supabase: Client = create_client(supabase_url, supabase_key, option)
             cls._instance = supabase
         return cls._instance
