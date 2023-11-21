@@ -20,6 +20,8 @@ from dotenv import load_dotenv
 from llama_index import PromptTemplate
 
 from app.service.agents import is_answer_successful
+from app.service.chat import chat_with_intent
+from app.service.chatbot import get_chatbot
 
 load_dotenv()
 
@@ -154,26 +156,32 @@ async def ask_bot(
     model: MessageCreateModel,
     conversation: ConversationEntity,
     user: User,
+    db: Session,
 ) -> MessageCreateModel:
     if user.organization.code != "tec-do":
-        reply = ""
-        async with aiohttp.ClientSession() as session:
-            async with build_chat_service_request(
-                model, conversation, user, session
-            ) as response:
-                if response.status != 200:
-                    raise HTTPException(
-                        status_code=500,
-                        detail=f"Failed to infer the reply for the user message, error reason: \n {response.text}",
-                    )
-                response_data = await response.json()
-                if is_error_response(response_data):
-                    raise HTTPException(
-                        status_code=500,
-                        detail=f"Failed to infer the reply for the user message, error reason: \n {response_data}",
-                    )
-                reply = response_data.get("data")
-        return MessageCreateModel(content=reply, role="bot")
+        if user.username == "admin":
+            bot = get_chatbot(db=db, user=user, id=conversation.bot_id)
+            reply = chat_with_intent(model.content, conversation.messages, bot.prompt_config)
+            return MessageCreateModel(content=reply, role="bot")
+        else:
+            reply = ""
+            async with aiohttp.ClientSession() as session:
+                async with build_chat_service_request(
+                    model, conversation, user, session
+                ) as response:
+                    if response.status != 200:
+                        raise HTTPException(
+                            status_code=500,
+                            detail=f"Failed to infer the reply for the user message, error reason: \n {response.text}",
+                        )
+                    response_data = await response.json()
+                    if is_error_response(response_data):
+                        raise HTTPException(
+                            status_code=500,
+                            detail=f"Failed to infer the reply for the user message, error reason: \n {response_data}",
+                        )
+                    reply = response_data.get("data")
+            return MessageCreateModel(content=reply, role="bot")
     else:
         reply = query_from_index(model.content)
         return MessageCreateModel(content=reply, role="bot")
