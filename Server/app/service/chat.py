@@ -3,7 +3,7 @@ import json
 from langchain.schema.agent import AgentActionMessageLog, AgentFinish
 from langchain.agents import AgentExecutor
 from langchain.agents.format_scratchpad import format_to_openai_function_messages
-from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain import hub
 from langchain.memory import ConversationBufferMemory
@@ -16,13 +16,14 @@ from langchain.callbacks.manager import (
 from langchain.tools import BaseTool
 from supabase import create_client, Client
 from supabase.client import ClientOptions
-from langchain.embeddings import OpenAIEmbeddings
+from langchain.embeddings import OpenAIEmbeddings, AzureOpenAIEmbeddings
 from langchain.agents.format_scratchpad import format_log_to_messages
 from langchain.agents.output_parsers import JSONAgentOutputParser
 from dotenv import load_dotenv
 from app.service.supabase_client import SupabaseClient
 
 load_dotenv()
+
 
 class Response(BaseModel):
     """Final response to the question being asked"""
@@ -86,7 +87,12 @@ def predict_intent(input, messages=[]):
         ]
     )
 
-    llm = ChatOpenAI(temperature=0, model="gpt-4-1106-preview")
+    llm = AzureChatOpenAI(
+        azure_deployment="gpt-4",
+        openai_api_version="2023-05-15",
+        azure_endpoint="https://seedlings-ejp.openai.azure.com/",
+        api_key="2cb70053536b4e1b8d76dfdb09ad2459",
+    )
 
     agent = (
         {
@@ -110,7 +116,12 @@ def predict_intent(input, messages=[]):
 
 
 def query_similar_by_supabase(query: str):
-    embeddings_model = OpenAIEmbeddings()
+    embeddings_model = AzureOpenAIEmbeddings(
+        azure_endpoint="https://seedlings.openai.azure.com/",
+        openai_api_key="49c6eee59eb642f29857eb571b0fb729",
+        azure_deployment="text-embedding-ada-002",
+        openai_api_version="2023-05-15",
+    )
 
     embedding = embeddings_model.embed_query(query)
 
@@ -165,7 +176,12 @@ def chat(input: str, memory: ConversationBufferMemory, role_prompt: str):
 
     prompt = hub.pull("hwchase17/react-chat-json")
 
-    chat_model = ChatOpenAI(temperature=0, model="gpt-4-1106-preview")
+    chat_model = AzureChatOpenAI(
+        azure_deployment="gpt-35-turbo",
+        openai_api_version="2023-05-15",
+        azure_endpoint="https://seedlings.openai.azure.com/",
+        api_key="49c6eee59eb642f29857eb571b0fb729",
+    )
 
     prompt = prompt.partial(
         tools=render_text_description(tools),
