@@ -161,7 +161,7 @@ async def ask_bot(
     if user.organization.code != "tec-do":
         if user.username == "admin":
             bot = get_chatbot(db=db, user=user, id=conversation.bot_id)
-            reply = chat_with_intent(model.content, conversation.messages, bot.prompt_config)
+            reply = chat_with_intent(model.content, conversation.messages, bot.prompt, bot.knowledge_bases[0].id)
             return MessageCreateModel(content=reply, role="bot")
         else:
             reply = ""

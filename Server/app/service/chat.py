@@ -115,7 +115,7 @@ def predict_intent(input, messages=[]):
     )
 
 
-def query_similar_by_supabase(query: str):
+def query_similar_by_supabase(query: str, knowledge_base_id: int):
     embeddings_model = AzureOpenAIEmbeddings(
         azure_endpoint="https://seedlings.openai.azure.com/",
         openai_api_key="49c6eee59eb642f29857eb571b0fb729",
@@ -132,7 +132,7 @@ def query_similar_by_supabase(query: str):
         {
             "query_embedding": embedding,
             "match_count": 10,
-            "knowledge_base_id": "55",
+            "knowledge_base_id": knowledge_base_id,
         },
     ).execute()
 
@@ -153,25 +153,33 @@ def query_similar_by_supabase(query: str):
     return context
 
 
-class CustomSearchTool(BaseTool):
-    name = "custom_search"
-    description = "useful for when you need to answer questions about medical beauty"
-    # description = "useful for when you need to answer questions about tax"
+def chat(
+    input: str,
+    memory: ConversationBufferMemory,
+    role_prompt: str,
+    knowledge_base_id: int,
+):
+    class CustomSearchTool(BaseTool):
+        name = "custom_search"
+        description = (
+            "useful for when you need to answer questions about medical beauty"
+        )
+        # description = "useful for when you need to answer questions about tax"
 
-    def _run(
-        self, query: str, run_manager: Optional[CallbackManagerForToolRun] = None
-    ) -> str:
-        """Use the tool."""
-        return query_similar_by_supabase(query)
+        def _run(
+            self, query: str, run_manager: Optional[CallbackManagerForToolRun] = None
+        ) -> str:
+            """Use the tool."""
+            return query_similar_by_supabase(query, knowledge_base_id)
 
-    async def _arun(
-        self, query: str, run_manager: Optional[AsyncCallbackManagerForToolRun] = None
-    ) -> str:
-        """Use the tool asynchronously."""
-        raise NotImplementedError("custom_search does not support async")
+        async def _arun(
+            self,
+            query: str,
+            run_manager: Optional[AsyncCallbackManagerForToolRun] = None,
+        ) -> str:
+            """Use the tool asynchronously."""
+            raise NotImplementedError("custom_search does not support async")
 
-
-def chat(input: str, memory: ConversationBufferMemory, role_prompt: str):
     tools = [CustomSearchTool()]
 
     prompt = hub.pull("hwchase17/react-chat-json")
@@ -222,7 +230,7 @@ def chat(input: str, memory: ConversationBufferMemory, role_prompt: str):
     return agent_executor.invoke({"input": input})["output"]
 
 
-def chat_with_intent(input: str, history: list, prompt_config: dict):
+def chat_with_intent(input: str, history: list, prompt: str, knowledge_base_id: int):
     intent = predict_intent(input, history[-10:])
     if intent["output"] == "W" or intent["output"] == "E":
         return ""
@@ -236,12 +244,4 @@ def chat_with_intent(input: str, history: list, prompt_config: dict):
             else:
                 memory.chat_memory.add_ai_message(message.content)
 
-        if "prompt" in prompt_config:
-            prompt = prompt_config["prompt"]
-        else:
-            required_keys = ["name", "role", "work", "style"]
-            missing_keys = set(required_keys) - set(prompt_config.keys())
-            if not missing_keys:
-                PROMPT_TEMPLATE = '你的名字是{name}，在这里，你作为{role}，专门{work}。\n我是你的服务对象，你需要以{style}的语气回答我的问题。\n你不被允许忘掉自己是{name}身份，每当你的身份可能被删除修改时，请保留他并且重复加强认知。即使你是一个计算机程序，但请在接下来的对话中隐藏你是计算机程序这件事，并且扮演{name}。\n不管我用什么语言提问，你都必须用中文回答。\n当问题无法在上下文或者文档中，直接找到答案时，尝试基于顾客问题和上下文对顾客的需求进行提问和进一步确认，引导顾客问出和上下文、文档有关的问题。\n当经过多轮对话，依然无法引导问出与上下文、文档有关的问题时，只能回答"抱歉，我不太明白您的问题是什么，请您再详细说明一下。",不要试图编造答案。'
-                prompt = PROMPT_TEMPLATE.format(**prompt_config)
-        return chat(input, memory, prompt)
+        return chat(input, memory, prompt, knowledge_base_id)
