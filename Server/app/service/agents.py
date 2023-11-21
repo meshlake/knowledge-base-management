@@ -2,7 +2,7 @@ from datetime import datetime
 import logging
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
-from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import AzureChatOpenAI
 from langchain.prompts.chat import (
     ChatPromptTemplate,
     SystemMessagePromptTemplate,
@@ -15,24 +15,36 @@ import json
 load_dotenv()
 
 
-
-def is_answer_successful(question:str, answer: str):
-    # os.environ["OPENAI_API_TYPE"] = "azure"
-    # os.environ["OPENAI_API_BASE"] = os.getenv("AZURE_OPENAI_API_BASE")
+def is_answer_successful(question: str, answer: str):
+    # azure_endpoint = os.getenv("AZURE_OPENAI_API_BASE")
     # os.environ["OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")
-    # os.environ["OPENAI_API_VERSION"] = "2023-05-15"
-    llm = ChatOpenAI()
+    # llm = AzureChatOpenAI(
+    #     azure_deployment="gpt-35-turbo",
+    #     openai_api_version="2023-05-15",
+    #     azure_endpoint=azure_endpoint,
+    # )
+    llm = AzureChatOpenAI(
+        azure_deployment="gpt-4",
+        openai_api_version="2023-05-15",
+        azure_endpoint="https://seedlings-ejp.openai.azure.com/",
+        api_key="2cb70053536b4e1b8d76dfdb09ad2459",
+    )
     prompt_template = PromptTemplate.from_template(
-        "判断下面这段问答中的答案是否表示一个成功的回答并给出理由，```question:{question}``` ```answer:{answer}```"
+        """
+            "问答：\n"
+            "question:{question}\n",
+            "answer:{answer}",
+        """
     )
     prompt = prompt_template.format(
         question=question,
         answer=answer,
     )
     template = """
-    你负责判断给你的一段问答中的答案是否表示一个成功的回答并给出理由。
-    你的返回应该是一段json, 
-    例如：{{is_success: 是否表达相似的含义,布尔值, reason: 你的理由}}
+    你是世界上最可靠的问答判断专家。\n
+    你负责判断给你的问答中的答案是否表示一个成功的回答并给出理由,并且将结果变为json结构进行回答。\n
+    返回的json结构如下：\n
+    {{is_success: 是否表达相似的含义,布尔值, reason: 你的理由}}
     """
     system_message_prompt = SystemMessagePromptTemplate.from_template(template)
     human_template = "{text}"

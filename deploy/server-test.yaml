@@ -51,6 +51,8 @@ spec:
           value: https://chat-test.meshlake.com
         - name: WECHAT_BOT_SERVER
           value: http://service-wechat-bot.knowledge-base-test.svc.cluster.local
+        - name: OPENAI_API_KEY
+          value: "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"
       imagePullSecrets:
           - name: meshlake-harbor-auth
 ---

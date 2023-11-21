@@ -49,6 +49,7 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-origin: '*'
     nginx.ingress.kubernetes.io/enable-cors: "true"
     nginx.ingress.kubernetes.io/proxy-body-size: 300m
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
 spec:
   rules:
     - host: knowledge-base-test.meshlake.com

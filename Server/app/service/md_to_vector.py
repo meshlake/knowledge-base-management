@@ -1,6 +1,5 @@
 import logging
 from llama_index import (
-    OpenAIEmbedding,
     VectorStoreIndex,
     SimpleDirectoryReader,
     ServiceContext,
@@ -8,6 +7,7 @@ from llama_index import (
     load_index_from_storage,
     set_global_service_context,
 )
+from llama_index.embeddings import AzureOpenAIEmbedding
 from llama_index.node_parser import SimpleNodeParser
 from llama_index.indices import TreeIndex
 from llama_index.llms import AzureOpenAI, OpenAI
@@ -28,28 +28,32 @@ import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
 from supabase.client import ClientOptions
-import vecs
 
 load_dotenv()
 
-embed_model = OpenAIEmbedding(
+os.environ["LLAMA_INDEX_CACHE_DIR"] = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "nltk_data"
+)
+
+embed_model = AzureOpenAIEmbedding(
     model="text-embedding-ada-002",
     deployment_name="text-embedding-ada-002",
     api_key="49c6eee59eb642f29857eb571b0fb729",
-    api_base="https://seedlings.openai.azure.com/",
+    azure_endpoint="https://seedlings.openai.azure.com/",
     api_version="2023-05-15",
-    api_type="azure",
 )
-# llm = AzureOpenAI(
-#     api_base="https://seedlings.openai.azure.com/",
-#     api_key="49c6eee59eb642f29857eb571b0fb729",
-#     engine="gpt-35-turbo",
-#     api_version="2023-05-15",
-# )
 
-llm = OpenAI(
+llm = AzureOpenAI(
+    azure_endpoint="https://seedlings-ejp.openai.azure.com/",
+    api_key="2cb70053536b4e1b8d76dfdb09ad2459",
+    engine="gpt-4",
     model="gpt-4",
+    api_version="2023-05-15",
 )
+
+# llm = OpenAI(
+#     model="gpt-4-1106-preview",
+# )
 
 # llm = OpenAI(
 #     model="gpt-4",
@@ -57,6 +61,7 @@ llm = OpenAI(
 
 service_context = ServiceContext.from_defaults(
     llm=llm,
+    embed_model=embed_model,
 )
 
 set_global_service_context(service_context)
@@ -94,6 +99,7 @@ def init_index(knowledge_id: int, file_id: int, type: str = "summary"):
     logging.info(f"Finish init index for knowledge {knowledge_id} file {file_id}")
     return index
 
+
 def init_index_from_local(type: str = "summary"):
     storage_context = StorageContext.from_defaults(
         persist_dir=f"app/storage/storage_{type}",
@@ -101,6 +107,7 @@ def init_index_from_local(type: str = "summary"):
 
     loaded_index = load_index_from_storage(storage_context)
     return loaded_index
+
 
 def md_file_to_documents(md_content: str):
     logging.info(f"Start split md file to documents {md_content[:50]}")
@@ -166,7 +173,9 @@ def insert_documents_to_index(
 
     for i in range(0, len(documents), chunk_size):
         documents_chunk = documents[i : i + chunk_size]
-        nodes = node_parser.get_nodes_from_documents(documents_chunk, show_progress=True)
+        nodes = node_parser.get_nodes_from_documents(
+            documents_chunk, show_progress=True
+        )
 
         logging.info(f"Adding chunk {i} to {i + chunk_size}")
 
