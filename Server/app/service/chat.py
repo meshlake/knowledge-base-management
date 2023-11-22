@@ -92,6 +92,7 @@ def predict_intent(input, messages=[]):
         openai_api_version="2023-05-15",
         azure_endpoint="https://seedlings-ejp.openai.azure.com/",
         api_key="2cb70053536b4e1b8d76dfdb09ad2459",
+        base_url=""
     )
 
     agent = (
@@ -185,10 +186,11 @@ def chat(
     prompt = hub.pull("hwchase17/react-chat-json")
 
     chat_model = AzureChatOpenAI(
-        azure_deployment="gpt-35-turbo",
+        azure_deployment="gpt-4",
         openai_api_version="2023-05-15",
-        azure_endpoint="https://seedlings.openai.azure.com/",
-        api_key="49c6eee59eb642f29857eb571b0fb729",
+        azure_endpoint="https://seedlings-ejp.openai.azure.com/",
+        api_key="2cb70053536b4e1b8d76dfdb09ad2459",
+        base_url=""
     )
 
     prompt = prompt.partial(
