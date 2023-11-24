@@ -185,7 +185,7 @@ const App: React.FC<ManuallyEnterProps> = (props) => {
         创建/编辑标签请在"知识库管理->标签管理页面"操作。`}
           onSelect={handleSelect}
           fieldNames={{ label: 'name', value: 'id' }}
-          options={tags}
+          options={tags.filter((item) => !!item?.parent_id)}
           optionFilterProp="children"
           filterOption={(input, option) => (option?.name ?? '').includes(input)}
         ></Select>
