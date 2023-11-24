@@ -474,14 +474,19 @@ def export_knowledge_base_to_excel(
                     if "structure" in item["metadata"]
                     else None
                 )
+                # 知识库中单条知识的标签
                 found_tags = [tag for tag in tag_entities if tag.id == tag_id]
                 if found_tags.__len__() > 0:
                     tag_name = found_tags[0].name
                     parent_tag_id = found_tags[0].parent_id
-                    parent_tag = [
+                    parent_tags = [
                         tag for tag in parent_tag_entities if tag.id == parent_tag_id
-                    ][0]
-                    parent_tag_name = parent_tag.name
+                    ]
+                    if parent_tags.__len__() > 0:
+                        parent_tag = parent_tags[0]
+                        parent_tag_name = parent_tag.name
+                    else:
+                        parent_tag_name = ""
                 else:
                     tag_name = ""
                     parent_tag_name = ""
