@@ -103,6 +103,7 @@ import aiohttp
 
 
 def query_from_index(question: str):
+    start_timestamp = datetime.now()
     summary_index = init_index_from_local("summary")
     summary_index_engine = summary_index.as_query_engine(
         similarity_top_k=2, response_mode="refine"
@@ -136,6 +137,7 @@ def query_from_index(question: str):
     logging.info(f"summary_response: {summary_response}")
 
     if is_answer_successful(question=question, answer=summary_response):
+        logging.info(f"{datetime.now() - start_timestamp} to get answer from summary index")
         return summary_response
     else:
         detail_index = init_index_from_local("detail")
@@ -149,6 +151,7 @@ def query_from_index(question: str):
         )
         response_detail = detail_index_engine.query(f"Use Chinese Answer '{question}'")
         detail_response = response_detail.response
+        logging.info(f"{datetime.now() - start_timestamp} to get answer from detail index")
         return detail_response
 
 
@@ -161,7 +164,12 @@ async def ask_bot(
     if user.organization.code != "tec-do":
         if user.username == "admin":
             bot = get_chatbot(db=db, user=user, id=conversation.bot_id)
-            reply = chat_with_intent(model.content, conversation.messages, bot.prompt, bot.knowledge_bases[0].id)
+            reply = chat_with_intent(
+                model.content,
+                conversation.messages,
+                bot.prompt,
+                bot.knowledge_bases[0].id,
+            )
             return MessageCreateModel(content=reply, role="bot")
         else:
             reply = ""

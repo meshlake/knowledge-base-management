@@ -43,12 +43,19 @@ embed_model = AzureOpenAIEmbedding(
     api_version="2023-05-15",
 )
 
+# llm = AzureOpenAI(
+#     azure_endpoint="https://seedlings-ejp.openai.azure.com/",
+#     api_key="2cb70053536b4e1b8d76dfdb09ad2459",
+#     engine="gpt-4",
+#     model="gpt-4",
+#     api_version="2023-05-15",
+# )
+
 llm = AzureOpenAI(
-    azure_endpoint="https://seedlings-ejp.openai.azure.com/",
-    api_key="2cb70053536b4e1b8d76dfdb09ad2459",
-    engine="gpt-4",
-    model="gpt-4",
+    engine="gpt-4-1106-preview",
     api_version="2023-05-15",
+    azure_endpoint="https://seedlings-eus2.openai.azure.com/",
+    api_key="ed30b886f2ac4f909a5b015be01393e6",
 )
 
 # llm = OpenAI(

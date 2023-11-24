@@ -92,7 +92,7 @@ def predict_intent(input, messages=[]):
         openai_api_version="2023-05-15",
         azure_endpoint="https://seedlings-ejp.openai.azure.com/",
         api_key="2cb70053536b4e1b8d76dfdb09ad2459",
-        base_url=""
+        base_url="",
     )
 
     agent = (
@@ -163,7 +163,7 @@ def chat(
     class CustomSearchTool(BaseTool):
         name = "custom_search"
         description = (
-            "useful for when you need to answer questions about medical beauty"
+            "useful for when you need to answer questions about cosmetic medicine"
         )
         # description = "useful for when you need to answer questions about tax"
 
@@ -185,11 +185,19 @@ def chat(
 
     prompt = hub.pull("hwchase17/react-chat-json")
 
+    # chat_model = AzureChatOpenAI(
+    #     azure_deployment="gpt-4",
+    #     openai_api_version="2023-05-15",
+    #     azure_endpoint="https://seedlings-ejp.openai.azure.com/",
+    #     api_key="2cb70053536b4e1b8d76dfdb09ad2459",
+    #     base_url=""
+    # )
+
     chat_model = AzureChatOpenAI(
-        azure_deployment="gpt-4",
+        azure_deployment="gpt-4-1106-preview",
         openai_api_version="2023-05-15",
-        azure_endpoint="https://seedlings-ejp.openai.azure.com/",
-        api_key="2cb70053536b4e1b8d76dfdb09ad2459",
+        azure_endpoint="https://seedlings-eus2.openai.azure.com/",
+        api_key="ed30b886f2ac4f909a5b015be01393e6",
         base_url=""
     )
 
@@ -198,6 +206,7 @@ def chat(
         tool_names=", ".join([t.name for t in tools]),
     )
 
+    # prompt.messages[0].prompt.template += "\n Must use Chinese to answer the question."
     prompt.messages[0].prompt.template = role_prompt
 
     chat_model_with_stop = chat_model.bind(stop=["\nObservation"])
@@ -226,7 +235,7 @@ def chat(
     )
 
     agent_executor = AgentExecutor(
-        agent=agent, tools=tools, verbose=True, memory=memory
+        agent=agent, tools=tools, verbose=True, memory=memory, handle_parsing_errors=True
     )
 
     return agent_executor.invoke({"input": input})["output"]
