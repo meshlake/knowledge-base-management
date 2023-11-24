@@ -250,6 +250,55 @@ def delete_tag_by_id(
     id: int,
     knowledge_base_id: int,
 ) -> int:
+    tag = (
+        db.query(KnowledgeBaseTagEntity).filter(KnowledgeBaseTagEntity.id == id).first()
+    )
+    if tag is None:
+        logging.info(
+            f"knowledge base tag with id {id} not found, nothing deleted, and ignore exploring this information"
+        )
+        return 0
+    supabase = SupabaseClient()
+    if tag.parent_id is not None:
+        count_query = (
+            supabase.table("knowledge")
+            .select("*", count="exact")
+            .eq("metadata->knowledge_base_id", knowledge_base_id)
+            .eq("metadata->tag", id)
+        )
+        count_response = count_query.execute()
+        logging.info(
+            f"find {count_response.count} knowledges with tag {id}, nothing deleted, and ignore exploring this information"
+        )
+        if int(count_response.count) > 0:
+            raise HTTPException(
+                status_code=499,
+                detail=f"Tag {tag.name} used by knowledge.",
+            )
+    else:
+        all_children_tags = (
+            db.query(KnowledgeBaseTagEntity)
+            .filter(KnowledgeBaseTagEntity.knowledge_base_id == knowledge_base_id)
+            .filter(KnowledgeBaseTagEntity.parent_id == id)
+            .all()
+        )
+        all_children_tags_ids = [tag.id for tag in all_children_tags]
+        count_query = (
+            supabase.table("knowledge")
+            .select("*", count="exact")
+            .eq("metadata->knowledge_base_id", knowledge_base_id)
+            .in_("metadata->tag", all_children_tags_ids)
+        )
+        count_response = count_query.execute()
+        logging.info(
+            f"find {count_response.count} knowledges in tags {all_children_tags_ids}, nothing deleted, and ignore exploring this information"
+        )
+        if int(count_response.count) > 0:
+            raise HTTPException(
+                status_code=499,
+                detail=f"Tag {tag.name}'s children tags used by knowledge.",
+            )
+
     count = (
         db.query(KnowledgeBaseTagEntity)
         .filter(KnowledgeBaseTagEntity.knowledge_base_id == knowledge_base_id)
@@ -258,10 +307,10 @@ def delete_tag_by_id(
         )
         .delete()
     )
-    if count == 0:
-        logging.info(
-            f"knowledge base tag with id {id} not found, nothing deleted, and ignore exploring this information"
-        )
+    # if count == 0:
+    #     logging.info(
+    #         f"knowledge base tag with id {id} not found, nothing deleted, and ignore exploring this information"
+    #     )
     db.commit()
     return count
 
