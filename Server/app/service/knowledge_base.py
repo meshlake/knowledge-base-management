@@ -103,6 +103,7 @@ def get_knowledge_base_tags(
     query.order_by(KnowledgeBaseTagEntity.createdAt.desc())
     return paginate(db, query)
 
+
 def get_knowledge_base_tags_without_parent(
     db: Session, knowledge_base_id: int
 ) -> Page[KnowledgeBaseTagModel]:
@@ -479,14 +480,10 @@ def export_knowledge_base_to_excel(
                 if found_tags.__len__() > 0:
                     tag_name = found_tags[0].name
                     parent_tag_id = found_tags[0].parent_id
-                    parent_tags = [
+                    parent_tag = [
                         tag for tag in parent_tag_entities if tag.id == parent_tag_id
-                    ]
-                    if parent_tags.__len__() > 0:
-                        parent_tag = parent_tags[0]
-                        parent_tag_name = parent_tag.name
-                    else:
-                        parent_tag_name = ""
+                    ][0]
+                    parent_tag_name = parent_tag.name
                 else:
                     tag_name = ""
                     parent_tag_name = ""
