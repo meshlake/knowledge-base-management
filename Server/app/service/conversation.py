@@ -255,7 +255,8 @@ async def ask_bot_stream(
         "Answers should be as detailed as possible.\n"
         "If the context contains image links, you do not need to understand the images. \n"
         "You only need to convert the image links to markdown format. Markdown image syntax example: '![](https://www.example.com/images/yourimage. jpg)'.\n"
-        "Use Chinese to answer the query and the answer format should be Markdown.\n"
+        "Use Chinese to answer the query.\n"
+        "Just return the Markdown style answer and don't use other mark to quote.\n"
         "Query: {query_str}\n"
         "Answer: "
     )

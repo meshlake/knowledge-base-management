@@ -205,6 +205,15 @@ const ChatComponent: React.FC = () => {
       let first = true;
       let msgId = '';
       let newMsg = '';
+      // const fn = throttle((newMsg) => {
+      //   updateMsg(msgId, {
+      //     type: 'text',
+      //     content: { text: newMsg },
+      //     user: {
+      //       avatar: '/images/bot_avatar.png',
+      //     },
+      //   });
+      // }, 100);
       reader.read().then(function processResult(result) {
         if (result.done) {
           updateConversationList();
@@ -225,15 +234,16 @@ const ChatComponent: React.FC = () => {
           const msgBox = document.getElementsByClassName('Message left')[len - 1];
           msgId = msgBox.getAttribute('data-id') as string;
           first = false;
-        } else {
-          updateMsg(msgId, {
-            type: 'text',
-            content: { text: newMsg },
-            user: {
-              avatar: '/images/bot_avatar.png',
-            },
-          });
         }
+
+        updateMsg(msgId, {
+          type: 'text',
+          content: { text: newMsg },
+          user: {
+            avatar: '/images/bot_avatar.png',
+          },
+        });
+
         return reader.read().then(processResult);
       });
     } else {
