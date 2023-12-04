@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Markdown from 'react-markdown';
 import classNames from 'classnames';
-import { useLocation, history } from '@umijs/max';
+import { useLocation, history, useModel } from '@umijs/max';
 import {
   DeleteOutlined,
   ExclamationCircleOutlined,
@@ -33,8 +33,9 @@ const ChatComponent: React.FC = () => {
   const [botId, setBotId] = useState<string>();
   const [chatbotList, setChatbotList] = useState<OptionProps[]>([]);
 
-  const { messages, appendMsg, setTyping, resetList } = useMessages([]);
+  const { messages, appendMsg, setTyping, resetList, updateMsg } = useMessages([]);
   const [messageLoading, setMessageLoading] = useState<boolean>(false);
+  const { initialState } = useModel('@@initialState');
 
   const getChatbotList = async () => {
     try {
@@ -165,6 +166,81 @@ const ChatComponent: React.FC = () => {
       });
   };
 
+  async function sendMessageStream(text: string) {
+    if (!botId) {
+      return;
+    }
+    let currentConversationId = activeConversationId;
+    if (!activeConversationId) {
+      try {
+        const newConversation = await conversationServices.createConversation({
+          bot: botId,
+          topic: text,
+        });
+        currentConversationId = newConversation.id;
+        setActiveConversationId(newConversation.id);
+        await updateConversationList();
+      } catch (error) {
+        throw new Error('创建对话失败，请重试');
+      }
+    }
+
+    const response = await fetch(`/api/conversations/${currentConversationId}/messages/stream`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer ' + localStorage.getItem('access_token'),
+        'Content-Type': 'application/json',
+        Accept: 'text/event-stream',
+      },
+      body: JSON.stringify({
+        role: 'user',
+        content: text,
+      }),
+    });
+
+    if (response.body) {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+
+      let first = true;
+      let msgId = '';
+      let newMsg = '';
+      reader.read().then(function processResult(result) {
+        if (result.done) {
+          updateConversationList();
+          return;
+        }
+        let token = decoder.decode(result.value);
+        // console.log(token);
+        // if (token.endsWith('.') || token.endsWith('!') || token.endsWith('?')) {
+        //   // document.getElementById("lalala").innerHTML += token + "<br>";
+        // } else {
+        //   // document.getElementById("lalala").innerHTML += token + ' ';
+        // }
+
+        newMsg += token;
+
+        if (first) {
+          const len = document.getElementsByClassName('Message left').length;
+          const msgBox = document.getElementsByClassName('Message left')[len - 1];
+          msgId = msgBox.getAttribute('data-id') as string;
+          first = false;
+        } else {
+          updateMsg(msgId, {
+            type: 'text',
+            content: { text: newMsg },
+            user: {
+              avatar: '/images/bot_avatar.png',
+            },
+          });
+        }
+        return reader.read().then(processResult);
+      });
+    } else {
+      throw new Error('回复失败，请重试');
+    }
+  }
+
   const sendMessage = async (text: string) => {
     if (!botId) {
       return;
@@ -196,6 +272,7 @@ const ChatComponent: React.FC = () => {
         };
       }
     } catch (err) {
+      console.log(err);
       throw new Error('服务异常');
     }
   };
@@ -217,18 +294,31 @@ const ChatComponent: React.FC = () => {
       setTyping(true);
       setMessageLoading(true);
       try {
-        const response = await sendMessage(val);
-        setTyping(false);
-        setMessageLoading(false);
-        if (response && response.content) {
+        if (initialState?.currentUser?.organization?.code === 'tec-do') {
           appendMsg({
             type: 'text',
-            content: { text: response.content },
+            content: { text: '...' },
+            position: 'left',
             user: {
               avatar: '/images/bot_avatar.png',
             },
+            status: 'pending',
           });
-          updateConversationList();
+          sendMessageStream(val);
+          setTyping(false);
+          setMessageLoading(false);
+        } else {
+          const response = await sendMessage(val);
+          if (response && response.content) {
+            appendMsg({
+              type: 'text',
+              content: { text: response.content },
+              user: {
+                avatar: '/images/bot_avatar.png',
+              },
+            });
+            updateConversationList();
+          }
         }
       } catch (error: any) {
         message.error(error.message);

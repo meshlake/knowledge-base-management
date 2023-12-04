@@ -1,4 +1,8 @@
+import asyncio
+import json
 import logging
+import time
+from typing import AsyncIterable, Awaitable
 from llama_index import (
     VectorStoreIndex,
     SimpleDirectoryReader,
@@ -28,6 +32,11 @@ import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
 from supabase.client import ClientOptions
+from langchain.chat_models import ChatOpenAI, AzureChatOpenAI
+from langchain.prompts.chat import ChatPromptTemplate
+from langchain.schema.output_parser import StrOutputParser
+from langchain.callbacks import AsyncIteratorCallbackHandler
+from langchain.schema import HumanMessage
 
 load_dotenv()
 
@@ -58,20 +67,36 @@ llm = AzureOpenAI(
     api_key="ed30b886f2ac4f909a5b015be01393e6",
 )
 
-# llm = OpenAI(
-#     model="gpt-4-1106-preview",
-# )
-
-# llm = OpenAI(
-#     model="gpt-4",
-# )
-
 service_context = ServiceContext.from_defaults(
     llm=llm,
     embed_model=embed_model,
 )
 
 set_global_service_context(service_context)
+
+model = AzureChatOpenAI(
+    temperature=0.0,
+    azure_deployment="gpt-4-1106-preview",
+    openai_api_version="2023-05-15",
+    azure_endpoint="https://seedlings-eus2.openai.azure.com/",
+    openai_api_key="ed30b886f2ac4f909a5b015be01393e6",
+)
+
+# model = AzureChatOpenAI(
+#     temperature=0.0,
+#     azure_deployment="gpt-4",
+#     openai_api_version="2023-05-15",
+#     azure_endpoint="https://seedlings-ejp.openai.azure.com/",
+#     openai_api_key="2cb70053536b4e1b8d76dfdb09ad2459",
+# )
+
+# model = AzureChatOpenAI(
+#     temperature=0.0,
+#     azure_deployment="gpt-35-turbo",
+#     openai_api_version="2023-05-15",
+#     azure_endpoint="https://seedlings.openai.azure.com/",
+#     openai_api_key="49c6eee59eb642f29857eb571b0fb729",
+# )
 
 
 def generate_collection_name(knowledge_id: int, file_id: int, type: str = "summary"):
@@ -269,3 +294,217 @@ def create_index(
     logging.info(
         f"Finish create detail index for knowledge {knowledge_id} file {file_id}"
     )
+
+
+def answer_question(question: str, context: str) -> str:
+    qa_prompt_tmpl_str = (
+        "Context information is below.\n"
+        "---------------------\n"
+        "{context_str}\n"
+        "---------------------\n"
+        "Given the context information and not prior knowledge, answer the query.\n"
+        "Answers should be as detailed as possible.\n"
+        "If the context contains image links, you do not need to understand the images. \n"
+        "You only need to convert the image links to markdown format. Markdown image syntax example: '![](https://www.example.com/images/yourimage. jpg)'.\n"
+        "Use Chinese to answer the query and the answer format should be Markdown.\n"
+        "Query: {query_str}\n"
+        "Answer: "
+    )
+
+    qa_prompt = ChatPromptTemplate.from_template(qa_prompt_tmpl_str)
+
+    qa_chain = qa_prompt | model | StrOutputParser()
+    answer = ""
+
+    try:
+        answer = qa_chain.invoke({"context_str": context, "query_str": question})
+    except Exception as e:
+        logging.error(e)
+
+    return answer
+
+
+async def answer_question_streaming(question: str, context: str) -> AsyncIterable[str]:
+    callback = AsyncIteratorCallbackHandler()
+
+    stream_model = AzureChatOpenAI(
+        temperature=0.0,
+        azure_deployment="gpt-4-1106-preview",
+        openai_api_version="2023-05-15",
+        azure_endpoint="https://seedlings-eus2.openai.azure.com/",
+        openai_api_key="ed30b886f2ac4f909a5b015be01393e6",
+        streaming=True,
+        verbose=True,
+        callbacks=[callback],
+    )
+
+    async def wrap_done(fn: Awaitable, event: asyncio.Event):
+        """Wrap an awaitable with a event to signal when it's done or an exception is raised."""
+        try:
+            await fn
+        except Exception as e:
+            # TODO: handle exception
+            print(f"Caught exception: {e}")
+        finally:
+            # Signal the aiter to stop.
+            event.set()
+
+    qa_prompt_tmpl_str = (
+        "Context information is below.\n"
+        "---------------------\n"
+        "{context_str}\n"
+        "---------------------\n"
+        "Given the context information and not prior knowledge, answer the query.\n"
+        "Answers should be as detailed as possible.\n"
+        "If the context contains image links, you do not need to understand the images. \n"
+        "You only need to convert the image links to markdown format. Markdown image syntax example: '![](https://www.example.com/images/yourimage. jpg)'.\n"
+        "Use Chinese to answer the query and the answer format should be Markdown.\n"
+        "Query: {query_str}\n"
+        "Answer: "
+    )
+
+    qa_prompt = ChatPromptTemplate.from_template(qa_prompt_tmpl_str)
+    # Begin a task that runs in the background.
+    task = asyncio.create_task(
+        wrap_done(
+            stream_model.agenerate(
+                messages=[
+                    [
+                        HumanMessage(
+                            content=qa_prompt.format(
+                                context_str=context, query_str=question
+                            )
+                        )
+                    ]
+                ]
+            ),
+            callback.done,
+        ),
+    )
+
+    async for token in callback.aiter():
+        # Use server-sent-events to stream the response
+        yield f"{token}"
+
+    await task
+
+    # qa_prompt_tmpl_str = (
+    #     "Context information is below.\n"
+    #     "---------------------\n"
+    #     "{context_str}\n"
+    #     "---------------------\n"
+    #     "Given the context information and not prior knowledge, answer the query.\n"
+    #     "Answers should be as detailed as possible.\n"
+    #     "If the context contains image links, you do not need to understand the images. \n"
+    #     "You only need to convert the image links to markdown format. Markdown image syntax example: '![](https://www.example.com/images/yourimage. jpg)'.\n"
+    #     "Use Chinese to answer the query and the answer format should be Markdown.\n"
+    #     "Query: {query_str}\n"
+    #     "Answer: "
+    # )
+
+    # qa_prompt = ChatPromptTemplate.from_template(qa_prompt_tmpl_str)
+
+    # qa_chain = qa_prompt | model | StrOutputParser()
+
+    # callback = AsyncIteratorCallbackHandler()
+
+    # try:
+    #     task = asyncio.create_task(
+    #         qa_chain.stream({"context_str": context, "query_str": question})
+    #     )
+    #     async for token in callback.aiter():
+    #         # Use server-sent-events to stream the response
+    #         yield f"{token}"
+
+    #     await task
+    #     # answer = qa_chain.stream({"context_str": context, "query_str": question})
+    # except Exception as e:
+    #     logging.error(e)
+
+    # # return answer
+
+
+def gen_question_from_content(md_content: str):
+    documents = md_file_to_documents(md_content)
+
+    CHINESE_QUESTION_GEN_TMPL = """\
+    Here is the context:
+    {context_str}
+
+    Given the contextual information, \
+    generate {num_questions} questions this context can provide \
+    specific answers to which are unlikely to be found elsewhere.
+
+    Higher-level summaries of surrounding context may be provided \
+    as well. Try using these summaries to generate better questions \
+    that this context can answer.
+
+    Use Chinese to generate questions.
+    """
+
+    metadata_extractor = MetadataExtractor(
+        extractors=[
+            QuestionsAnsweredExtractor(
+                questions=1, llm=llm, prompt_template=CHINESE_QUESTION_GEN_TMPL
+            ),
+        ]
+    )
+
+    parser = SimpleNodeParser.from_defaults(
+        chunk_size=6000, chunk_overlap=20, metadata_extractor=metadata_extractor
+    )
+
+    nodes = parser.get_nodes_from_documents(documents, show_progress=True)
+
+    qa_pairs = []
+    for i in range(len(nodes)):
+        logging.info(f"question {i}/{len(nodes)} in content base")
+        question = nodes[i].metadata["questions_this_excerpt_can_answer"]
+        content = nodes[i].get_content()
+        logging.info(f"answer {i}/{len(nodes)} in content base")
+        time.sleep(1)
+        answer = answer_question(question, content)
+        if answer:
+            qa_pairs.append(json.dumps({"question": question, "answer": answer}))
+
+    # for node in nodes:
+    #     question = node.metadata["questions_this_excerpt_can_answer"]
+    #     content = node.get_content()
+    #     answer = answer_question(question, content)
+    #     if answer:
+    #         qa_pairs.append(json.dumps({"question": question, "answer": answer}))
+    return qa_pairs
+
+
+def gen_question_from_title(md_content: str):
+    headers_to_split_on = [("#", "Header")]
+
+    markdown_splitter = MarkdownHeaderTextSplitter(
+        headers_to_split_on=headers_to_split_on
+    )
+    md_header_splits = markdown_splitter.split_text(md_content)
+
+    prompt = ChatPromptTemplate.from_template(
+        "Change the title below into a Chinese question: {title}"
+    )
+
+    str_chain = prompt | model | StrOutputParser()
+
+    qa_pairs = []
+
+    for i in range(len(md_header_splits)):
+        title = md_header_splits[i].metadata["Header"]
+        logging.info(f"question {i}/{len(md_header_splits)} in title base")
+        question = str_chain.invoke({"title": title})
+        time.sleep(1)
+        logging.info(f"answer {i}/{len(md_header_splits)} in title base")
+        answer = answer_question(question, md_header_splits[i].page_content)
+        if answer:
+            qa_pairs.append(json.dumps({"question": question, "answer": answer}))
+    return qa_pairs
+
+
+def md_to_qa(md_content: str):
+    qa_pairs_from_content = gen_question_from_content(md_content)
+    qa_pairs_from_title = gen_question_from_title(md_content)
+    return qa_pairs_from_content + qa_pairs_from_title

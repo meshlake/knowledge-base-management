@@ -116,12 +116,13 @@ def predict_intent(input, messages=[]):
     )
 
 
-def query_similar_by_supabase(query: str, knowledge_base_id: int):
+def query_similar_by_supabase(query: str, knowledge_base_id: int, similarity_threshold=0.85, similarity_top_k=10):
     embeddings_model = AzureOpenAIEmbeddings(
         azure_endpoint="https://seedlings.openai.azure.com/",
         openai_api_key="49c6eee59eb642f29857eb571b0fb729",
         azure_deployment="text-embedding-ada-002",
         openai_api_version="2023-05-15",
+        base_url="",
     )
 
     embedding = embeddings_model.embed_query(query)
@@ -132,12 +133,12 @@ def query_similar_by_supabase(query: str, knowledge_base_id: int):
         "match_knowledge_with_meta",
         {
             "query_embedding": embedding,
-            "match_count": 10,
+            "match_count": similarity_top_k,
             "knowledge_base_id": knowledge_base_id,
         },
     ).execute()
 
-    datas = [data for data in res.data if data["similarity"] > 0.85]
+    datas = [data for data in res.data if data["similarity"] > similarity_threshold]
 
     context = ""
     for data in datas:

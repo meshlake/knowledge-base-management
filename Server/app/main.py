@@ -1,3 +1,5 @@
+import asyncio
+from typing import AsyncIterable
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import HTTPException
@@ -26,13 +28,12 @@ import os
 
 app = FastAPI()
 
-origins = ["*"]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=True,
 )
 
 app.include_router(organization.router)
@@ -96,7 +97,6 @@ with open(file_path, "w") as json_file:
 
 with open(file_path, "w") as json_file:
     json.dump(list(auth), json_file)
-
 
 # 注册权限验证中间件
 @app.middleware("http")

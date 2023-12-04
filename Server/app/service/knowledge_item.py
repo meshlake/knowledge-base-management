@@ -1,6 +1,6 @@
 import logging
 import tempfile
-from app.service.md_to_vector import create_index
+from app.service.md_to_vector import create_index, md_to_qa
 from app.dependencies import get_db
 from app.models.userDto import User
 from app.models.knowledge_item import KnowledgeItem as KnowledgeItemModel
@@ -287,62 +287,71 @@ def create_knowledge_items_for_file(
                 }
             embedding_docs = documents
         elif filetype == FileType.MD:
-            # documents = loader.load()
-            s3 = boto3.client(
-                "s3",
-                aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-                aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-                region_name="cn-northwest-1",
-            )
-            with tempfile.TemporaryDirectory() as temp_dir:
-                temp_file_path = f"{temp_dir}/{key}"
-                os.makedirs(os.path.dirname(temp_file_path), exist_ok=True)
-                s3.download_file(bucket_name, key, temp_file_path)
+            if user.organization.code != "tec-do":
+                documents = loader.load()
 
-                with open(temp_file_path, encoding="utf-8") as f:
-                    content = f.read()
+                headers_to_split_on = [
+                    ("#", "Header 1"),
+                    ("##", "Header 2"),
+                ]
+                markdown_splitter = MarkdownHeaderTextSplitter(
+                    headers_to_split_on=headers_to_split_on
+                )
+                text_splitter = RecursiveCharacterTextSplitter(
+                    separators=["\n\n", "\n"], chunk_size=500, chunk_overlap=30
+                )
 
-                    create_index(content, knowledge_base_id, file_id)
-
-                    db = next(get_db())
-                    update_file_status(
-                        db=db, filepath=filepath, status=FileStatus.SUCCESS
+                docs = []
+                for document in documents:
+                    md_header_splits = markdown_splitter.split_text(
+                        document.page_content
                     )
-                    db.close()
-                    logging.info(f"Embedding成功：{filepath}")
+                    splits = text_splitter.split_documents(md_header_splits)
+                    docs.extend(splits)
 
-                    return
-            # headers_to_split_on = [
-            #     ("#", "Header 1"),
-            #     ("##", "Header 2"),
-            # ]
-            # markdown_splitter = MarkdownHeaderTextSplitter(
-            #     headers_to_split_on=headers_to_split_on
-            # )
-            # text_splitter = RecursiveCharacterTextSplitter(
-            #     separators=["\n\n", "\n"], chunk_size=500, chunk_overlap=30
-            # )
+                metadata = {
+                    "type": KnowledgeItemType.FILE.name,
+                    "source": filepath,
+                    "knowledge_base_id": knowledge_base_id,
+                    "user_id": user.id,
+                    "tag": None,
+                    "structure": KnowledgeStructure.NORMAL.name,
+                }
+                # 因为S3Loader加载文件是下载后从临时文件夹中获取的，所以metadata中的source是临时文件夹中的文件路径，需要修改为S3中的文件路径
+                for doc in docs:
+                    doc.metadata = metadata
 
-            # docs = []
-            # for document in documents:
-            #     md_header_splits = markdown_splitter.split_text(document.page_content)
-            #     splits = text_splitter.split_documents(md_header_splits)
-            #     docs.extend(splits)
+                embedding_docs = docs
+            else:
+                s3 = boto3.client(
+                    "s3",
+                    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+                    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+                    region_name="cn-northwest-1",
+                )
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    temp_file_path = f"{temp_dir}/{key}"
+                    os.makedirs(os.path.dirname(temp_file_path), exist_ok=True)
+                    s3.download_file(bucket_name, key, temp_file_path)
 
-            # metadata = {
-            #     "type": KnowledgeItemType.FILE.name,
-            #     "source": filepath,
-            #     "knowledge_base_id": knowledge_base_id,
-            #     "user_id": user.id,
-            #     "tag": None,
-            #     "structure": KnowledgeStructure.NORMAL.name,
-            # }
-            # # 因为S3Loader加载文件是下载后从临时文件夹中获取的，所以metadata中的source是临时文件夹中的文件路径，需要修改为S3中的文件路径
-            # for doc in docs:
-            #     doc.metadata = metadata
+                    with open(temp_file_path, encoding="utf-8") as f:
+                        content = f.read()
 
-            # embedding_docs = docs
+                        # create_index(content, knowledge_base_id, file_id)
+                        qa_pairs = md_to_qa(content)
 
+                        metadata = {
+                            "type": KnowledgeItemType.FILE.name,
+                            "source": filepath,
+                            "knowledge_base_id": knowledge_base_id,
+                            "user_id": user.id,
+                            "tag": None,
+                            "structure": KnowledgeStructure.QA.name,
+                        }
+                        embedding_docs = [
+                            Document(page_content=qa_pair, metadata=metadata)
+                            for qa_pair in qa_pairs
+                        ]
         else:
             documents = loader.load()
             text_splitter = RecursiveCharacterTextSplitter(
