@@ -28,6 +28,11 @@ const errorHandler = (error: RequestError): Response => {
         });
         history.push('/');
         break;
+      case 499:
+        notification.error({
+          message: '该标签被知识点引用，无法删除',
+        });
+        break;
       default:
         notification.error({
           message: 'Request error!',
