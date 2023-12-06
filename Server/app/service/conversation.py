@@ -329,6 +329,7 @@ async def ask_bot_stream(
             message += token
             # Use server-sent-events to stream the response
             yield f"{token}"
+            await asyncio.sleep(0.1)
 
         await task
         persist_message(db, model, conversation)
