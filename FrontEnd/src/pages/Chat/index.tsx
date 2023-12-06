@@ -14,6 +14,7 @@ import * as chatbotServices from '@/services/chatbot';
 import { Form, Modal, Select, Spin, message } from 'antd';
 import { OptionProps } from 'antd/es/select';
 import Chat, { Bubble, useMessages } from '@chatui/core';
+import Stream from '@/utils/stream';
 import '@chatui/core/dist/index.css';
 import styles from './index.less';
 
@@ -205,6 +206,25 @@ const ChatComponent: React.FC = () => {
       let first = true;
       let msgId = '';
       let newMsg = '';
+
+      let stream = new Stream(25, (char) => {
+        if (first) {
+          const len = document.getElementsByClassName('Message left').length;
+          const msgBox = document.getElementsByClassName('Message left')[len - 1];
+          msgId = msgBox.getAttribute('data-id') as string;
+          first = false;
+        }
+
+        newMsg += char;
+
+        updateMsg(msgId, {
+          type: 'text',
+          content: { text: newMsg },
+          user: {
+            avatar: '/images/bot_avatar.png',
+          },
+        });
+      });
       // const fn = throttle((newMsg) => {
       //   updateMsg(msgId, {
       //     type: 'text',
@@ -216,33 +236,18 @@ const ChatComponent: React.FC = () => {
       // }, 100);
       reader.read().then(function processResult(result) {
         if (result.done) {
+          stream.end();
           updateConversationList();
           return;
         }
         let token = decoder.decode(result.value);
+        stream.push(token.split(''));
         // console.log(token);
         // if (token.endsWith('.') || token.endsWith('!') || token.endsWith('?')) {
         //   // document.getElementById("lalala").innerHTML += token + "<br>";
         // } else {
         //   // document.getElementById("lalala").innerHTML += token + ' ';
         // }
-
-        newMsg += token;
-
-        if (first) {
-          const len = document.getElementsByClassName('Message left').length;
-          const msgBox = document.getElementsByClassName('Message left')[len - 1];
-          msgId = msgBox.getAttribute('data-id') as string;
-          first = false;
-        }
-
-        updateMsg(msgId, {
-          type: 'text',
-          content: { text: newMsg },
-          user: {
-            avatar: '/images/bot_avatar.png',
-          },
-        });
 
         return reader.read().then(processResult);
       });
@@ -314,7 +319,7 @@ const ChatComponent: React.FC = () => {
             },
             status: 'pending',
           });
-          sendMessageStream(val);
+          await sendMessageStream(val);
           setTyping(false);
           setMessageLoading(false);
         } else {
