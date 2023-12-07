@@ -32,9 +32,10 @@ const ChatComponent: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [conversationList, setConversationList] = useState<Conversation_API.Conversation[]>([]);
   const [botId, setBotId] = useState<string>();
+  const [botName, setBotName] = useState<string>();
   const [chatbotList, setChatbotList] = useState<OptionProps[]>([]);
 
-  const { messages, appendMsg, setTyping, resetList, updateMsg } = useMessages([]);
+  const { messages, appendMsg, resetList, updateMsg, deleteMsg } = useMessages([]);
   const [messageLoading, setMessageLoading] = useState<boolean>(false);
   const { initialState } = useModel('@@initialState');
 
@@ -79,6 +80,7 @@ const ChatComponent: React.FC = () => {
               content: { text: item.content },
               position: item.role === 'user' ? 'right' : 'left',
               user: {
+                name: item.role === 'user' ? 'User' : botName,
                 avatar:
                   item.role === 'user' ? '/images/default_avatar.png' : '/images/bot_avatar.png',
               },
@@ -167,7 +169,7 @@ const ChatComponent: React.FC = () => {
       });
   };
 
-  async function sendMessageStream(text: string) {
+  async function sendMessageStream(text: string, msgId: string) {
     if (!botId) {
       return;
     }
@@ -203,51 +205,28 @@ const ChatComponent: React.FC = () => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
 
-      let first = true;
-      let msgId = '';
       let newMsg = '';
-
-      let stream = new Stream(25, (char) => {
-        if (first) {
-          const len = document.getElementsByClassName('Message left').length;
-          const msgBox = document.getElementsByClassName('Message left')[len - 1];
-          msgId = msgBox.getAttribute('data-id') as string;
-          first = false;
-        }
-
+      let stream = new Stream(50, (char, end) => {
         newMsg += char;
-
         updateMsg(msgId, {
           type: 'text',
           content: { text: newMsg },
           user: {
+            name: end ? botName : '正在输入...',
             avatar: '/images/bot_avatar.png',
           },
         });
       });
-      // const fn = throttle((newMsg) => {
-      //   updateMsg(msgId, {
-      //     type: 'text',
-      //     content: { text: newMsg },
-      //     user: {
-      //       avatar: '/images/bot_avatar.png',
-      //     },
-      //   });
-      // }, 100);
+
       reader.read().then(function processResult(result) {
         if (result.done) {
           stream.end();
           updateConversationList();
           return;
         }
+
         let token = decoder.decode(result.value);
         stream.push(token.split(''));
-        // console.log(token);
-        // if (token.endsWith('.') || token.endsWith('!') || token.endsWith('?')) {
-        //   // document.getElementById("lalala").innerHTML += token + "<br>";
-        // } else {
-        //   // document.getElementById("lalala").innerHTML += token + ' ';
-        // }
 
         return reader.read().then(processResult);
       });
@@ -303,41 +282,44 @@ const ChatComponent: React.FC = () => {
         content: { text: val },
         position: 'right',
         user: {
+          name: 'User',
           avatar: '/images/default_avatar.png',
         },
       });
-      setTyping(true);
+      const msgId = Math.random() + '';
+      appendMsg({
+        _id: msgId,
+        type: 'text',
+        content: { text: '' },
+        position: 'left',
+        user: {
+          name: botName,
+          avatar: '/images/bot_avatar.png',
+        },
+      });
       setMessageLoading(true);
       try {
         if (initialState?.currentUser?.organization?.code === 'tec-do') {
-          appendMsg({
-            type: 'text',
-            content: { text: '...' },
-            position: 'left',
-            user: {
-              avatar: '/images/bot_avatar.png',
-            },
-            status: 'pending',
-          });
-          await sendMessageStream(val);
-          setTyping(false);
+          await sendMessageStream(val, msgId);
           setMessageLoading(false);
         } else {
           const response = await sendMessage(val);
           if (response && response.content) {
-            appendMsg({
+            updateMsg(msgId, {
               type: 'text',
               content: { text: response.content },
               user: {
+                name: botName,
                 avatar: '/images/bot_avatar.png',
               },
             });
             updateConversationList();
           }
+          setMessageLoading(false);
         }
       } catch (error: any) {
+        deleteMsg(msgId);
         message.error(error.message);
-        setTyping(false);
         setMessageLoading(false);
       }
     }
@@ -353,6 +335,12 @@ const ChatComponent: React.FC = () => {
     initializeState();
     getChatbotList();
   }, []);
+
+  useEffect(() => {
+    if (botId) {
+      setBotName(chatbotList.find((item) => item.value === botId)?.label);
+    }
+  }, [botId, chatbotList]);
 
   const newConversation = (
     <>
@@ -379,6 +367,14 @@ const ChatComponent: React.FC = () => {
         </div>
       </div>
     </>
+  );
+
+  const Typing = (
+    <div className={styles.typing}>
+      <div className={styles.typingDot}></div>
+      <div className={styles.typingDot}></div>
+      <div className={styles.typingDot}></div>
+    </div>
   );
 
   return (
@@ -438,7 +434,7 @@ const ChatComponent: React.FC = () => {
       <div className={styles.rightContainer} style={{ opacity: loading ? 0 : 1 }}>
         {!activeConversationId && !botId && !loading ? newConversation : null}
         <div className={styles.topBar}>
-          <span>{chatbotList.find((item) => item.value === botId)?.label}</span>
+          <span>{botName}</span>
           <Button
             type="link"
             className={styles.settingIcon}
@@ -450,9 +446,7 @@ const ChatComponent: React.FC = () => {
           <Chat
             messages={messages}
             renderMessageContent={(msg: any) => (
-              <Bubble>
-                <Markdown>{msg.content.text}</Markdown>
-              </Bubble>
+              <Bubble>{msg.content.text ? <Markdown>{msg.content.text}</Markdown> : Typing}</Bubble>
             )}
             onSend={handleSendMessage}
           />
